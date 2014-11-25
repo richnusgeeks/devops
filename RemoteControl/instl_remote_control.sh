@@ -2,7 +2,7 @@
 ############################################################################
 # File name : instl_remote_control.sh
 # Purpose   : Install Python pieces required for Fabric and REST based
-#             remote validation/monitoring tool(s).
+#             remote validation/monitoring tool(s) on CentOS/RHEL.
 # Usages    : ./instl_remote_control.sh <-i|--install|-r|--clean|-d|--dump>
 #             (make it executable using chmod +x)
 # Start date : 02/07/2014

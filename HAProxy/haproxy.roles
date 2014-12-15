@@ -1,0 +1,20 @@
+RABBITMQ
+    connect = 5s
+    client  = 0s
+    server  = 0s
+    backends= a.b.c.d e.f.g.h
+    env     = test
+    type    = tcp:5672 http:15672
+    healthcheck = 
+end
+
+REDIS
+    connect = 60s
+    client  = 0s
+    server  = 0s
+    backends= a.b.c.d e.f.g.h
+    env     = test
+    type    = tcp:6379
+    healthcheck =
+end
+

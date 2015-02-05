@@ -1,6 +1,0 @@
----
-keypairloc: "~/.ssh"
-keypairname: "coreos-test-east1"
-tausrvc: "testapp.service"
-tgasrvc: "apache@"
-

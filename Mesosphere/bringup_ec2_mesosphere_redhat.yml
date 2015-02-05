@@ -1,0 +1,147 @@
+---
+# Playbook to bringup an AWS EC2 instance
+# to quickly test mesosphere components.
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    keypairloc: "~/.ssh"
+    keypairname: "mesosphere-test-east1"
+    instance_type: "m3.large"
+    image: "ami-50842d38"
+    region: "us-east-1"
+    group: "mesosphere-test"
+    state: "present"
+    count: 1
+
+  tasks:
+    - name: create keypair
+      ec2_key: name={{ keypairname }}
+               state={{ state }}
+               region={{ region }}
+               wait=true
+      register: keypair
+
+    - debug: var=keypair
+
+    - name: sg for mesosphere test
+      ec2_group:
+        name: "{{ group }}"
+        region: "{{ region }}"
+        state: "{{ state }}"
+        description: "Mesosphere test security group"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 4400
+            to_port: 4400
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 5050
+            to_port: 5050
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 8080
+            to_port: 8080
+            cidr_ip: 0.0.0.0/0
+      register: sg
+
+    - debug: var=sg
+
+    - name: write keypair file
+      template: src=keypair.j2
+                dest="{{ keypairloc }}/{{ keypairname }}.cer"
+                mode=0400
+      when: keypair.key.private_key is defined
+
+    - name: bringup ec2 instance
+      ec2: image={{ image }}
+           instance_type={{ instance_type }}
+           keypair={{ keypairname }}
+           region={{ region }}
+           group={{ group }}
+           instance_tags='{"Name":"Mesosphere Test"}'
+           count={{ count }}
+           wait=true
+      register: ec2_info
+
+    - debug: var=ec2_info
+    - debug: var=item
+      with_items: ec2_info.instance_ids
+
+    - name: add host info to in-memory inventory
+      add_host: hostname={{ item.public_ip }} groupname=ec2hosts
+      with_items: ec2_info.instances
+
+    - name: wait for instances to listen on port:22
+      wait_for:
+        state=started
+        host={{ item.public_dns_name }}
+        port=22
+      with_items: ec2_info.instances
+
+
+- hosts: ec2hosts
+  gather_facts: True
+  remote_user: ec2-user
+  sudo: yes
+
+  tasks:
+
+    # fetch instance data from the metadata servers in ec2
+    - ec2_facts:
+
+    - name: install EPEL repo
+      yum: name=http://dl.fedoraproject.org/pub/epel/6Server/x86_64/epel-release-6-8.noarch.rpm state=present
+
+    - name: install mesosphere repo
+      yum: name=http://repos.mesosphere.io/el/6/noarch/RPMS/mesosphere-el-repo-6-2.noarch.rpm state=present
+
+    - name: install cloudera repo for zookeeper
+      yum: name=http://archive.cloudera.com/cdh4/one-click-install/redhat/6/x86_64/cloudera-cdh-4-0.x86_64.rpm state=present
+
+    - name: install mesosphere components
+      yum: name={{ item }} state=latest
+      with_items:
+        - mesos
+        - marathon
+        - zookeeper
+
+    - name: create mesos slave configs
+      shell: touch {{ item }}
+      with_items:
+        - /etc/mesos-slave/containerizers
+        - /etc/mesos-slave/executor_registration_timeout
+
+    - name: patch mesos slave config for docker
+      lineinfile: dest=/etc/mesos-slave/containerizers line="docker,mesos"
+
+    - name: patch mesos slave config for executor timeout
+      lineinfile: dest=/etc/mesos-slave/executor_registration_timeout line="5mins"
+
+    - name: install docker
+      yum: name=docker-io state=latest
+
+    - name: start docker service
+      service: name=docker state=started enabled=yes
+
+    - name: initialize zookeeper server
+      shell: zookeeper-server-initialize --myid=1 
+   
+    - name: start zookeeper server
+      shell: zookeeper-server start
+
+    - name: start mesosphere services
+      service: name={{ item }} state=started
+      with_items:
+        - mesos-master
+        - mesos-slave
+        - marathon
+
+    - debug: msg="{{ hostvars[inventory_hostname]['ansible_ec2_instance_id'] }}"
+    - debug: msg="{{ hostvars[inventory_hostname]['ansible_ec2_public_hostname'] }}"
+

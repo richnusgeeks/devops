@@ -1,0 +1,163 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteVPNGW(vpngwid, region, **kwargs):
+  '''
+    Routine to delete a VPN Gateway.
+  '''
+  timeout = kwargs.get("timeout", 5)
+  vpcid = kwargs.get("vpc_id", None)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if vpcid:
+        if conn.get_all_vpcs(vpcid)[0].state == "available":
+          if not detach_vpn_gateway(vpngwid):
+            d["msg"] = "VPN Gateway %s not detached from VPC %s" %(str(vpngwid), str(vpcid))
+            dumpErrorInfo(d)
+
+      if conn.get_all_vpn_gateways(vpngwid)[0].state == "deleted":
+        d["msg"] = "VPN Gateway %s is already deleted" %str(vpngwid)
+        dumpErrorInfo(d, False)
+      else:
+        try:
+          conn.delete_vpn_gateway(vpngwid)
+          time.sleep(float(timeout))
+          if conn.get_all_vpn_gateways(vpngwid)[0].state != "deleted":
+            d["msg"] = "Seems VPN Gateway %s deletion taking time, please check later" %str(vpngwid) 
+            dumpErrorInfo(d)
+          else:
+            d["changed"] = True
+            d["msg"] = "VPN Gateway %s deleted" %str(vpngwid)
+            dumpErrorInfo(d, False)
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" %str(e)
+                       })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createVPNGW(region, **kwargs):
+  '''
+    Routine to create a VPN Gateway.
+  '''
+  timeout = kwargs.get("timeout", 5)
+  vpcid = kwargs.get("vpc_id", None)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        vgw = conn.create_vpn_gateway('ipsec.1')
+        time.sleep(float(timeout))
+        if conn.get_all_vpn_gateways(vgw.id)[0].state != 'deleted':
+          d["id"] = vgw.id
+          if vpcid:
+            if conn.get_all_vpcs(vpcid)[0].state == "available":
+              conn.attach_vpn_gateway(vgw.id, vpcid)
+ 
+        else:
+          d["msg"] = "Seems VPN Gateway creation taking time, please check later" 
+        d["changed"] = True
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteVPNGW():
+  '''
+    Routine to create or delete a VPN Gateway.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data:
+      if not "vgw_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vgw_id is the required argument"
+                     })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "vgw_id":
+          d["vgw_id"] = value
+        elif key == "vpc_id":
+          d["vpc_id"] = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        
+  if d["state"] == "present":
+    if d.has_key("vpc_id"):
+      createVPNGW(d["region"], vpc_id=d["vpc_id"])
+    else:
+      createVPNGW(d["region"])
+    
+  elif d["state"] == "absent":
+    if d.has_key("vpc_id"):
+      deleteVPNGW(d["vgw_id"], d["region"], vpc_id=d["vpc_id"])
+    else:
+      deleteVPNGW(d["vgw_id"], d["region"])
+
+delCrteVPNGW()

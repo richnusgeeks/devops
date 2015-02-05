@@ -1,0 +1,225 @@
+#! /usr/bin/python
+import boto.sqs
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+tsqsinfo = (
+             'ApproximateNumberOfMessagesNotVisible',
+             'MessageRetentionPeriod',
+             'ApproximateNumberOfMessagesDelayed',
+             'MaximumMessageSize',
+             'CreatedTimestamp',
+             'ApproximateNumberOfMessages',
+             'ReceiveMessageWaitTimeSeconds',
+             'DelaySeconds',
+             'VisibilityTimeout',
+             'LastModifiedTimestamp',
+             #'QueueArn',
+           )
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def dumpSQS(queue, region):
+  '''
+    Routine to return SQS queue info.
+  '''
+  try:
+    conn = boto.sqs.connect_to_region(region)
+    d = {}
+    if conn:
+      if not detectSQS(queue, region):
+        d["msg"] = "No %s found" % str(queue)
+        return d
+      else:
+        q = conn.get_queue(queue)
+        try:
+          dq = conn.get_queue_attributes(q)
+          for a in tsqsinfo:
+            if a == 'CreatedTimestamp' or a == 'LastModifiedTimestamp':
+              d[a] = "%s" %(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime(float(dq[a]))))
+            else:
+              d[a] = "%s" % str(dq[a])
+            d["Url"] = str(q.url)
+          return {queue : d}
+
+        except Exception, e:
+          d["msg"] = "%s" % str(e)
+          return d
+    
+    else:
+      d["msg"] = "null sqs connection object"
+      return d
+
+  except Exception, e:
+    d["msg"] = "%s" % str(e)
+    return d
+
+def detectSQS(queue, region):
+  '''
+    Routine to detect SQS queue presence.
+  '''
+  try:
+    conn = boto.sqs.connect_to_region(region)
+    if conn:
+      try:
+        q = conn.get_queue(queue)
+        if not q:
+          return False
+        else:
+          return True
+      except Exception, e:
+        return False 
+    else:
+      return False
+  except Exception, e:
+    return False
+
+def deleteSQS(queue, **kwargs):
+  '''
+    Routine to delete a SQS queue.
+  '''
+  region = kwargs.get("region", "us-east-1")
+  timeout = kwargs.get("timeout", 10)
+
+  try:
+    conn = boto.sqs.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if detectSQS(queue, region):
+        try:
+          q = conn.get_queue(queue)
+          if conn.delete_queue(q):
+            time.sleep(float(timeout))
+            if detectSQS(queue, region):
+              d["changed"] = True
+              d["msg"] = "Seems %s deletion taking time, please check later" % str(queue) 
+              dumpErrorInfo(d)
+            else:
+              d["changed"] = True
+              d["msg"] = "The %s queue deleted" % str(queue)
+              dumpErrorInfo(d, False)
+          else:
+            dumpErrorInfo({
+                           "failed" : True,
+                           "msg" : "The %s deletion failed" % str(queue)
+                         })   
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" % str(e)
+                       })
+      else:
+        d["msg"] = "No %s queue present to delete" % str(queue)
+        dumpErrorInfo(d, False)
+
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "null sqs connection object"
+                   })   
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" % str(e)
+                 })   
+
+def createSQS(queue, **kwargs):
+  '''
+    Routine to create a SQS queue.
+  '''
+  region = kwargs.get("region", "us-east-1")
+  timeout = kwargs.get("timeout", 10)
+
+  try:
+    conn = boto.sqs.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        if conn.create_queue(queue):
+          time.sleep(float(timeout))
+          if detectSQS(queue, region):
+            d["msg"] = dumpSQS(queue, region) 
+          else:
+            d["msg"] = "Seems %s creation taking time, please check later" % queue 
+          d["changed"] = True
+          dumpErrorInfo(d, False)
+        else:
+          dumpErrorInfo({
+                        "failed" : True,
+                        "msg" : "The %s creation failed" %str(e)
+                       })
+          
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" % str(e)
+                     })
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" % str(e)
+                 })
+
+def delCrteSQS():
+  '''
+    Routine to create or delete a SQS queue.
+  '''
+  if not "name=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "name is the required argument"
+                 })
+
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "name":
+          name = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        elif key == "state":
+          state = value
+        
+  if state == "present":
+    createSQS(name, **d)
+  if state == "absent":
+    deleteSQS(name, **d)
+
+delCrteSQS()
+

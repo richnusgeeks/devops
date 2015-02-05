@@ -1,0 +1,202 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteDHCPOpts(dhcp_id, region, timeout=5):
+  '''
+    Routine to delete a DHCP options set.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if not dhcp_id in [i.id for i in conn.get_all_dhcp_options()]:
+        d["msg"] = "DHCP option %s is not present already" %str(dhcp_id)
+        dumpErrorInfo(d, False)
+      else:
+        try:
+          if not conn.delete_dhcp_options(dhcp_id):
+            d["msg"] = "DHCP option %s deletion failed" %str(dhcp_id) 
+          else: 
+            time.sleep(float(timeout))
+            if dhcp_id in [i.id for i in conn.get_all_dhcp_options()]:
+              d["msg"] = "Seems DHCP options %s deletion taking time, please check later" %str(dhcp_id) 
+              dumpErrorInfo(d)
+            else:
+              d["changed"] = True
+              d["msg"] = "DHCP options %s deleted" %str(dhcp_id)
+            dumpErrorInfo(d, False)
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" %str(e)
+                       })
+
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createDHCPOpts(region, **kwargs):
+  '''
+    Routine to create a DHCP options set.
+  '''
+  timeout = kwargs.get("timeout", 5)
+  vpc_id = kwargs.get("vpc_id", None)
+  dhcp_id = kwargs.get("dhcp_id", None)
+  dmn_nme = kwargs.get("dmn_nme")
+  dmn_nme_srvrs = kwargs.get("dmn_nme_srvrs")
+  ntp_srvrs = kwargs.get("ntp_srvrs")
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    dhcp = None 
+    if conn:
+      try:
+        if not dhcp_id:
+          dos = conn.create_dhcp_options(dmn_nme, 
+                                         dmn_nme_srvrs,
+                                         ntp_srvrs)
+          time.sleep(float(timeout))
+          if conn.get_all_dhcp_options(dos.id):
+            dhcp = dos.id
+          else:
+            d["msg"] = "Seems DHCP options creation taking time, please check later" 
+            d["changed"] = True
+            dumpErrorInfo(d, False)
+        else:
+          dhcp = dhcp_id                        
+
+        if vpc_id:
+          if not conn.associate_dhcp_options(dhcp, vpc_id):
+            d["msg"] = "DHCP options %s association with VPC %s failed" %(str(dhcp), str(vpc_id))
+            dumpErrorInfo(d)
+
+        d["id"] = dhcp 
+        d["changed"] = True
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteDHCPOpts():
+  '''
+    Routine to create or delete a DHCP options set.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data:
+      if not "dhcp_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "dhcp_id is the required argument"
+                     })
+
+  if "state=present" in args_data:
+    if "dhcp_id=" in args_data:
+      if not "vpc_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vpc_id is the required argument"
+                     })
+
+    if not "dmn_nme=" in args_data and \
+       not "dmn_nme_srvrs=" in args_data and \
+       not "ntp_srvrs=" in args_data:
+      dumpErrorInfo({
+                    "failed" : True,
+                    "msg" : "dmn_nme, dmn_nme_srvrs, ntp_srvrs are the required argument"
+                   })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        elif key == "dhcp_id":
+          d["dhcp_id"] = value
+        elif key == "vpc_id":
+          d["vpc_id"] = value
+        elif key == "dmn_nme":
+          d["dmn_nme"] = value
+        elif key == "dmn_nme_srvrs":
+          d["dmn_nme_srvrs"] = value.split(",")
+        elif key == "ntp_srvrs":
+          d["ntp_srvrs"] = value.split(",")
+        
+  if d["state"] == "present":
+    if d.has_key("vpc_id"):
+      createDHCPOpts(d["region"],
+                     vpc_id=d["vpc_id"],
+                     dmn_nme=d["dmn_nme"],
+                     dmn_nme_srvrs=d["dmn_nme_srvrs"],
+                     ntp_srvrs=d["ntp_srvrs"])
+    else:      
+      createDHCPOpts(d["region"],
+                     dmn_nme=d["dmn_nme"],
+                     dmn_nme_srvrs=d["dmn_nme_srvrs"],
+                     ntp_srvrs=d["ntp_srvrs"])
+  if d["state"] == "absent":
+    deleteDHCPOpts(d["dhcp_id"], d["region"])
+
+delCrteDHCPOpts()

@@ -1,0 +1,9 @@
+---
+# Playbook to:
+# 1. bringup CoreOS EC2 nodes,
+# 2. configure dynamic clustering,
+# 3. launch test container on the cluster,
+
+- include: coreoscld.yml
+- include: coreosprov.yml
+

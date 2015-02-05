@@ -1,0 +1,10 @@
+---
+keypairloc: "~/.ssh"
+keypairname: "coreos-test-east1"
+instance_type: "m1.small"
+image: "ami-6470340c"
+region: "us-east-1"
+group: "coreos-test"
+state: "present"
+count: 3
+

@@ -1,0 +1,181 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteEntry(acl_id, region, rule_num):
+  '''
+    Routine to delete a N/W ACL entry.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if not conn.delete_network_acl_entry(acl_id, rule_num, False):
+        d["msg"] = "ACL entry deletion from %s for rule %s failed" %(str(acl_id), str(rule_num))
+        dumpErrorInfo(d, False)
+      else:
+        d["changed"] = True
+        d["msg"] = "ACL entry deleted from %s for rule %s" %(str(acl_id), str(rule_num))
+      dumpErrorInfo(d, False)
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createEntry(acl_id, region, rule_num, cidr_block):
+  '''
+    Routine to create an ACL entry.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if not conn.create_network_acl_entry(acl_id, rule_num, -1, 'allow', cidr_block, False):
+        d["msg"] = "ACL entry creation for %s in %s failed" %(str(cidr_block), str(acl_id))
+        dumpErrorInfo(d, False)
+      else:
+        d["changed"] = True
+        d["msg"] = "ACL entry created for %s in %s" %(str(cidr_block), str(acl_id))
+      dumpErrorInfo(d, False)
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def dumpNWAcl(vpcid, region):
+  '''
+    Routine to dump default N/W ACL id.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        d["id"] = conn.get_all_network_acls(filters={"vpc-id":vpcid})[0].id
+        dumpErrorInfo(d, False)
+
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteEntry():
+  '''
+    Routine to create/delete N/W ACL entry 
+    and dump default N/W ACL id.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data or \
+       "state=present" in args_data:
+      if not "acl_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "acl_id is the required argument"
+                     })
+      if not "rule_num=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "rule_num is the required argument"
+                     })
+
+      if "state=present" in args_data and \
+         not "cidr_block" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "cidr_block is the required argument"
+                     })
+
+    if "state=dump" in args_data and \
+      not "vpc_id=" in args_data:
+      dumpErrorInfo({
+                    "failed" : True,
+                    "msg" : "vpc_id is the required argument"
+                   })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "region":
+          d["region"] = value
+        elif key == "vpc_id":
+          d["vpc_id"] = value
+        elif key == "acl_id":
+          d["acl_id"] = value
+        elif key == "cidr_block":
+          d["cidr_block"] = value
+        elif key == "rule_num":
+          d["rule_num"] = value
+        
+  if d["state"] == "present":
+    createEntry(d["acl_id"], d["region"],
+                d["rule_num"], d["cidr_block"])
+  elif d["state"] == "absent":
+    deleteEntry(d["acl_id"], d["region"],
+                d["rule_num"])
+  elif d["state"] == "dump":
+    dumpNWAcl(d["vpc_id"], d["region"])
+
+delCrteEntry()

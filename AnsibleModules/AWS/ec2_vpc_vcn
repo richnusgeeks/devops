@@ -21,48 +21,35 @@ def dumpErrorInfo(dmsg, berr=True):
   else:
     sys.exit(0)
            
-def deleteVPNGW(vpngwid, region, **kwargs):
+def deleteVCN(vcnid, region, **kwargs):
   '''
-    Routine to delete a VPN Gateway.
+    Routine to delete a VPN Connection.
   '''
   delay = kwargs.get("delay", 5)
   timeout = kwargs.get("timeout", 300)
-  vpcid = kwargs.get("vpc_id", None)
 
   try:
     conn = boto.vpc.connect_to_region(region)
     d = { "changed" : False, }
     if conn:
-      if vpcid and conn.get_all_vpcs(vpcid)[0].state == "available":
-        if conn.get_all_vpn_gateways(vpngwid)[0].state == "deleted":
-          d["msg"] = "VPN Gateway %s is already deleted" %str(vpngwid)
-          dumpErrorInfo(d, False)
-
-        if conn.get_all_vpn_gateways(vpngwid)[0].attachments[0].state != "detached":
-          if not conn.detach_vpn_gateway(vpngwid, vpcid):
-            d["msg"] = "VPN Gateway %s detachment from VPC %s failed" %(str(vpngwid), str(vpcid))
+      if conn.get_all_vpn_connections(vcnid)[0].state == "deleted":
+        d["msg"] = "VPN Connection %s is already deleted" %str(vcnid)
+        dumpErrorInfo(d, False)
+      else:
+        try:
+          if not conn.delete_vpn_connection(vcnid):
+            d["msg"] = "VPN connection %s deletion failed" %(str(vcnid))
             dumpErrorInfo(d)
           else:
             strttme = time.time()
-            while conn.get_all_vpn_gateways(vpngwid)[0].attachments[0].state == "detaching":
+            while conn.get_all_vpn_connections(vcnid)[0].state != "deleted":
               time.sleep(float(delay))
               if int(strttme-time.time()) > timeout:
-                d["msg"] = "VPN Gateway %s detach from VPC %s timeout" %(str(vpngwid), str(vpcid))
-                dumpErrorInfo(d)
-        try:
-          if not conn.delete_vpn_gateway(vpngwid):
-              d["msg"] = "VPN Gateway %s deletion failed" %(str(vpngwid))
-              dumpErrorInfo(d)
-          else:
-            strttme = time.time()
-            while conn.get_all_vpn_gateways(vpngwid)[0].state != "deleted":
-              time.sleep(float(delay))
-              if int(strttme-time.time()) > timeout:
-                d["msg"] = "VPN Gateway %s deletion time out" %str(vpngwid)
+                d["msg"] = "VPN connection %s deletion time out" %str(vcnid)
                 dumpErrorInfo(d)
 
           d["changed"] = True
-          d["msg"] = "VPN Gateway %s deleted" %str(vpngwid)
+          d["msg"] = "VPN Connection %s deleted" %str(vcnid)
           dumpErrorInfo(d, False)
         except Exception, e:
           dumpErrorInfo({
@@ -76,35 +63,24 @@ def deleteVPNGW(vpngwid, region, **kwargs):
                    "msg" : "%s" %str(e)
                  })   
 
-def createVPNGW(region, **kwargs):
+def createVCN(region, cgwid, vgwid, **kwargs):
   '''
-    Routine to create a VPN Gateway.
+    Routine to create a VPN Connection.
   '''
-  delay = kwargs.get("delay", 5)
-  timeout = kwargs.get("timeout", 300)
-  vpcid = kwargs.get("vpc_id", None)
+  timeout = kwargs.get("timeout", 5)
 
   try:
     conn = boto.vpc.connect_to_region(region)
     d = { "changed" : False, }
     if conn:
       try:
-        vgw = conn.create_vpn_gateway('ipsec.1')
-        time.sleep(float(delay))
-        if conn.get_all_vpn_gateways(vgw.id)[0].state != 'deleted':
-          d["id"] = vgw.id
-          if vpcid:
-            if conn.get_all_vpcs(vpcid)[0].state == "available":
-              conn.attach_vpn_gateway(vgw.id, vpcid)
-              strttme = time.time()
-              while conn.get_all_vpn_gateways(vgw.id)[0].attachments[0].state == "attaching":
-                time.sleep(float(delay))
-                if int(strttme-time.time()) > timeout:
-                  d["msg"] = "VPN Gateway %s attach time out" %str(vpngwid)
-                  dumpErrorInfo(d)
- 
+        vcn = conn.create_vpn_connection('ipsec.1', cgwid, vgwid)
+        time.sleep(float(timeout))
+        if conn.get_all_vpn_connections(vcn.id)[0].state != 'deleted':
+          d["id"] = vcn.id
+
         else:
-          d["msg"] = "Seems VPN Gateway creation taking time, please check later" 
+          d["msg"] = "Seems VPN Connection creation taking time, please check later" 
         d["changed"] = True
         dumpErrorInfo(d, False)
                
@@ -125,9 +101,9 @@ def createVPNGW(region, **kwargs):
                    "msg" : "%s" %str(e)
                  })
 
-def delCrteVPNGW():
+def delCrteVCN():
   '''
-    Routine to create or delete a VPN Gateway.
+    Routine to create or delete a VPN Connection.
   '''
   if not "region=" in args_data:
     dumpErrorInfo({
@@ -142,6 +118,18 @@ def delCrteVPNGW():
                  })
   else:
     if "state=absent" in args_data:
+      if not "vcn_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vcn_id is the required argument"
+                     })
+    else:
+      if not "cgw_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "cgw_id is the required argument"
+                     })
+         
       if not "vgw_id=" in args_data:
         dumpErrorInfo({
                       "failed" : True,
@@ -158,25 +146,21 @@ def delCrteVPNGW():
 
         if key == "state":
           d["state"] = value
+        elif key == "vcn_id":
+          d["vcn_id"] = value
         elif key == "vgw_id":
           d["vgw_id"] = value
-        elif key == "vpc_id":
-          d["vpc_id"] = value
+        elif key == "cgw_id":
+          d["cgw_id"] = value
         elif key == "timeout":
           d["timeout"] = value
         elif key == "region":
           d["region"] = value
         
   if d["state"] == "present":
-    if d.has_key("vpc_id"):
-      createVPNGW(d["region"], vpc_id=d["vpc_id"])
-    else:
-      createVPNGW(d["region"])
+      createVCN(d["region"], d["cgw_id"], d["vgw_id"])
     
   elif d["state"] == "absent":
-    if d.has_key("vpc_id"):
-      deleteVPNGW(d["vgw_id"], d["region"], vpc_id=d["vpc_id"])
-    else:
-      deleteVPNGW(d["vgw_id"], d["region"])
+      deleteVCN(d["vcn_id"], d["region"])
 
-delCrteVPNGW()
+delCrteVCN()

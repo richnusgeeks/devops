@@ -1,0 +1,211 @@
+#! /usr/bin/python
+import boto.ec2
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteRuleDefSG(sgid, region, cidr):
+  '''
+    Routine to delete an icmp rule from VPC Default
+    Security Group.
+  '''
+  try:
+    conn = boto.ec2.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        if not conn.revoke_security_group(
+                                          from_port=-1,
+                                          to_port=-1, 
+                                          ip_protocol='icmp',
+                                          cidr_ip=cidr,
+                                          group_id=sgid
+                                         ):
+            d["msg"] = "Rule deletion for cidr %s from %s failed" %(str(cidr), str(sgid))
+            dumpErrorInfo(d)
+        
+        d["changed"] = True
+        d["msg"] = "Rule deleted for cidr %s from %s" %(str(cidr), str(sgid))
+        dumpErrorInfo(d, False)
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null EC2 connection object returned"
+                   })
+
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createRuleDefSG(sgid, region, cidr):
+  '''
+    Routine to create an icmp rule to VPC Default
+    Security Group.
+  '''
+  try:
+    conn = boto.ec2.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        if not conn.authorize_security_group(
+                                             from_port=-1,
+                                             to_port=-1, 
+                                             ip_protocol='icmp',
+                                             cidr_ip=cidr,
+                                             group_id=sgid 
+                                            ):
+          d["msg"] = "Rule addition for cidr %s in %s failed" %(str(cidr), str(sgid))
+          dumpErrorInfo(d)
+        
+        d["changed"] = True
+        d["msg"] = "Rule added for cidr %s in %s" %(str(cidr), str(sgid))
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null EC2 connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def dumpDefSG(vpcid, region):
+  '''
+    Routine to dump Default Security Group
+    created with VPC.
+  '''
+  try:
+    conn = boto.ec2.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        sgs = [ {sg.name: sg.id} for sg in conn.get_all_security_groups(filters={"vpc-id":vpcid})]
+        for i in sgs:
+          if i.has_key('default'):
+            d["id"] = i['default']
+            dumpErrorInfo(d, False)
+  
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null EC2 connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+  
+def delCrteDumpDefSG():
+  '''
+    Routine to create/delete icmp rules and
+    dump Default Security Group created with VPC.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=dump" in args_data:
+      if not "vpc_id" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vpc_id is the required argument"
+                     })
+    else:
+      if not "sg_id=" in args_data:
+        dumpErrorInfo({
+                        "failed" : True,
+                        "msg" : "sg_id is the required argument"
+                     })
+
+      if not "cidr=" in args_data:
+        dumpErrorInfo({
+                        "failed" : True,
+                        "msg" : "cidr is the required argument"
+                     })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+        
+        if key == "region":
+          d["region"] = value
+        if key == "state":
+          d["state"] = value
+        if key == "vpc_id":
+          d["vpc_id"] = value
+        elif key == "sg_id":
+          d["sg_id"] = value
+        elif key == "cidr":
+          d["cidr"] = value
+        
+  if d["state"] == "present":
+    createRuleDefSG(
+                    d["sg_id"],
+                    d["region"],
+                    d["cidr"],
+                   )
+    
+  elif d["state"] == "absent":
+    deleteRuleDefSG(
+                    d["sg_id"],
+                    d["region"],
+                    d["cidr"],
+                   )
+
+  elif d["state"] == "dump":
+    dumpDefSG(d["vpc_id"], d["region"]) 
+
+delCrteDumpDefSG()

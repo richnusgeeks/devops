@@ -1,0 +1,264 @@
+#! /usr/bin/python
+import boto.redshift
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+trsinfo = (
+            #'ClusterIdentifier',
+            'ClusterCreateTime',
+            'ClusterStatus',
+            'DBName',
+            'MasterUsername',
+            'Endpoint',
+            'NodeType',
+            'NumberOfNodes',
+            'ClusterNodes',
+            'PubliclyAccessible',
+            'VpcSecurityGroups',
+            'ElasticIpStatus',
+            #'ClusterPublicKey',
+            'ModifyStatus',
+            #'PendingModifiedValues',
+            'VpcId',
+            'ClusterVersion',
+            'AutomatedSnapshotRetentionPeriod',
+            'ClusterParameterGroups',
+            'PreferredMaintenanceWindow',
+            'HsmStatus',
+            'RestoreStatus',
+            'AllowVersionUpgrade',
+            'ClusterSubnetGroupName',
+            'ClusterSecurityGroups',
+            'AvailabilityZone',
+            'Encrypted',
+            'ClusterRevisionNumber',
+            'ClusterSnapshotCopyStatus',
+          )
+
+tnode = (
+         'dw1.xlarge',
+         'dw1.8xlarge',
+         'dw2.large',
+         'dw2.8xlarge',
+        )
+
+tcluster = (
+            'single-node',
+            'multi-node',
+           )
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def dumpRedshift(clstrifr, region="us-east-1"):
+  '''
+    Routine to return redshift cluster info.
+  '''
+  try:
+    conn = boto.redshift.connect_to_region(region)
+    d = {}
+    if conn:
+      for c in conn.describe_clusters()['DescribeClustersResponse']['DescribeClustersResult']['Clusters']:
+        d1 = dict()
+        if c['ClusterIdentifier'] == clstrifr:
+          for i in trsinfo:
+            if i == 'ClusterCreateTime':
+              d1[i] = "%s" %(time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime(c[i])))
+            else:
+              d1[i] = "%s" %str(c[i])
+          d["%s" %str(c['ClusterIdentifier'])] = d1
+          return d
+    else:
+      d["msg"] = "null redshift connection object"
+      return d
+  except Exception, e:
+    d["msg"] = "%s" %str(e)
+    return d
+
+def detectRedshift(clstrifr, region="us-east-1"):
+  '''
+    Routine to detect redshift cluster presence.
+  '''
+  try:
+    conn = boto.redshift.connect_to_region(region)
+    if conn:
+      for c in conn.describe_clusters()['DescribeClustersResponse']['DescribeClustersResult']['Clusters']:
+        if c['ClusterIdentifier'] == clstrifr:
+          return True 
+    else:
+      return False
+  except Exception, e:
+    return False
+
+def deleteRedshift(identifier, **kwargs):
+  '''
+    Routine to delete a redshift cluster.
+  '''
+
+  timeout = kwargs.get("timeout", 10)
+  region = kwargs.get("region", "us-east-1")
+
+  try:
+    conn = boto.redshift.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if detectRedshift(identifier, region):
+        try:
+          conn.delete_cluster(identifier, skip_final_cluster_snapshot=True)
+          time.sleep(float(timeout))
+          if detectRedshift(identifier, region):
+            d["changed"] = True
+            d["msg"] = "Seems %s deletion taking time, please check later" %str(identifier) 
+            dumpErrorInfo(d)
+          else:
+            d["msg"] = "No %s cluster present to delete" %str(identifier)
+            dumpErrorInfo(d, False)
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" %str(e)
+                       })
+      else:
+        d["msg"] = "No %s cluster present to delete" %(identifier)
+        dumpErrorInfo(d, False)
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createRedshift(identifier, **kwargs):
+  '''
+    Routine to create a redshift cluster.
+  '''
+  node = kwargs.get("node", tnode[0])
+  cluster = kwargs.get("cluster", tcluster[0])
+
+  num = kwargs.get("num", 1)
+  user = kwargs.get("user", "test")
+  password = kwargs.get("password", "t3sT@123!")
+  db = kwargs.get("db", "testdb")
+  timeout = kwargs.get("timeout", 10)
+  region = kwargs.get("region", "us-east-1")
+ 
+  try:
+    conn = boto.redshift.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        if num > 1:
+          conn.create_cluster(
+                              cluster_identifier=identifier,
+                              node_type=node,
+                              cluster_type=cluster,
+                              number_of_nodes=num,
+                              master_username=user,
+                              master_user_password=password,
+                              db_name=db
+                             )
+        elif num == 1:
+          conn.create_cluster(
+                              cluster_identifier=identifier,
+                              node_type=node,
+                              cluster_type=cluster,
+                              master_username=user,
+                              master_user_password=password,
+                              db_name=db
+                             )
+        time.sleep(float(timeout))
+        if detectRedshift(identifier, region):
+          d["msg"] = dumpRedshift(identifier, region) 
+        else:
+          d["msg"] = "Seems %s creation taking time, please check later" %identifier 
+        d["changed"] = True
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteRedshift():
+  '''
+    Routine to create or delete a redshift cluster.
+  '''
+  if not "id=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "id is the required argument"
+                 })
+
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "id":
+          d["id"] = value
+        elif key == "node":
+          d["node"] = value
+        elif key == "cluster":
+          d["cluster"] = value
+        elif key == "num":
+          d["num"] = value
+          if d["num"] < 1:
+            dumpErrorInfo({
+                          "failed" : True,
+                          "msg" : "number of cluster nodes should be > 1"
+                         })
+        elif key == "user":
+          d["user"] = value
+        elif key == "password":
+          d["password"] = value
+        elif key == "db":
+          d["db"] = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        
+  if d.has_key("state") and d["state"] == "present":
+    createRedshift(d["id"], **d)
+  if d.has_key("state") and d["state"] == "absent":
+    deleteRedshift(d["id"], **d)
+
+delCrteRedshift()

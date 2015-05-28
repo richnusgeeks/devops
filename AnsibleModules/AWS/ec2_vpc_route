@@ -1,0 +1,181 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteRoute(rttbl_id, region, cidr_block):
+  '''
+    Routine to delete a route table.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if not conn.delete_route(rttbl_id, cidr_block):
+        d["msg"] = "Route %s deletion from %s failed" %(str(cidr_block), str(rttbl_id))
+        dumpErrorInfo(d, False)
+      else:
+        d["changed"] = True
+        d["msg"] = "Route %s deleted from %s" %(str(cidr_block), str(rttbl_id))
+      dumpErrorInfo(d, False)
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createRoute(rttbl_id, region, cidr_block, gtway_id):
+  '''
+    Routine to delete a route table.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if not conn.create_route(rttbl_id, cidr_block, gtway_id):
+        d["msg"] = "Route %s creation in %s failed" %(str(cidr_block), str(rttbl_id))
+        dumpErrorInfo(d, False)
+      else:
+        d["changed"] = True
+        d["msg"] = "Route %s created in %s" %(str(cidr_block), str(rttbl_id))
+      dumpErrorInfo(d, False)
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def dumpRouteTbl(vpcid, region):
+  '''
+    Routine to dump main route table id.
+  '''
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        d["id"] = conn.get_all_route_tables(filters={"vpc_id":vpcid})[0].id
+        dumpErrorInfo(d, False)
+
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteRoute():
+  '''
+    Routine to create/delete routes and
+    dump main route table id.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data or \
+       "state=present" in args_data:
+      if not "rttbl_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "rttbl_id is the required argument"
+                     })
+      if not "cidr_block=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "cidr_block is the required argument"
+                     })
+
+      if "state=present" in args_data and \
+         not "gtway_id" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "gtway_id is the required argument"
+                     })
+
+    if "state=dump" in args_data and \
+      not "vpc_id=" in args_data:
+      dumpErrorInfo({
+                    "failed" : True,
+                    "msg" : "vpc_id is the required argument"
+                   })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "region":
+          d["region"] = value
+        elif key == "vpc_id":
+          d["vpc_id"] = value
+        elif key == "rttbl_id":
+          d["rttbl_id"] = value
+        elif key == "cidr_block":
+          d["cidr_block"] = value
+        elif key == "gtway_id":
+          d["gtway_id"] = value
+        
+  if d["state"] == "present":
+    createRoute(d["rttbl_id"], d["region"],
+                d["cidr_block"], d["gtway_id"])
+  elif d["state"] == "absent":
+    deleteRoute(d["rttbl_id"], d["region"],
+                d["cidr_block"])
+  elif d["state"] == "dump":
+    dumpRouteTbl(d["vpc_id"], d["region"])
+
+delCrteRoute()

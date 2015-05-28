@@ -1,0 +1,166 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteVCN(vcnid, region, **kwargs):
+  '''
+    Routine to delete a VPN Connection.
+  '''
+  delay = kwargs.get("delay", 5)
+  timeout = kwargs.get("timeout", 300)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if conn.get_all_vpn_connections(vcnid)[0].state == "deleted":
+        d["msg"] = "VPN Connection %s is already deleted" %str(vcnid)
+        dumpErrorInfo(d, False)
+      else:
+        try:
+          if not conn.delete_vpn_connection(vcnid):
+            d["msg"] = "VPN connection %s deletion failed" %(str(vcnid))
+            dumpErrorInfo(d)
+          else:
+            strttme = time.time()
+            while conn.get_all_vpn_connections(vcnid)[0].state != "deleted":
+              time.sleep(float(delay))
+              if int(strttme-time.time()) > timeout:
+                d["msg"] = "VPN connection %s deletion time out" %str(vcnid)
+                dumpErrorInfo(d)
+
+          d["changed"] = True
+          d["msg"] = "VPN Connection %s deleted" %str(vcnid)
+          dumpErrorInfo(d, False)
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" %str(e)
+                       })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createVCN(region, cgwid, vgwid, **kwargs):
+  '''
+    Routine to create a VPN Connection.
+  '''
+  timeout = kwargs.get("timeout", 5)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        vcn = conn.create_vpn_connection('ipsec.1', cgwid, vgwid)
+        time.sleep(float(timeout))
+        if conn.get_all_vpn_connections(vcn.id)[0].state != 'deleted':
+          d["id"] = vcn.id
+
+        else:
+          d["msg"] = "Seems VPN Connection creation taking time, please check later" 
+        d["changed"] = True
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteVCN():
+  '''
+    Routine to create or delete a VPN Connection.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data:
+      if not "vcn_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vcn_id is the required argument"
+                     })
+    else:
+      if not "cgw_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "cgw_id is the required argument"
+                     })
+         
+      if not "vgw_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "vgw_id is the required argument"
+                     })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "vcn_id":
+          d["vcn_id"] = value
+        elif key == "vgw_id":
+          d["vgw_id"] = value
+        elif key == "cgw_id":
+          d["cgw_id"] = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        
+  if d["state"] == "present":
+      createVCN(d["region"], d["cgw_id"], d["vgw_id"])
+    
+  elif d["state"] == "absent":
+      deleteVCN(d["vcn_id"], d["region"])
+
+delCrteVCN()

@@ -1,0 +1,162 @@
+#! /usr/bin/python
+import boto.vpc
+import shlex
+import json
+import time
+import sys
+
+args_file = sys.argv[1]
+args_data = file(args_file).read()
+
+def dumpErrorInfo(dmsg, berr=True):
+  
+  print json.dumps(dmsg,
+                   sort_keys=True,
+                   indent=4,
+                   separators=(',', ': ')
+                  )
+
+  if berr:
+    sys.exit(1)
+  else:
+    sys.exit(0)
+           
+def deleteCSTGW(cstgwid, region, **kwargs):
+  '''
+    Routine to delete a Customer Gateway.
+  '''
+  timeout = kwargs.get("timeout", 5)
+  vpcid = kwargs.get("vpc_id", None)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      if conn.get_all_customer_gateways(cstgwid)[0].state == "deleted":
+        d["msg"] = "Customer Gateway %s is already deleted" %str(cstgwid)
+        dumpErrorInfo(d, False)
+      else:
+        try:
+          conn.delete_customer_gateway(cstgwid)
+          time.sleep(float(timeout))
+          if conn.get_all_customer_gateways(cstgwid)[0].state != "deleted":
+            d["msg"] = "Seems Customer Gateway %s deletion taking time, please check later" %str(cstgwid) 
+            dumpErrorInfo(d)
+          else:
+            d["changed"] = True
+            d["msg"] = "Customer Gateway %s deleted" %str(cstgwid)
+            dumpErrorInfo(d, False)
+        except Exception, e:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "%s" %str(e)
+                       })
+                         
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })   
+
+def createCSTGW(region, ipaddr, bgpasn, **kwargs):
+  '''
+    Routine to create a Customer Gateway.
+  '''
+  timeout = kwargs.get("timeout", 5)
+  vpcid = kwargs.get("vpc_id", None)
+
+  try:
+    conn = boto.vpc.connect_to_region(region)
+    d = { "changed" : False, }
+    if conn:
+      try:
+        cgw = conn.create_customer_gateway('ipsec.1', ipaddr, bgpasn)
+        time.sleep(float(timeout))
+        if conn.get_all_customer_gateways(cgw.id)[0].state != 'deleted':
+          d["id"] = cgw.id
+
+        else:
+          d["msg"] = "Seems Customer Gateway creation taking time, please check later" 
+        d["changed"] = True
+        dumpErrorInfo(d, False)
+               
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" %str(e)
+                     })
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "Null VPC connection object returned"
+                   })
+  
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" %str(e)
+                 })
+
+def delCrteCSTGW():
+  '''
+    Routine to create or delete a Customer Gateway.
+  '''
+  if not "region=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "region is the required argument"
+                 })
+
+  if not "state=" in args_data:
+    dumpErrorInfo({
+                  "failed" : True,
+                  "msg" : "state is the required argument"
+                 })
+  else:
+    if "state=absent" in args_data:
+      if not "cgw_id=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "cgw_id is the required argument"
+                     })
+    else:
+      if not "ip_addr=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "ip_addr is the required argument"
+                     })
+         
+      if not "bgp_asn=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "bgp_asn is the required argument"
+                     })
+
+  arguments = shlex.split(args_data)
+
+  d = {} 
+  for arg in arguments:
+    # ignore any arguments without an equals in it
+    if "=" in arg:
+        (key, value) = arg.split("=")
+
+        if key == "state":
+          d["state"] = value
+        elif key == "cgw_id":
+          d["cgw_id"] = value
+        elif key == "ip_addr":
+          d["ip_addr"] = value
+        elif key == "bgp_asn":
+          d["bgp_asn"] = value
+        elif key == "timeout":
+          d["timeout"] = value
+        elif key == "region":
+          d["region"] = value
+        
+  if d["state"] == "present":
+      createCSTGW(d["region"], d["ip_addr"], d["bgp_asn"])
+    
+  elif d["state"] == "absent":
+      deleteCSTGW(d["cgw_id"], d["region"])
+
+delCrteCSTGW()

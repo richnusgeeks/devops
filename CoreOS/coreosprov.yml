@@ -1,0 +1,8 @@
+---
+- hosts: ec2hosts
+  gather_facts: False
+  remote_user: core
+
+  roles:
+    - coreosprov
+

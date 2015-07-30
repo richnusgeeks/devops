@@ -92,8 +92,49 @@ def subsSNSTopic(tpcarn, qarn, region):
   '''
     Routine to subscribe a SQS queue to a SNS topic.
   '''
-  pass
+  try:
+    sns = boto3.resource('sns', region)
+    d = { "changed" : False, }
+    if sns:
+      try:
+        tpc = sns.Topic(tpcarn)
+        if tpc:
+          try:
+            sbscptn = tpc.subscribe(
+                        Protocol='sqs',
+                        Endpoint=qarn
+                      )
+            d["changed"] = True
+            d["arn"] = sbscptn.attributes["SubscriptionArn"]
+            dumpErrorInfo(d, False)
 
+          except Exception, e:
+            dumpErrorInfo({
+                           "failed" : True,
+                           "msg" : "%s" % str(e)
+                         })
+        else:
+          dumpErrorInfo({
+                         "failed" : True,
+                         "msg" : "null sns topic object"
+                       })
+
+      except Exception, e:
+        dumpErrorInfo({
+                       "failed" : True,
+                       "msg" : "%s" % str(e)
+                     })
+
+    else:
+      dumpErrorInfo({
+                     "failed" : True,
+                     "msg" : "null sns resource object"
+                   })
+  except Exception, e:
+    dumpErrorInfo({
+                   "failed" : True,
+                   "msg" : "%s" % str(e)
+                 })
 
 def dumpSNSTopic(name, region):
   '''
@@ -145,7 +186,7 @@ def delCrteSNSTopic():
                   "msg" : "state is the required argument"
                  })
   else:
-    if "state=present" in args_data:
+    if "state=dump" in args_data or "state=present" in args_data:
       if not "name=" in args_data:
         dumpErrorInfo({
                       "failed" : True,
@@ -156,6 +197,17 @@ def delCrteSNSTopic():
         dumpErrorInfo({
                       "failed" : True,
                       "msg" : "arn is the required argument"
+                     })
+    elif "state=subctn" in args_data:
+      if not "tpcarn=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "tpcarn is the required argument"
+                     })
+      if not "qarn=" in args_data:
+        dumpErrorInfo({
+                      "failed" : True,
+                      "msg" : "qarn is the required argument"
                      })
 
   arguments = shlex.split(args_data)
@@ -173,6 +225,10 @@ def delCrteSNSTopic():
         region = value
       elif key == "state":
         state = value
+      elif key == "qarn":
+        qarn = value
+      elif key == "tpcarn":
+        tpcarn = value
         
   if state == "dump":
     dumpSNSTopic(name, region)
@@ -180,5 +236,7 @@ def delCrteSNSTopic():
     createSNSTopic(name, region)
   if state == "absent":
     deleteSNSTopic(arn, region)
+  if state == "subctn":
+    subsSNSTopic(tpcarn, qarn, region)
 
 delCrteSNSTopic()

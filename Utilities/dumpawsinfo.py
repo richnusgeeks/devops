@@ -288,8 +288,8 @@ class DumpAwsInfo():
         if conn:
           for r in conn.get_all_reservations():
             for i in r.instances:
-              s = " ID: %s , PDNS: %s, PVTDNS: %s , ImageID: %s , Tags: %s , Type: %s ,\
-   State: %s , Key: %s , GRPS: %s , PIP: %s , PVTIP: %s, SNID: %s , VPCID: %s , Monitored: %s, Region: %s"\
+              s = " ID: %s | PDNS: %s | PVTDNS: %s  | ImageID: %s | Tags: %s | Type: %s |\
+   State: %s | Key: %s | GRPS: %s | PIP: %s | PVTIP: %s| SNID: %s | VPCID: %s | Monitored: %s| Region: %s"\
                     %(i.id,i.public_dns_name,i.private_dns_name,i.image_id,i.tags.get('Name',''),\
                       i.instance_type,i.state,i.key_name,i.groups,i.ip_address,i.private_ip_address,\
                       i.subnet_id,i.vpc_id,i.monitored,i.region.name)

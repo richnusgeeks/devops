@@ -366,6 +366,74 @@ class DumpAwsInfo():
     '''
       Method to dump VPC subnets info.
     '''
+    try:
+      rgns = [i.name  for i in boto.ec2.regions() if not i.name.startswith("cn-") and -1 == i.name.find("-gov-")]
+    except Exception, e:
+      serr = ('%s :: dumpInstances(...) : regions(...), '
+              '%s' %(self.sclsnme, str(e)))
+      self.opygenericroutines.prntLogErrWarnInfo(serr, bresume = True)
+
+    self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
+    print("\n<Start of Dump VPC Subnets>\n")
+
+    d = {}
+    for r in rgns:
+      try:
+        conn = boto.ec2.connect_to_region(r)
+        if conn:
+          for r in conn.get_all_reservations():
+            for i in r.instances:
+              if i.vpc_id:
+                if d.has_key(i.vpc_id):
+                  if d[i.vpc_id].has_key(i.subnet_id):
+                    d[i.vpc_id][i.subnet_id].append(
+                      {
+                        "name": i.tags.get("Name","Name"),
+                        "type": i.instance_type,
+                        "state": i.state,
+                        "region": i.region.name,
+                      }
+                    )
+                  else:
+                    d[i.vpc_id][i.subnet_id] = [
+                      {
+                        "name": i.tags.get("Name","Name"),
+                        "type": i.instance_type,
+                        "state": i.state,
+                        "region": i.region.name,
+                      }
+                    ]
+
+                else:
+                  d[i.vpc_id] = {
+                                i.subnet_id:
+                                  [
+                                    {
+                                      "name": i.tags.get("Name","Name"),
+                                      "type": i.instance_type,
+                                      "state": i.state,
+                                      "region": i.region.name,
+                                    }
+                                  ]
+                              }
+
+      except Exception, e:
+        serr = ('%s :: dumpInstances(...) : connect_ec2,get_all_reservations(...), '
+                '%s' %(self.sclsnme, str(e)))
+        self.opygenericroutines.prntLogErrWarnInfo(serr, bresume = True)
+
+    for v in d:
+      print(" %s :" %v)
+      for s in d[v]:
+        print("  %s :" %s)
+        for i in d[v][s]:
+          print("   %s" %i)
+      print
+
+    #print d.keys()
+
+    self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
+    print("\n<End of Dump VPC Subnets>\n")
 
   def dumpSQSQueues(self):
     '''

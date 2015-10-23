@@ -9,7 +9,7 @@
 # Download link : www.richnusgeeks.me
 # License : RichNusGeeks
 # Version : 0.0.1
-# Modification history : 
+# Modification history : addition of best practices checks,Ankur 10/23/2015
 # Notes : 
 ############################################################################
 
@@ -34,11 +34,15 @@ port = 9200
 health = '/_cluster/health'
 state = '/_cluster/state'
 nodes = '/_nodes'
-elsver = '0.90.11'
+elsver = '1.7.3'
 minmstrs = 2
 mindatas = 2
 minnodes = minmstrs + mindatas
 shrdsunasgn = 0
+numrplcs = 1
+numshrds = 5
+numcores = 2
+fldscrptrs = 64*1024 
 colors = ('RED', 'GREEN', 'YELLOW',)
 # <end of global section>
 
@@ -103,33 +107,43 @@ def extendedTest(client):
     try:
         r = rest.get("http://%s:%d%s" %(client, port, nodes))
         if 200 == r.status_code:
-            h = r.json()
+          h = r.json()
+          clstrnme = h['cluster_name']
 
-            winclnts = {
-                        'Role1' : 0,
-                        'Role2' : 0,
-                        'Role3' : 0,
-                        'Role4' : 0,
-                        'Role5' : 0,
-                       }
+        for n in h['nodes']:
+          hstnme = h['nodes'][n]['host']
 
-            for n in h['nodes']:
-                for w in winclnts:
-                    if h['nodes'][n]['hostname'].upper().startswith(w):
-                        winclnts[w] += 1
+          if elsver != h['nodes'][n]['version']:
+            colorPrnt("  ELS %s cluster version %s on %s (recommended %s) [WARN]"
+              %(clstrnme, h['nodes'][n]['version'], hstnme, elsver), color="YELLOW", colored=colored)
 
-                if elsver != h['nodes'][n]['version']:
-                    colorPrnt("  ELS %s cluster version %s on %s (expected %s) [FAIL]"
-                          %(h['cluster_name'], h['nodes'][n]['version'], h['nodes'][n]['hostname'], elsver))
+          if numrplcs > int(h['nodes'][n]['settings']['index']['number_of_replicas']):
+            colorPrnt("  ELS %s cluster number_of_replicas %s on %s (recommended >= %s) [WARN]"
+              %(clstrnme, h['nodes'][n]['settings']['index']['number_of_replicas'], hstnme, numrplcs), color="YELLOW", colored=colored)
+             
+          if numshrds > int(h['nodes'][n]['settings']['index']['number_of_shards']):
+            colorPrnt("  ELS %s cluster number_of_shards %s on %s (recommended >= %s) [WARN]"
+              %(clstrnme, h['nodes'][n]['settings']['index']['number_of_shards'], hstnme, numshrds), color="YELLOW", colored=colored)
 
-            print
+          if numcores > int(h['nodes'][n]['os']['cpu']['total_cores']):
+            colorPrnt("  ELS %s cluster total_cores %s on %s (recommended >= %s) [WARN]"
+              %(clstrnme, h['nodes'][n]['os']['cpu']['total_cores'], hstnme, numcores), color="YELLOW", colored=colored)
 
-            for w in winclnts:
-                if winclnts[w] > 0:
-                    colorPrnt("  ELS %s cluster number of %s client(s) %d [PASS]" %(h['cluster_name'], w, winclnts[w]), color="GREEN", colored=colored)
-                else:
-                    colorPrnt("  ELS %s cluster number of %s client(s) %d (expected > 0) [FAIL]" %(h['cluster_name'], w, winclnts[w]), colored=colored)
-            print
+          heapmax = int(h['nodes'][n]['jvm']['mem']['heap_max_in_bytes'])
+          totalmem = int(h['nodes'][n]['os']['mem']['total_in_bytes'])
+          if heapmax != totalmem/2:
+            colorPrnt("  ELS %s cluster heap_max_in_bytes %s on %s (recommended ~ %s) [WARN]"
+              %(clstrnme, heapmax, hstnme, totalmem/2), color="YELLOW", colored=colored)
+
+          if fldscrptrs != int(h['nodes'][n]['process']['max_file_descriptors']):
+            colorPrnt("  ELS %s cluster max_file_descriptors %s on %s (recommended ~ %s) [WARN]"
+              %(clstrnme, h['nodes'][n]['process']['max_file_descriptors'], hstnme, fldscrptrs), color="YELLOW", colored=colored)
+
+          if not h['nodes'][n]['process']['mlockall']:
+            colorPrnt("  ELS %s cluster mlockall %s on %s (recommended true) [WARN]"
+              %(clstrnme, str(h['nodes'][n]['process']['mlockall']).lower(), hstnme), color="YELLOW", colored=colored)
+
+          print
     except Exception, e:
         colorPrnt(" %s" %str(e), colored=colored)
         print

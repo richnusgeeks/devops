@@ -117,13 +117,14 @@ def extendedTest(client):
             colorPrnt("  ELS %s cluster version %s on %s (recommended %s) [WARN]"
               %(clstrnme, h['nodes'][n]['version'], hstnme, elsver), color="YELLOW", colored=colored)
 
-          if numrplcs > int(h['nodes'][n]['settings']['index']['number_of_replicas']):
-            colorPrnt("  ELS %s cluster number_of_replicas %s on %s (recommended >= %s) [WARN]"
-              %(clstrnme, h['nodes'][n]['settings']['index']['number_of_replicas'], hstnme, numrplcs), color="YELLOW", colored=colored)
+          if h['nodes'][n]['settings'].has_key('index'):
+            if numrplcs > int(h['nodes'][n]['settings']['index']['number_of_replicas']):
+              colorPrnt("  ELS %s cluster number_of_replicas %s on %s (recommended >= %s) [WARN]"
+                %(clstrnme, h['nodes'][n]['settings']['index']['number_of_replicas'], hstnme, numrplcs), color="YELLOW", colored=colored)
              
-          if numshrds > int(h['nodes'][n]['settings']['index']['number_of_shards']):
-            colorPrnt("  ELS %s cluster number_of_shards %s on %s (recommended >= %s) [WARN]"
-              %(clstrnme, h['nodes'][n]['settings']['index']['number_of_shards'], hstnme, numshrds), color="YELLOW", colored=colored)
+            if numshrds > int(h['nodes'][n]['settings']['index']['number_of_shards']):
+              colorPrnt("  ELS %s cluster number_of_shards %s on %s (recommended >= %s) [WARN]"
+                %(clstrnme, h['nodes'][n]['settings']['index']['number_of_shards'], hstnme, numshrds), color="YELLOW", colored=colored)
 
           if numcores > int(h['nodes'][n]['os']['cpu']['total_cores']):
             colorPrnt("  ELS %s cluster total_cores %s on %s (recommended >= %s) [WARN]"

@@ -5,6 +5,7 @@
 # Usages : dumpawsinfo [-i|--instances|-s|--securitygps|-k|--keypairs|
 #                       -u|--subnets|-b|--s3buckets|-q|--sqsqueues|
 #                       -r|--redshift|-e|--emrclstrs|-n|--kinesis]
+#                       <BotoProfileName>
 # Start date : 10/09/2014
 # End date : dd/mm/2014
 # Author : Ankur Kumar <richnusgeeks@gmail.com>
@@ -86,6 +87,7 @@ class DumpAwsInfo():
       self.opygenericroutines.setupLogging()
       self.bcnfgfloprtn = self.opygenericroutines.setupConfigFlOprtn()
       self.sclsnme     = self.__class__.__name__
+      self.botoprfl = "default"
       self.iflag = False
       self.sflag = False
       self.kflag = False
@@ -216,7 +218,7 @@ class DumpAwsInfo():
       self.susage = '''usage: %prog [-i|--instances|-s|--securitygps|-k|--keypairs|
                        -u|--subnets|-b|--s3buckets|-q|--sqsqueues|
                        -r|--redshift|-e|--emrclstrs|-n|--kinesis|
-                       -m|--ami]'''
+                       -m|--ami] <BotoProfileName>'''
 
   def parseOptsArgs(self):
     '''
@@ -228,6 +230,7 @@ class DumpAwsInfo():
     try:
       (options, args) = self.opygenericroutines.parseCmdLine( \
                           self.doptsargs, \
+                          tposargs = tuple(self.botoprfl), \
                           susage = self.susage, \
                           bexactposargs = False)
     except Exception, e:
@@ -266,6 +269,9 @@ class DumpAwsInfo():
     if options.mflag:
       self.mflag = options.mflag
 
+    if args and args[0] != self.botoprfl:
+      self.botoprfl = args[0]
+
     return True
 
   def dumpInstances(self):
@@ -284,7 +290,10 @@ class DumpAwsInfo():
 
     for r in rgns:
       try:
-        conn = boto.ec2.connect_to_region(r)
+        if self.botoprfl[0] != "default":
+          conn = boto.ec2.connect_to_region(r, profile_name = self.botoprfl)
+        else:
+          conn = boto.ec2.connect_to_region(r)
         if conn:
           for r in conn.get_all_reservations():
             for i in r.instances:
@@ -308,7 +317,10 @@ class DumpAwsInfo():
     '''
     
     try:
-      conn = boto.connect_s3()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_s3(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_s3()
       if conn:
         print("\n<Start of Dump S3 Buckets>\n")
         self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
@@ -329,7 +341,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_ec2()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_ec2(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_ec2()
       if conn:
         print("\n<Start of Dump Security Groups>\n")
         self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
@@ -349,7 +364,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_ec2()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_ec2(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_ec2()
       if conn:
         print("\n<Start of Dump Keypairs>\n")
         self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
@@ -379,7 +397,10 @@ class DumpAwsInfo():
     d = {}
     for r in rgns:
       try:
-        conn = boto.ec2.connect_to_region(r)
+        if self.botoprfl[0] != "default":
+          conn = boto.ec2.connect_to_region(r, profile_name = self.botoprfl)
+        else:
+          conn = boto.ec2.connect_to_region(r)
         if conn:
           for r in conn.get_all_reservations():
             for i in r.instances:
@@ -392,6 +413,7 @@ class DumpAwsInfo():
                         "type": i.instance_type,
                         "state": i.state,
                         "region": i.region.name,
+                        "privateip": i.private_ip_address
                       }
                     )
                   else:
@@ -401,6 +423,7 @@ class DumpAwsInfo():
                         "type": i.instance_type,
                         "state": i.state,
                         "region": i.region.name,
+                        "privateip": i.private_ip_address
                       }
                     ]
 
@@ -441,7 +464,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_sqs()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_sqs(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_sqs()
       if conn:
         print("\n<Start of Dump SQS Queues>\n")
         self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
@@ -469,7 +495,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_redshift()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_redshift(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_redshift()
       if conn:
         print("\n<Start of Redshift clusters>\n")
         for c in conn.describe_clusters()['DescribeClustersResponse']['DescribeClustersResult']['Clusters']:
@@ -493,7 +522,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_emr()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_emr(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_emr()
       if conn:
         print("\n<Start of EMR clusters>\n")
         print(" Jobflows: %s" %conn.describe_jobflows())
@@ -514,7 +546,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_kinesis()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_kinesis(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_kinesis()
       if conn:
         print("\n<Start of Kinesis streams>\n")
         for c in conn.list_streams():
@@ -530,7 +565,10 @@ class DumpAwsInfo():
     '''
 
     try:
-      conn = boto.connect_ec2()
+      if self.botoprfl[0] != "default":
+        conn = boto.connect_ec2(profile_name = self.botoprfl)
+      else:
+        conn = boto.connect_ec2()
       if conn:
         print("\n<Start of Dump AMIs>\n")
         self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)

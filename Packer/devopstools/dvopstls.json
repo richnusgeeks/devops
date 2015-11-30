@@ -1,0 +1,47 @@
+{
+
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "us-east-1",
+      "source_ami": "ami-bb156ad1",
+      "instance_type": "t2.medium",
+      "ssh_username": "ubuntu",
+      "ami_name": "AnkurDevOpsTools",
+      "force_deregister": true,
+      "ami_description": "AMI packing Hashicorp tools, Ansible, Fabric etc.",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_size": 20,
+          "delete_on_termination": true
+        }
+      ]
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sleep 10",
+        "sudo apt-get update",
+        "sudo apt-get upgrade -y",
+        "sudo apt-get install -y unzip"
+      ]
+    },
+    {
+      "type": "shell",
+      "script": "scripts/instl-cnfgr-tools.sh",
+      "execute_command": "chmod +x {{ .Path }}; sudo {{ .Path }} -i"
+    }
+  ]
+
+}

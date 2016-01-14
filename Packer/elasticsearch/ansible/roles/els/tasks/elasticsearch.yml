@@ -1,0 +1,11 @@
+---
+- name: Enable service elasticsearch
+  service:
+    name: elasticsearch
+    enabled: Yes
+
+- name: Install visualization plugins
+  command: /usr/share/elasticsearch/bin/plugin -install "{{ item }}"
+  with_items:
+    - "mobz/elasticsearch-head"
+    - "lmenezes/elasticsearch-kopf"

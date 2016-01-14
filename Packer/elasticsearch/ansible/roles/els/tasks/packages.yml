@@ -1,0 +1,32 @@
+---
+- name: Set /etc/apt/preferences.d/elasticsearch
+  template:
+    src=etc_apt_preferences.d_elasticsearch.j2
+    dest=/etc/apt/preferences.d/elasticsearch
+
+- name: Add elasticsearch apt key (cached locally)
+  apt_key:
+    #url=https://packages.elastic.co/GPG-KEY-elasticsearch
+    #id=46095ACC8548582C1A2699A9D27D666CD88E42B4
+    data="{{ lookup('file', 'GPG-KEY-elasticsearch') }}"
+
+- name: Add elasticsearch repo and update
+  apt_repository:
+    state=present
+    repo='deb http://packages.elastic.co/elasticsearch/{{ version_elasticsearch }}/debian stable main'
+
+- name: Install elasticsearch packages
+  apt:
+    pkg={{item}}
+    state=present
+    install_recommends=no
+  with_items: aws_elasticsearch_packages
+
+- name: Install AWS Cloud Plugin for Elasticsearch
+  shell: /usr/share/elasticsearch/bin/plugin -install elasticsearch/elasticsearch-cloud-aws/{{version_elasticsearch_cloud_aws}}
+    creates="/usr/share/elasticsearch/plugins/cloud-aws"
+
+- name: Set /etc/elasticsearch/elasticsearch.yml
+  template:
+    src="elasticsearch.yml_{{version_elasticsearch}}.j2"
+    dest='/etc/elasticsearch/elasticsearch.yml'

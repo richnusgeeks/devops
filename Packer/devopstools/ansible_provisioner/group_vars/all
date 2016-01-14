@@ -1,0 +1,18 @@
+---
+hscrplnk: "https://releases.hashicorp.com"
+hscrppckgs:
+  - {"name":"otto", "version":"0.1.2"}
+  - {"name":"nomad", "version":"0.2.0"}
+  - {"name":"vault", "version":"0.3.1"}
+  - {"name":"consul", "version":"0.5.2"}
+  - {"name":"packer", "version":"0.8.6"}
+  - {"name":"terraform", "version":"0.6.7"}
+
+dirlnks: "/usr/local/bin"
+tmpdir: "/tmp"
+ossufx:
+  - {"Darwin":"darwin"}
+  - {"Debian":"linux"}
+destdir:
+  {"Darwin":"/Users/Ankur/Development/Cloud/Works",
+   "Debian":"/opt"}

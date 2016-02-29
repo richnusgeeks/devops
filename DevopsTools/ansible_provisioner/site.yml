@@ -1,8 +1,0 @@
----
-# Playbook to:
-# 1. install Hashicorp Tools, Ansible and Fabric on Ubuntu/MacOSX,
-
-#- include: common.yml
-- include: hscrptls.yml
-#- include: fabric.yml
-#- include: ansible.yml

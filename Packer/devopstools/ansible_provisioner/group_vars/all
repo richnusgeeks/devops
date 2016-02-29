@@ -1,12 +1,12 @@
 ---
 hscrplnk: "https://releases.hashicorp.com"
 hscrppckgs:
-  - {"name":"otto", "version":"0.1.2"}
-  - {"name":"nomad", "version":"0.2.0"}
-  - {"name":"vault", "version":"0.3.1"}
-  - {"name":"consul", "version":"0.5.2"}
-  - {"name":"packer", "version":"0.8.6"}
-  - {"name":"terraform", "version":"0.6.7"}
+  - {"name":"otto", "version":"0.2.0"}
+  - {"name":"nomad", "version":"0.3.0"}
+  - {"name":"vault", "version":"0.5.1"}
+  - {"name":"consul", "version":"0.6.3"}
+  - {"name":"packer", "version":"0.9.0"}
+  - {"name":"terraform", "version":"0.6.12"}
 
 dirlnks: "/usr/local/bin"
 tmpdir: "/tmp"

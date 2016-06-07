@@ -23,6 +23,7 @@ ECHO=$(which echo)
 GREP=$(which grep)
 DATE=$(which date)
 WGET=$(which wget)
+UNME=$(which uname)
 UNZIP=$(which unzip)
 BSNME=$(which basename)
 MKDIR=$(which mkdir)
@@ -45,12 +46,12 @@ HCTLS="consul \
        packer \
        terraform \
        vault"
-HCTLSVER[consul]='0.5.2'
-HCTLSVER[nomad]='0.2.0'
-HCTLSVER[otto]='0.1.2'
-HCTLSVER[packer]='0.8.6'
-HCTLSVER[terraform]='0.6.7'
-HCTLSVER[vault]='0.3.1'
+HCTLSVER[consul]='0.6.3'
+HCTLSVER[nomad]='0.3.0'
+HCTLSVER[otto]='0.2.0'
+HCTLSVER[packer]='0.9.0'
+HCTLSVER[terraform]='0.6.12'
+HCTLSVER[vault]='0.5.1'
 
 exitOnErr() {
 
@@ -63,7 +64,7 @@ exitOnErr() {
 prntUsage() {
 
     "$ECHO" "Usages: $PRGNME <-i|--install|-r|--remove|-d|--dump>"
-    "$ECHO" "        -c|--install Install DevOps tools,"
+    "$ECHO" "        -i|--install Install DevOps tools,"
     "$ECHO" "        -r|--remove  Configure DevOps tools,"
     "$ECHO" "        -d|--dump    Dump various DevOps tools related info,"
     exit 0
@@ -94,21 +95,30 @@ parseArgs() {
 
 instlDvopsTls() {
 
+  if "$UNME" -v | "$GREP" -i darwin 2>&1 > /dev/null
+  then
+    OS='darwin'
+    HCTLSLOC='~/Development/Cloud/Works'
+  else
+    OS='linux'
+  fi
+
   for t in $HCTLS
   do
-    if ! "$WGET" -P /tmp --tries=5 -q "$HCTLSURL/$t/${HCTLSVER[$t]}/${t}_${HCTLSVER[$t]}_linux_amd64.zip"
+    if ! "$WGET" -P /tmp --tries=5 -q "$HCTLSURL/$t/${HCTLSVER[$t]}/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip"
     then
-      exitOnErr "$WGET -P /tmp $HCTLSURL/$t/${HCTLSVER[$t]}/${t}_${HCTLSVER[$t]}_linux_amd64.zip failed"
+      exitOnErr "$WGET -P /tmp $HCTLSURL/$t/${HCTLSVER[$t]}/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip failed"
     else
-      if ! "$UNZIP" "/tmp/${t}_${HCTLSVER[$t]}_linux_amd64.zip" -d "$HCTLSLOC/${t}_${HCTLSVER[$t]}"
+      if ! "$UNZIP" "/tmp/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip" -d "$HCTLSLOC/${t}_${HCTLSVER[$t]}"
       then
-        exitOnErr "$UNZIP /tmp/${t}_${HCTLSVER[$t]}_linux_amd64.zip -d $HCTLSLOC/${t}_${HCTLSVER[$t]}"
+        exitOnErr "$UNZIP /tmp/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip -d $HCTLSLOC/${t}_${HCTLSVER[$t]}"
       else
         if ! "$LN" -s "$HCTLSLOC/${t}_${HCTLSVER[$t]}/$t" "/usr/local/bin/$t"
         then
-          exitOnErr " failed"
+          exitOnErr "$LN -s $HCTLSLOC/${t}_${HCTLSVER[$t]}/$t /usr/local/bin/$t failed"
         fi
       fi
+      "$RM" -fv "/tmp/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip"
     fi
   done
 
@@ -118,7 +128,7 @@ rmveDvopsTls() {
 
   for t in $HCTLS
   do
-    "$RM" -rfv "$HCTLSLOC/${t}_${HCTLSVER[$t]}" "$PRFLDLOC/${t}.sh"
+    "$RM" -rfv "$HCTLSLOC/${t}_${HCTLSVER[$t]}" "$t"
   done
 
 }

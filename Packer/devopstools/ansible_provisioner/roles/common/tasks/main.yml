@@ -1,0 +1,23 @@
+---
+- name: install unzip on Ubuntu
+  apt: name=unzip
+       state=latest
+       update_cache=yes
+  when: ansible_os_family == "Debian"
+
+- name: install build essential on Ubuntu
+  apt: name=build-essential
+       state=latest
+       update_cache=yes         
+  when: ansible_os_family == "Debian"
+
+- name: install easy_install on Ubuntu
+  apt: name=easy_install
+       state=latest
+       update_cache=yes
+  when: ansible_os_family == "Debian"
+
+- name: install pip on Ubuntu
+  easy_install: name=pip
+                state=latest
+  when: ansible_os_family == "Debian"

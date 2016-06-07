@@ -1,0 +1,25 @@
+{
+  "builders": [{
+    "type": "docker",
+    "image": "yikaus/alpine-bash",
+    "commit": true
+  }],
+
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "apk update && apk add -u gcc g++ make curl && rm -rf /var/cache/apk/*",
+      "wget http://download.redis.io/redis-stable.tar.gz && tar zxvf redis-stable.tar.gz && rm -f redis-stable.tar.gz && cd redis-stable && make install && cd .. && rm -rf redis-stable && echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf",
+      "apk del --purge gcc g++ make curl && rm -rf /var/cache/apk/*"
+    ]
+  }],
+
+  "post-processors": [
+    [{
+      "type": "docker-tag",
+      "repository": "ankurlocal/alpred",
+      "tag": "0.1",
+      "force": true 
+    }]
+  ]
+}

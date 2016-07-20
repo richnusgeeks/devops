@@ -1,0 +1,12 @@
+{
+  "aws_access_key": "<akey>",
+  "aws_secret_key": "<skey>",
+  "ami_region": "<argn>",
+  "base_ami": "<bami>",
+  "ami_size": "<asze>",
+  "ami_subnet": "<asbnt>",
+  "ami_vpc": "<avpc>",
+  "ami_name": "<anme>",
+  "ami_desc": "<adsc>",
+  "root_size": "<rsze>"
+}

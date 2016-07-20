@@ -1,6 +1,7 @@
 #! /bin/bash
 set -u
 
+OS='linux'
 HCTLSLOC='/usr/local/bin'
 HCTLSURL='https://releases.hashicorp.com'
 declare -A HCTLSVER
@@ -19,73 +20,88 @@ HCTLSVER[vault]='0.6.0'
 
 exitOnErr() {
 
-    local date=$($date)
+    local date=$(date)
     echo " Error: <$date> $1, exiting ..."
     exit 1
 
 }
 
-if [ -f '/.dockerenv' ]
-then
-  
-  sudo apt-key adv --keyserver \
-    hkp://p80.pool.sks-keyservers.net:80 \
-    --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-  echo
+instlBase() {
 
-  sudo apt-get update && \
+
+  sudo apt-get update && sleep 5 && \
   sudo apt-get install -y --no-install-recommends \
-    unzip \
-    apt-transport-https \
-    ca-certificates
+   wget \
+   unzip \
+   apt-transport-https \
+   ca-certificates
   echo
 
-  echo 'deb https://apt.dockerproject.org/repo ubuntu-trusty main'| \
-    sudo tee /etc/apt/sources.list.d/docker.list
-  echo
+}
 
-  sudo apt-get update && \
-    sudo apt-get purge lxc-docker
-  echo
+instlDocker() {
 
-  apt-cache policy docker-engine
-  echo
+  if [ ! -f '/.dockerenv' ]
+  then
 
-  sudo apt-get update && \
+    sudo apt-key adv --keyserver \
+     hkp://p80.pool.sks-keyservers.net:80 \
+     --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+    echo
+
+    echo 'deb https://apt.dockerproject.org/repo ubuntu-trusty main'| \
+     sudo tee /etc/apt/sources.list.d/docker.list
+    echo
+
+    sudo apt-get update && \
+     sudo apt-get purge lxc-docker
+    echo
+
+    apt-cache policy docker-engine
+    echo
+
+    sudo apt-get update && \
+     sudo apt-get install -y --no-install-recommends \
+     linux-image-extra-$(uname -r) \
+     apparmor
+    echo
+
+    sudo apt-get update && \
+     sudo apt-get install -y --no-install-recommends \
+     docker-engine
+    echo
+
+    sudo usermod -aG docker ubuntu
+    echo
+
+    sudo docker info
+    echo
+
+  fi
+
+}
+
+instlPyStuff() {
+
   sudo apt-get install -y --no-install-recommends \
-    linux-image-extra-$(uname -r) \
-    apparmor
-  echo
-
-  sudo apt-get update && \
-  sudo apt-get install -y --no-install-recommends \
-    docker-engine
-  echo
-
-  sudo usermod -aG docker ubuntu
-  echo
-
-  sudo docker info
-  echo
-
-fi
-
-  sudo apt-get install -y --no-install-recommends \
-    linux-image-extra-$(uname -r) \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    python-dev \
-    python-pip
+   build-essential \
+   libssl-dev \
+   libffi-dev \
+   python-dev \
+   python-pip
   echo
 
   sudo pip install -U fabric \
-    ansible \
-    requests \
-    boto \
-    bottle \
-    cryptography
+   ansible \
+   requests \
+   boto \
+   bottle \
+   cryptography
   echo
+
+}
+
+instlHcrpStuff() {
 
   for t in $HCTLS
   do
@@ -98,12 +114,30 @@ fi
         exitOnErr "unzip /tmp/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip -d $HCTLSLOC"
       else
         rm -fv "/tmp/${t}_${HCTLSVER[$t]}_${OS}_amd64.zip"
-        eval "$t" version
       fi
     fi
   done
 
+}
+
+dumpCmpnts() {
+
+  gcc --version
+  g++ --version
+
   pip list|grep -Ei '(boto|requests|bottle|cryptography)'
   fab -V
+  ansible --version
 
-fi
+  for t in $HCTLS
+  do
+    eval "$t" version
+  done
+
+}
+
+instlBase
+instlDocker
+instlPyStuff
+instlHcrpStuff
+dumpCmpnts

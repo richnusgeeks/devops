@@ -66,6 +66,12 @@ except Exception, e:
     prntErrWarnInfo(serr)
 
 try:
+    from boto.vpc import VPCConnection
+except Exception, e:
+    serr = '%s, %s' %('from boto.vpc import VPCConnection', str(e))
+    prntErrWarnInfo(serr)
+
+try:
     import time
 except Exception, e:
     serr = '%s, %s' %('import time', str(e))
@@ -413,7 +419,8 @@ class DumpAwsInfo():
                         "type": i.instance_type,
                         "state": i.state,
                         "region": i.region.name,
-                        "privateip": i.private_ip_address
+                        "privateip": i.private_ip_address,
+                        "blockdevice": i.block_device_mapping,
                       }
                     )
                   else:
@@ -423,7 +430,8 @@ class DumpAwsInfo():
                         "type": i.instance_type,
                         "state": i.state,
                         "region": i.region.name,
-                        "privateip": i.private_ip_address
+                        "privateip": i.private_ip_address,
+                        "blockdevice": i.block_device_mapping,
                       }
                     ]
 
@@ -436,6 +444,8 @@ class DumpAwsInfo():
                                       "type": i.instance_type,
                                       "state": i.state,
                                       "region": i.region.name,
+                                      "privateip": i.private_ip_address,
+                                      "blockdevice": i.block_device_mapping,
                                     }
                                   ]
                               }
@@ -445,6 +455,7 @@ class DumpAwsInfo():
                 '%s' %(self.sclsnme, str(e)))
         self.opygenericroutines.prntLogErrWarnInfo(serr, bresume = True)
 
+    c = VPCConnection()
     for v in d:
       print(" %s :" %v)
       for s in d[v]:

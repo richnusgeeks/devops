@@ -60,7 +60,7 @@ except Exception, e:
     _prntErrWarnInfo(serr)
 
 try:
-    import boto, boto.ec2
+    import boto, boto.ec2, boto.ec2.elb
 except Exception, e:
     serr = '%s, %s' %('import boto', str(e))
     prntErrWarnInfo(serr)
@@ -286,6 +286,7 @@ class DumpAwsInfo():
     '''
     try:
       rgns = [i.name  for i in boto.ec2.regions() if not i.name.startswith("cn-") and -1 == i.name.find("-gov-")]
+      rgnsb = [i.name  for i in boto.ec2.elb.regions() if not i.name.startswith("cn-") and -1 == i.name.find("-gov-")]
     except Exception, e:
       serr = ('%s :: dumpInstances(...) : regions(...), '
               '%s' %(self.sclsnme, str(e)))
@@ -294,23 +295,62 @@ class DumpAwsInfo():
     self.opygenericroutines.prntLogErrWarnInfo('', 'info', bresume = True)
     print("\n<Start of Dump EC2/VPC Instances>\n")
 
+    elbs = {}
+    for rb in rgnsb:
+      try:
+        if self.botoprfl[0] != "default":
+          connb = boto.ec2.elb.connect_to_region(rb, profile_name = self.botoprfl)
+        else:
+          connb = boto.ec2.elb.connect_to_region(rb)
+
+        if connb:
+          b = connb.get_all_load_balancers()
+          for l in b:
+            elbs[l.name] = [i.id for i in l.instances]
+      except Exception, e:
+        serr = ('%s :: dumpInstances(...) : connect_ec2_elb,get_all_load_balancers(...)'
+                '%s' %(self.sclsnme, str(e)))
+        self.opygenericroutines.prntLogErrWarnInfo(serr, bresume = True)
+
     for r in rgns:
       try:
         if self.botoprfl[0] != "default":
           conn = boto.ec2.connect_to_region(r, profile_name = self.botoprfl)
         else:
           conn = boto.ec2.connect_to_region(r)
+
         if conn:
+          v = conn.get_all_volumes()
+
           for r in conn.get_all_reservations():
             for i in r.instances:
-              s = " ID: %s | PDNS: %s | PVTDNS: %s  | ImageID: %s | Tags: %s | Type: %s |\
-   State: %s | Key: %s | GRPS: %s | PIP: %s | PVTIP: %s| SNID: %s | VPCID: %s | Monitored: %s| Region: %s"\
+              s = [g.id for g in i.groups]
+              t = s.sort()
+              r = ",".join(s)
+
+              l = []
+              for e in v:
+                if e.attach_data.instance_id == i.id:
+                  if e.encrypted:
+                    enc = "encrypted"
+                  else:
+                    enc = "unencrypted"
+                  l.append("%s=%s@%s:%s" %(e.attach_data.device, e.size, e.type, enc))
+
+              j = []
+              for k in elbs:
+                if i.id in elbs[k]:
+                  j.append(k)
+
+              s = "| ID: %s | PDNS: %s | PVTDNS: %s | ImageID: %s | Tags: %s | Type: %s |\
+   State: %s | Key: %s | GRPS: %s | PIP: %s | PVTIP: %s | SNID: %s | VPCID: %s | Monitored: %s|\
+   Region: %s | Vols: %s | Elbs: %s"\
                     %(i.id,i.public_dns_name,i.private_dns_name,i.image_id,i.tags.get('Name',''),\
-                      i.instance_type,i.state,i.key_name,i.groups,i.ip_address,i.private_ip_address,\
-                      i.subnet_id,i.vpc_id,i.monitored,i.region.name)
+                      i.instance_type,i.state,i.key_name,r,i.ip_address,i.private_ip_address,\
+                      i.subnet_id,i.vpc_id,i.monitored,i.region.name,",".join(l),",".join(j) or "")
               self.opygenericroutines.prntLogErrWarnInfo(str(s), 'info', bresume=True)
       except Exception, e:
-        serr = ('%s :: dumpInstances(...) : connect_ec2,get_all_reservations(...), '
+        serr = ('%s :: dumpInstances(...) : connect_ec2,get_all_volumes,get_all_reservations(...)'
                 '%s' %(self.sclsnme, str(e)))
         self.opygenericroutines.prntLogErrWarnInfo(serr, bresume = True)
 

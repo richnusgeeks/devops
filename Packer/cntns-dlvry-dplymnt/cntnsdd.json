@@ -1,0 +1,48 @@
+{
+
+ "variables": {
+    "aws_access_key": null,
+    "aws_secret_key": null,
+    "ami_region": null,
+    "base_ami": null,
+    "ami_size": null,
+    "ami_subnet": null,
+    "ami_vpc": null,
+    "ami_name": null,
+    "ami_desc": null,
+    "root_size": null
+  },
+
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "{{user `ami_region`}}",
+      "source_ami": "{{user `base_ami`}}",
+      "instance_type": "{{user `ami_size`}}",
+      "ssh_username": "ubuntu",
+      "subnet_id": "{{user `ami_subnet`}}",
+      "vpc_id": "{{user `ami_vpc`}}",
+      "force_deregister": true,
+      "ami_name": "{{user `ami_name`}}",
+      "ami_description": "{{user `ami_desc`}}",
+      "tags": {
+        "Name": "{{user `ami_name`}}"
+      },
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_size": "{{user `root_size`}}",
+          "delete_on_termination": true
+        }
+      ]
+    }
+  ],
+
+  "provisioners": [{
+    "type": "shell",
+    "script": "scripts/setup_components.sh"
+  }]
+
+}

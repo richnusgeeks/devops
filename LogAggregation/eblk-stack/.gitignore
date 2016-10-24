@@ -1,0 +1,5 @@
+*.log
+ssh/awsdemo
+variables.json
+terraform.tfvars
+*.backup

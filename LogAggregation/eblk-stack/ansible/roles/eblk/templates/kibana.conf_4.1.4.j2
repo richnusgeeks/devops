@@ -1,0 +1,5 @@
+start on runlevel [35]
+stop on runlevel [!35]
+respawn
+respawn limit 10 5
+exec /opt/kibana-{{version_kibana}}-linux-x64/bin/kibana 2>&1 > /var/log/kibana.log

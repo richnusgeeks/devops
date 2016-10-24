@@ -1,0 +1,70 @@
+---
+- name: set /etc/apt/preferences.d/elasticsearch
+  template:
+    src=etc_apt_preferences.d_elasticsearch.j2
+    dest=/etc/apt/preferences.d/elasticsearch
+
+- name: add elasticsearch apt key (cached locally)
+  apt_key:
+    #url=https://packages.elastic.co/GPG-KEY-elasticsearch
+    #id=46095ACC8548582C1A2699A9D27D666CD88E42B4
+    data="{{ lookup('file', 'GPG-KEY-elasticsearch') }}"
+
+- name: add ES/LS repos and update
+  apt_repository:
+    state=present
+    repo="{{item}}"
+  with_items: esls_repos
+
+- name: install elasticsearch packages
+  apt:
+    pkg="{{item}}"
+    state=present
+    install_recommends=no
+  with_items: esls_packages
+
+- name: install plugins for elasticsearch
+  shell: /usr/share/elasticsearch/bin/plugin -install "{{item}}"
+  with_items: es_plugins
+
+- name: download filebeat deb package
+  get_url:
+    url="https://download.elastic.co/beats/topbeat/topbeat_{{version_topbeat}}_amd64.deb"
+    dest="/tmp/topbeat_{{version_topbeat}}_amd64.deb"
+
+- name: install filebeat
+  apt:
+    deb="/tmp/topbeat_{{version_topbeat}}_amd64.deb"
+
+- name: unarchive kibana tarball
+  unarchive:
+    src="https://download.elastic.co/kibana/kibana/kibana-{{version_kibana}}-linux-x64.tar.gz"
+    dest="/opt"
+    copy=no
+
+- name: unarchive kibana beats dashboards
+  unarchive:
+    src="http://download.elastic.co/beats/dashboards/beats-dashboards-{{version_dashboards}}.zip"
+    dest="/opt"
+    copy=no
+
+- name: create kibana upstart service
+  template:
+    src="kibana.conf_{{version_kibana}}.j2"
+    dest="/etc/init/kibana.conf"
+
+- name: stop and disble ES/LS services
+  service: name="{{item}}"
+           state=stopped
+           enabled=no
+  with_items: esls_services
+
+- name: set /etc/elasticsearch/elasticsearch.yml
+  template:
+    src="elasticsearch.yml_{{version_elasticsearch}}.j2"
+    dest="/etc/elasticsearch/elasticsearch.yml"
+
+- name: set /etc/logstash/conf.d/log4jes.conf
+  template:
+    src="logstash.conf_{{version_logstash}}.j2"
+    dest="/etc/logstash/conf.d/log4jes.conf"

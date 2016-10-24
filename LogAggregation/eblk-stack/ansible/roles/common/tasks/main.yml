@@ -1,0 +1,20 @@
+---
+- name: install common packages
+  apt:
+    pkg="{{ item }}"
+    state=present
+    install_recommends=no
+    update_cache=yes
+    cache_valid_time=43200
+  with_items: common_packages
+  retries: 3
+  delay: 10
+
+- name: copy data drive creation scripts
+  copy:
+    src="{{item}}"
+    dest="/opt/{{item}}"
+    owner="root"
+    group="root"
+    mode=0644
+  with_items: data_drive_scripts

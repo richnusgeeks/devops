@@ -1,0 +1,45 @@
+---
+common_packages:
+  - awscli
+  - curl
+  - cron
+  - lvm2
+  - mc
+  - mdadm
+  - ntp
+  - sysstat
+  - unzip
+  - xfsprogs
+  - zip
+data_drive_scripts:
+  - "create_storage.sh"
+  - "create_lvm_ebs.sh"
+
+stackname: "stackname"
+openjdk_version: 7
+version_elasticsearch: 1.7
+version_logstash: 2.2
+version_topbeat: 1.1.0
+version_kibana: 4.1.4
+version_dashboards: 1.1.0
+version_elasticsearch_cloud_aws: 2.7.1
+esls_repos:
+  - "deb http://packages.elastic.co/elasticsearch/{{ version_elasticsearch }}/debian stable main"
+  - "deb http://packages.elastic.co/logstash/{{version_logstash}}/debian stable main"
+esls_packages:
+  - "openjdk-{{ openjdk_version }}-jre"
+  - "elasticsearch"
+  - "logstash"
+es_plugins:
+  - "elasticsearch/elasticsearch-cloud-aws/{{version_elasticsearch_cloud_aws}}"
+  - "mobz/elasticsearch-head/{{version_elasticsearch}}"
+  - "lmenezes/elasticsearch-kopf/1.0"
+esls_services:
+  - "elasticsearch"
+  - "logstash"
+  - "topbeat"
+  - "kibana"
+es_dirs:
+  - "/var/lib/elasticsearch"
+  - "/var/log/elasticsearch"
+  - "/tmp/elasticsearch"

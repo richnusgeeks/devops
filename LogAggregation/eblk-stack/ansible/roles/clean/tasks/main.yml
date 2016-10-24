@@ -1,0 +1,33 @@
+---
+- name: disable password based root login
+  lineinfile:
+    dest="/etc/ssh/sshd_config"
+    regexp="^ *PermitRootLogin"
+    line="PermitRootLogin without-password"
+
+- name: disable sshd dns checks
+  lineinfile:
+    dest="/etc/ssh/sshd_config"
+    regexp="^ *UseDNS"
+    line="UseDNS no"
+
+- name: disable local root access
+  command: passwd -l root
+  ignore_errors: yes
+
+- name: remove ssh host keypairs
+  command: shred -u /etc/ssh/*_key /etc/ssh/*_key.pub
+  ignore_errors: yes
+
+- name: clear authorized_keys file
+  command: cat /dev/null > /home/ubuntu/.ssh/authorized_keys
+  ignore_errors: yes
+
+- name: delete the shell history
+  command: shred -u ~/.*history
+  ignore_errors: yes
+
+- name: remove ES leftover
+  command: rm -rf "{{item}}/*"
+  with_items: es_dirs
+  ignore_errors: yes

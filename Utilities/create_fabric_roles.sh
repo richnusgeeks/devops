@@ -13,7 +13,7 @@ ROLES="env-tag1 \
        env-tag10"
 
 rm -f activity.log
-python dumpawsinfo.py > /dev/null
+python dumpawsinfo.py -i > /dev/null
 
 for r in $ROLES
 do

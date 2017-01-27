@@ -22,7 +22,7 @@ BNRYS="cpulimit \
        freshclam \
        clamscan"
 SMRYFL="summary_$($HSTNME)"
-SKPLST="/opt/${SCRPTNME}.skip" 
+SKPLST="/opt/${SCRPTNME}.skip"
 
 exitOnErr() {
 
@@ -88,6 +88,9 @@ virusScan() {
       if "$ECHO" "$e"|"$GREP" -E '^ *#' > /dev/null 2>&1
       then
         continue
+      elif "$ECHO" "$e"|"$GREP" -E '^ *$' > /dev/null 2>&1
+      then
+        continue
       else
         excld+="--exclude=$("$ECHO" "$e"|"$SED" 's/^ \{1,\}//'|"$SED" 's/ \{1,\}$//') "
       fi
@@ -97,7 +100,7 @@ virusScan() {
   if ! eval nohup sudo -b "$CPULMT" -i -l "$CPUPER" \
     "$CLMSCAN" --max-filesize=5m --quiet -r / --exclude-dir=/dev --exclude-dir=/sys --exclude-dir=/proc \
     --scan-pe=no --scan-ole2=no --scan-pdf=no --scan-swf=no --scan-html=no --scan-xmldocs=no --scan-hwp3=no \
-    "$excld" -l scan_$(/bin/hostname).log >/dev/null 2>&1
+    $excld -l scan_$(/bin/hostname).log >/dev/null 2>&1
   then
     exitOnErr "launching cpulimit'd clamscan job failed"
   fi

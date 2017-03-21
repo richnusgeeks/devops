@@ -1,0 +1,68 @@
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: appui-<ENV>
+#type: Opaque
+#data:
+#  clientSecret: <CLNTSCRT>
+#---
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: appui-<ENV>
+#data:
+#  oauthPath: <OATHPTH> 
+#  appPath: <APPPTH>    
+#  clientId: <CLNTID>
+#---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appui
+  labels:
+    app: appui
+spec:
+  type: LoadBalancer
+  ports:
+  - port: <APPUIPRT>
+  selector:
+    app: appui
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: appui
+spec:
+  replicas: <NUMRPLCS>
+  template:
+    metadata:
+      labels:
+        run: appui
+        app: appui 
+    spec:
+      containers:
+        - name: appui
+          image: <GCPCRURL>/<GCPPRJID>/<APPUIDIN>:<TAG>
+          ports:
+          - containerPort: <APPUIPRT>
+#          env:
+#            - name: APP_oauthPath
+#              valueFrom:
+#                configMapKeyRef:
+#                  name: appui-<ENV>
+#                  key: oauthPath
+#            - name: APP_appPath
+#              valueFrom:
+#                configMapKeyRef:
+#                  name: appui-<ENV>
+#                  key: appPath
+#            - name: APP_clientId
+#              valueFrom:
+#                configMapKeyRef:
+#                  name: appui-<ENV>
+#                  key: clientId
+#            - name: APP_clientSecret
+#              valueFrom:
+#                secretKeyRef:
+#                  name: appui-<ENV>
+#                  key: clientSecret

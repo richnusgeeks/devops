@@ -1,10 +1,10 @@
 #! /usr/bin/env python
-
+  
 from sys import argv
 from cryptography.fernet import Fernet
 
 scrtfl = "secrets.cfg"
-
+ 
 def prntErrWarnInfo(smsg, smsgtype = 'err', bresume = False):
   derrwarninfo = {
                   'err'  : ' ERROR',
@@ -38,42 +38,36 @@ def prntErrWarnInfo(smsg, smsgtype = 'err', bresume = False):
 
 def preChecks():
   if len(argv) < 2:
-    msg = "%s <num secrets> <plaintext1> ... <plaintextN>"  %argv[0]
+    msg = "%s <secret position>"  %argv[0]
     prntErrWarnInfo(msg, "info")
+ 
+  if int(argv[1]) <= 0:
+    msg = "position of secret sould be greater than 0"
+    prntErrWarnInfo(msg)
 
-  if argv[1] <= 0:
-    msg = "num secrets sould be greater than 0"
+def readSecret(pos):
+  with open(scrtfl, "rb") as infile:
+    try:
+      c = infile.readlines()
+    except Exception, e:
+      msg = "readlines(), %s" %e
+      prntErrWarnInfo(msg)
+ 
+  try:
+    f = Fernet(c[0].strip())
+  except Exception, e:
+    msg = "Fernet(...), %s" %e
+    prntErrWarnInfo(msg)
+
+  try:
+    return f.decrypt(c[1+int(pos)].strip())
+  except Exception, e:
+    msg = "decrypt(...), %s" %e
     prntErrWarnInfo(msg)
 
 def main():
   preChecks()
-
-  with open(scrtfl, "wb") as outfile:
-    try:
-      key = Fernet.generate_key()
-      outfile.write("%s\n" %key)
-    except Exception, e:
-      msg = "generate_key(),write(...), %s" %e
-      prntErrWarnInfo(msg)
-
-    try:
-      f = Fernet(key)
-    except Exception, e:
-      msg = "Fernet(...), %s" %e
-      prntErrWarnInfo(msg)
-
-    try:
-      outfile.write("%s\n" %(f.encrypt(argv[2])))
-    except Exception, e:
-      msg = "encrypt(...),write(...), %s" %e
-      prntErrWarnInfo(msg)
-
-    for e in argv[2:]:
-      try:
-        outfile.write("%s\n" %(f.encrypt(e)))
-      except Exception, e:
-        msg = "encrypt(...),write(...), %s" %e
-        prntErrWarnInfo(msg)
+  print(readSecret(argv[1]))
 
 if "__main__" == __name__:
   main()

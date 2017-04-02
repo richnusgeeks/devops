@@ -102,17 +102,22 @@ instlDvopsTls() {
 
   for t in $HCTLS
   do
-    v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -v '\-rc'|${HEAD} -1)
-  
-    if ! "${CURL}" -sSLk -o /tmp/${t}.zip "${HCTLSURL}/${t}/${v}/${t}_${v}_${OS}_amd64.zip"
+    local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -v '\-rc'|${HEAD} -1)
+
+    local c=$(${t} version|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+ 
+    if [[ "${v}" != "${c}" ]]
     then
-      exitOnErr "${CURL} -sSLk -o /tmp/${t}.zip ${HCTLSURL}/${t}/${v}/${t}_${v}_${OS}_amd64.zip"
-    else
-      if ! "${UNZIP}" -o "/tmp/${t}.zip" -d "${HCTLSLOC}"
+      if ! "${CURL}" -sSLk -o /tmp/${t}.zip "${HCTLSURL}/${t}/${v}/${t}_${v}_${OS}_amd64.zip"
       then
-        exitOnErr "${UNZIP} -o /tmp/${t}.zip -d ${HCTLSLOC}"
+        exitOnErr "${CURL} -sSLk -o /tmp/${t}.zip ${HCTLSURL}/${t}/${v}/${t}_${v}_${OS}_amd64.zip"
+      else
+        if ! "${UNZIP}" -o "/tmp/${t}.zip" -d "${HCTLSLOC}"
+        then
+          exitOnErr "${UNZIP} -o /tmp/${t}.zip -d ${HCTLSLOC}"
+        fi
+        "${RM}" -fv "/tmp/${t}.zip"
       fi
-      "${RM}" -fv "/tmp/${t}.zip"
     fi
   done
 
@@ -131,8 +136,8 @@ dumpDvopsTls() {
 
   for t in $HCTLS
   do
-    ls -lhrt "/usr/local/bin/$t"
-    "$t" version
+    ls -lhrt "${HCTLSLOC}/${t}"
+    "${t}" version
   done
 
 }

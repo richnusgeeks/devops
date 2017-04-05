@@ -37,10 +37,14 @@ DUMP=false
 HCTLSLOC='/usr/local/bin'
 HCTLSURL='https://releases.hashicorp.com'
 HCTLS="consul \
+       consul-replicate \
+       consul-template \
+       envconsul \
        nomad \
        packer \
        terraform \
-       vault"
+       vault \
+       vault-ssh-helper"
 
 exitOnErr() {
 
@@ -104,7 +108,7 @@ instlDvopsTls() {
   do
     local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
 
-    local c=$(${t} version|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+    local c=$(${t} -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
  
     if [[ "${v}" != "${c}" ]]
     then

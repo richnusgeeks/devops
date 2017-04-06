@@ -141,7 +141,7 @@ dumpDvopsTls() {
   for t in $HCTLS
   do
     ls -lhrt "${HCTLSLOC}/${t}"
-    "${t}" version
+    "${t}" -v
   done
 
 }

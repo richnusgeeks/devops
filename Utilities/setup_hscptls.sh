@@ -35,6 +35,8 @@ INSTL=false
 RMVE=false
 DUMP=false
 HCTLSLOC='/usr/local/bin'
+CMNTLS="hashi-ui"
+CMNTLSURL="https://github.com/jippi"
 HCTLSURL='https://releases.hashicorp.com'
 HCTLS="consul \
        consul-replicate \
@@ -43,8 +45,8 @@ HCTLS="consul \
        nomad \
        packer \
        terraform \
-       vault \
-       vault-ssh-helper"
+       vault"
+#       vault-ssh-helper
 
 exitOnErr() {
 
@@ -93,18 +95,35 @@ parseArgs() {
     prntUsage
   fi
 
-}
-
-instlDvopsTls() {
-
-  if "$UNME" -v | "$GREP" -i darwin 2>&1 > /dev/null
+  if "${UNME}" -v | "${GREP}" -i darwin 2>&1 > /dev/null
   then
     OS='darwin'
   else
     OS='linux'
   fi
 
-  for t in $HCTLS
+}
+
+instlHCrpUI() {
+
+  for ct in ${CMNTLS}
+  do
+    local c=$("${CURL}" -sSLk "${CMNTLSURL}/${ct}/releases/latest"|"${GREP}" -E 'v[0-9.]+'|"${GREP}" master|"${AWK}" -F'"' '{print $2}'|"${AWK}" -F"/" '{print $NF}'|"${SED}" -e 's/...master//' -e 's/v//')
+
+    if [[ ! -z "${c}" ]]
+    then
+      if ! "${CURL}" -sSLK -o "${HCTLSLOC}/${ct}" "${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
+      then
+        exitOnErr "${CURL} -sSLK -o ${HCTLSLOC}/${ct} ${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
+      fi
+    fi
+  done
+
+}
+
+instlDvopsTls() {
+
+  for t in ${HCTLS}
   do
     local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
 
@@ -124,6 +143,8 @@ instlDvopsTls() {
       fi
     fi
   done
+
+  instlHCrpUI
 
 }
 

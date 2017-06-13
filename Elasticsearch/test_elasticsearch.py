@@ -2,7 +2,7 @@
 ############################################################################
 # File name : test_elasticsearch.py
 # Purpose : External scan for Elasticsearch cluster
-# Usages : python test_elasticsearch.py <master with http enabled>
+# Usages : python test_elasticsearch.py <http port> <node with http enabled>
 # Start date : 05/07/2014
 # End date : mm/dd/2014
 # Author : Ankur Kumar <richnusgeeks@gmail.com>
@@ -10,6 +10,7 @@
 # License : RichNusGeeks
 # Version : 0.0.1
 # Modification history : addition of best practices checks,Ankur 10/23/2015
+#                        refarctored for v5.4,Ankur 06/12/2017
 # Notes : 
 ############################################################################
 
@@ -21,29 +22,34 @@ from sys import argv
 
 # <start of global section>
 if len(argv) == 1:
-    print(" Usage: %s <elasticsearch client hosname(s)>" %argv[0])
+    print(" Usage: %s <http port> <elasticsearch client hosname(s)> <http port>" %argv[0])
     exit(1) 
 
 if '-n' == argv[1]:
   colored = False
-  clnts = argv[2:]
+  port = argv[2]
+  clnts = argv[3:]
 else:
   colored = True
-  clnts = argv[1:]
-port = 9200
+  port = argv[1]
+  clnts = argv[2:]
+port = port
 health = '/_cluster/health'
 state = '/_cluster/state'
 nodes = '/_nodes'
-elsver = '1.7.3'
+ndstts = '/_nodes/stats'
+elsver = '5.4'
 minmstrs = 2
 mindatas = 2
 minnodes = minmstrs + mindatas
 shrdsunasgn = 0
-numrplcs = 1
-numshrds = 5
 numcores = 2
 fldscrptrs = 64*1024 
 colors = ('RED', 'GREEN', 'YELLOW',)
+elsdata = {
+  "cluster": {},
+  "nodes": {},
+}
 # <end of global section>
 
 # <start of helper section>
@@ -68,100 +74,117 @@ def colorPrnt(msg, color="RED", colored=True):
       if colored:
         print(Fore.RESET + Style.RESET_ALL),
 
+def gatherData(client):
+  try:
+    r = rest.get("http://%s:%s%s" %(client, port, health))
+    if 200 == r.status_code:
+      h = r.json()
+      elsdata["cluster"]["cluster_name"] = h["cluster_name"]
+      elsdata["cluster"]["status"] = h["status"]
+      elsdata["cluster"]["number_of_nodes"] = h["number_of_nodes"]
+      elsdata["cluster"]["number_of_data_nodes"] = h["number_of_data_nodes"]
+      elsdata["cluster"]["unassigned_shards"] = h["unassigned_shards"]
+
+    r = rest.get("http://%s:%s%s" %(client, port, nodes))
+    if 200 == r.status_code:
+      h = r.json()
+      for n in h['nodes']:
+        hstnme = h['nodes'][n]['host']
+        hstname = h['nodes'][n]['name']
+        elsdata["nodes"][h["nodes"][n]["name"]] = {}
+        elsdata["nodes"][h["nodes"][n]["name"]]["host"] = h["nodes"][n]["host"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["version"] = h["nodes"][n]["version"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["available_processors"] = h["nodes"][n]["os"]["available_processors"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["roles"] = h["nodes"][n]["roles"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["mlockall"] = h["nodes"][n]["process"]["mlockall"]
+
+    r = rest.get("http://%s:%s%s" %(client, port, ndstts))
+    if 200 == r.status_code:
+      h = r.json()
+      for n in h['nodes']:
+        elsdata["nodes"][h["nodes"][n]["name"]]["max_file_descriptors"] = h["nodes"][n]["process"]["max_file_descriptors"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["heap_max_in_bytes"] = h["nodes"][n]["jvm"]["mem"]["heap_max_in_bytes"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["mem_total_in_bytes"] = h['nodes'][n]['os']['mem']['total_in_bytes']
+        elsdata["nodes"][h["nodes"][n]["name"]]["swap_total_in_bytes"] = h["nodes"][n]["os"]["swap"]["total_in_bytes"]
+  except Exception, e:
+    colorPrnt(" %s" %str(e), colored=colored)
+    print
+
 def basicTest(client):
-
     try:
-        r = rest.get("http://%s:%d%s" %(client, port, health))
-        if 200 == r.status_code:
-            h = r.json()
+      if "red" == elsdata["cluster"]["status"]:
+        colorPrnt("  %s state %s (expected %s) [FAIL]" %(elsdata["cluster"]["cluster_name"], "red", "green"), colored=colored)
+      elif "green" == elsdata["cluster"]["status"]:
+        colorPrnt("  %s cluster state green [PASS]" %elsdata["cluster"]["cluster_name"], color="GREEN", colored=colored)
+      elif "yellow" == h["status"]:
+        colorPrnt("  %s cluster state %s (expected %s) [WARN]" %(elsdata["cluster"]["cluster_name"], "yellow", "green"), color="YELLOW", colored=colored)
 
-	    if 'red' == h['status']:
-                colorPrnt("  ELS %s cluster state %s (expected %s) [FAIL]" %('red', h['cluster_name'],'green'), colored=colored)
-            elif 'green' == h['status']:
-                colorPrnt("  ELS %s cluster state green [PASS]" %h['cluster_name'], color="GREEN", colored=colored)
-            elif 'yellow' == h['status']:
-                colorPrnt("  ELS %s cluster state %s (expected %s) [WARN]" %(h['cluster_name'], 'yellow', 'green'), color="YELLOW", colored=colored)
+      if minnodes > elsdata["cluster"]["number_of_nodes"]:
+        colorPrnt("  %s total nodes %d (expected >= %d) [FAIL]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_nodes"], minnodes), colored=colored)
+      else:
+        colorPrnt("  %s total nodes %d [PASS]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_nodes"]), color="GREEN", colored=colored)
 
-            if minnodes > h['number_of_nodes']:
-                colorPrnt("  ELS %s cluster total nodes %d (expected >= %d) [FAIL]" %(h['cluster_name'], h['number_of_nodes'], minnodes), colored=colored)
-            else:
-                colorPrnt("  ELS %s cluster total nodes %d [PASS]" %(h['cluster_name'], h['number_of_nodes']), color="GREEN", colored=colored)
+      if mindatas > elsdata["cluster"]["number_of_data_nodes"]:
+        colorPrnt("  %s data nodes %d (expected >= %d) [FAIL]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_data_nodes"], mindatas), colored=colored)
+      else:
+        colorPrnt("  %s total nodes %d [PASS]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_data_nodes"]), color="GREEN", colored=colored)
 
-            if mindatas > h['number_of_data_nodes']:
-                colorPrnt("  ELS %s cluster data nodes %d (expected >= %d) [FAIL]" %(h['cluster_name'], h['number_of_data_nodes'], mindatas), colored=colored)
-            else:
-                colorPrnt("  ELS %s cluster data nodes %d [PASS]" %(h['cluster_name'], h['number_of_data_nodes']), color="GREEN", colored=colored)
+      if shrdsunasgn < elsdata["cluster"]["unassigned_shards"]:
+        colorPrnt("  %s unassigned_shards %d (expected %d) [FAIL]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["unassigned_shards"], shrdsunasgn), colored=colored)
+      else:
+        colorPrnt("  %s unassigned_shards %d [PASS]" %(elsdata["cluster"]["cluster_name"], shrdsunasgn), color="GREEN", colored=colored)
 
-            if shrdsunasgn < h['unassigned_shards']:
-                colorPrnt("  ELS %s cluster unassigned_shards %d (expected %d) [FAIL]" %(h['cluster_name'], h['unassigned_shards'], shrdsunasgn), colored=colored)
-            else:
-                colorPrnt("  ELS %s cluster unassigned_shards %d [PASS]" %(h['cluster_name'], shrdsunasgn), color="GREEN", colored=colored)
-     
-            print    
+      print
     except Exception, e:
         colorPrnt(" %s" %str(e), colored=colored)
         print
 
 def extendedTest(client):
+  try:
+     for n in elsdata["nodes"]:
+       if not elsdata["nodes"][n]["version"].startswith(elsver):
+         colorPrnt("  version %s on %s(%s) (recommended %s) [WARN]"
+           %(elsdata["nodes"][n]["version"], n, elsdata["nodes"][n]["host"], elsver), color="YELLOW", colored=colored)
 
-    try:
-        r = rest.get("http://%s:%d%s" %(client, port, nodes))
-        if 200 == r.status_code:
-          h = r.json()
-          clstrnme = h['cluster_name']
+       if numcores > int(elsdata["nodes"][n]["available_processors"]):
+         colorPrnt("  total_cores %s on %s(%s) (recommended >= %s) [WARN]"
+           %(elsdata["nodes"][n]["available_processors"], n, elsdata["nodes"][n]["host"], numcores), color="YELLOW", colored=colored)
 
-        for n in h['nodes']:
-          hstnme = h['nodes'][n]['host']
+       if not elsdata["nodes"][n]["mlockall"]:
+         colorPrnt("  mlockall %s on %s(%s) (recommended true) [WARN]"
+           %(str(elsdata["nodes"][n]["mlockall"]).lower(), n, elsdata["nodes"][n]["host"]), color="YELLOW", colored=colored)
 
-          if elsver != h['nodes'][n]['version']:
-            colorPrnt("  ELS %s cluster version %s on %s (recommended %s) [WARN]"
-              %(clstrnme, h['nodes'][n]['version'], hstnme, elsver), color="YELLOW", colored=colored)
+       if fldscrptrs > int(elsdata["nodes"][n]["max_file_descriptors"]):
+         colorPrnt("  max_file_descriptors %s on %s(%s) (recommended ~ %s) [WARN]"
+           %(elsdata["nodes"][n]["max_file_descriptors"], n, elsdata["nodes"][n]["host"], fldscrptrs), color="YELLOW", colored=colored)
 
-          if h['nodes'][n]['settings'].has_key('index'):
-            if numrplcs > int(h['nodes'][n]['settings']['index']['number_of_replicas']):
-              colorPrnt("  ELS %s cluster number_of_replicas %s on %s (recommended >= %s) [WARN]"
-                %(clstrnme, h['nodes'][n]['settings']['index']['number_of_replicas'], hstnme, numrplcs), color="YELLOW", colored=colored)
-             
-            if numshrds > int(h['nodes'][n]['settings']['index']['number_of_shards']):
-              colorPrnt("  ELS %s cluster number_of_shards %s on %s (recommended >= %s) [WARN]"
-                %(clstrnme, h['nodes'][n]['settings']['index']['number_of_shards'], hstnme, numshrds), color="YELLOW", colored=colored)
+       heapmax = int(elsdata["nodes"][n]["heap_max_in_bytes"])
+       totalmem = int(elsdata["nodes"][n]["mem_total_in_bytes"])
+       if heapmax != totalmem/2:
+         colorPrnt("  heap_max_in_bytes %s on %s(%s) (recommended ~ %s) [WARN]"
+           %(heapmax, n, elsdata["nodes"][n]["host"], totalmem/2), color="YELLOW", colored=colored)
 
-          if numcores > int(h['nodes'][n]['os']['cpu']['total_cores']):
-            colorPrnt("  ELS %s cluster total_cores %s on %s (recommended >= %s) [WARN]"
-              %(clstrnme, h['nodes'][n]['os']['cpu']['total_cores'], hstnme, numcores), color="YELLOW", colored=colored)
+       if 0 != int(elsdata["nodes"][n]["swap_total_in_bytes"]):
+         colorPrnt("  swap_total_in_bytes %s on %s(%s) (recommended swap off) [WARN]"
+           %(elsdata["nodes"][n]["swap_total_in_bytes"], n, elsdata["nodes"][n]["host"]), color="YELLOW", colored=colored)
 
-          heapmax = int(h['nodes'][n]['jvm']['mem']['heap_max_in_bytes'])
-          totalmem = int(h['nodes'][n]['os']['mem']['total_in_bytes'])
-          if heapmax != totalmem/2:
-            colorPrnt("  ELS %s cluster heap_max_in_bytes %s on %s (recommended ~ %s) [WARN]"
-              %(clstrnme, heapmax, hstnme, totalmem/2), color="YELLOW", colored=colored)
-
-          if fldscrptrs != int(h['nodes'][n]['process']['max_file_descriptors']):
-            colorPrnt("  ELS %s cluster max_file_descriptors %s on %s (recommended ~ %s) [WARN]"
-              %(clstrnme, h['nodes'][n]['process']['max_file_descriptors'], hstnme, fldscrptrs), color="YELLOW", colored=colored)
-
-          if not h['nodes'][n]['process']['mlockall']:
-            colorPrnt("  ELS %s cluster mlockall %s on %s (recommended true) [WARN]"
-              %(clstrnme, str(h['nodes'][n]['process']['mlockall']).lower(), hstnme), color="YELLOW", colored=colored)
-
-          print
-    except Exception, e:
-        colorPrnt(" %s" %str(e), colored=colored)
-        print
+       print
+  except Exception, e:
+    colorPrnt(" %s" %str(e), colored=colored)
+  print
 
 def main():
-
-    init(autoreset=True)
-    print
+  init(autoreset=True)
+  print
     
-    for c in clnts:
-        print(" ELS Client : %s" %c)
-
-        basicTest(c)
-        extendedTest(c)
+  for c in clnts:
+    print(" ELS HTTP Node: %s" %c)
+    gatherData(c)
+    basicTest(c)
+    extendedTest(c)
     
-    print
-    deinit()
+  print
+  deinit()
 # <end of helper section>
 
 # <start of test section>

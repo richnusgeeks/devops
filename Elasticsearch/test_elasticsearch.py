@@ -97,6 +97,7 @@ def gatherData(client):
         elsdata["nodes"][h["nodes"][n]["name"]]["available_processors"] = h["nodes"][n]["os"]["available_processors"]
         elsdata["nodes"][h["nodes"][n]["name"]]["roles"] = h["nodes"][n]["roles"]
         elsdata["nodes"][h["nodes"][n]["name"]]["mlockall"] = h["nodes"][n]["process"]["mlockall"]
+        elsdata["nodes"][h["nodes"][n]["name"]]["using_compressed_ordinary_object_pointers"] = h["nodes"][n]["jvm"]["using_compressed_ordinary_object_pointers"]
 
     r = rest.get("http://%s:%s%s" %(client, port, ndstts))
     if 200 == r.status_code:
@@ -164,6 +165,10 @@ def extendedTest(client):
          colorPrnt("  heap_max_in_bytes %s on %s(%s) (recommended ~ %s) [WARN]"
            %(heapmax, n, elsdata["nodes"][n]["host"], totalmem/2), color="YELLOW", colored=colored)
 
+       if not elsdata["nodes"][n]["using_compressed_ordinary_object_pointers"]:
+         colorPrnt("  using_compressed_ordinary_object_pointers %s on %s(%s) (required true) [FAIL]"
+           %(str(elsdata["nodes"][n]["using_compressed_ordinary_object_pointers"]).lower(), n, elsdata["nodes"][n]["host"]), colored=colored)
+
        if 0 != int(elsdata["nodes"][n]["swap_total_in_bytes"]):
          colorPrnt("  swap_total_in_bytes %s on %s(%s) (recommended swap off) [WARN]"
            %(elsdata["nodes"][n]["swap_total_in_bytes"], n, elsdata["nodes"][n]["host"]), color="YELLOW", colored=colored)
@@ -203,4 +208,3 @@ def main():
 if __name__ == '__main__':
     main()
 # <end of main section>
-

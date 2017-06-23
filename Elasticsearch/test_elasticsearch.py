@@ -50,6 +50,7 @@ elsdata = {
   "cluster": {},
   "nodes": {},
 }
+memtolerance = 1
 # <end of global section>
 
 # <start of helper section>
@@ -117,7 +118,7 @@ def basicTest(client):
         colorPrnt("  %s state %s (expected %s) [FAIL]" %(elsdata["cluster"]["cluster_name"], "red", "green"), colored=colored)
       elif "green" == elsdata["cluster"]["status"]:
         colorPrnt("  %s cluster state green [PASS]" %elsdata["cluster"]["cluster_name"], color="GREEN", colored=colored)
-      elif "yellow" == h["status"]:
+      elif "yellow" == elsdata["cluster"]["status"]:
         colorPrnt("  %s cluster state %s (expected %s) [WARN]" %(elsdata["cluster"]["cluster_name"], "yellow", "green"), color="YELLOW", colored=colored)
 
       if minnodes > elsdata["cluster"]["number_of_nodes"]:
@@ -128,7 +129,7 @@ def basicTest(client):
       if mindatas > elsdata["cluster"]["number_of_data_nodes"]:
         colorPrnt("  %s data nodes %d (expected >= %d) [FAIL]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_data_nodes"], mindatas), colored=colored)
       else:
-        colorPrnt("  %s total nodes %d [PASS]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_data_nodes"]), color="GREEN", colored=colored)
+        colorPrnt("  %s data nodes %d [PASS]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["number_of_data_nodes"]), color="GREEN", colored=colored)
 
       if shrdsunasgn < elsdata["cluster"]["unassigned_shards"]:
         colorPrnt("  %s unassigned_shards %d (expected %d) [FAIL]" %(elsdata["cluster"]["cluster_name"], elsdata["cluster"]["unassigned_shards"], shrdsunasgn), colored=colored)
@@ -150,10 +151,10 @@ def extendedTest(client):
        if numcores > int(elsdata["nodes"][n]["available_processors"]):
          colorPrnt("  total_cores %s on %s(%s) (recommended >= %s) [WARN]"
            %(elsdata["nodes"][n]["available_processors"], n, elsdata["nodes"][n]["host"], numcores), color="YELLOW", colored=colored)
-
-       if not elsdata["nodes"][n]["mlockall"]:
-         colorPrnt("  mlockall %s on %s(%s) (recommended true) [WARN]"
-           %(str(elsdata["nodes"][n]["mlockall"]).lower(), n, elsdata["nodes"][n]["host"]), color="YELLOW", colored=colored)
+       if 0 != int(elsdata["nodes"][n]["swap_total_in_bytes"]):
+         if not elsdata["nodes"][n]["mlockall"]:
+           colorPrnt("  mlockall %s on %s(%s) (recommended true) [WARN]"
+             %(str(elsdata["nodes"][n]["mlockall"]).lower(), n, elsdata["nodes"][n]["host"]), color="YELLOW", colored=colored)
 
        if fldscrptrs > int(elsdata["nodes"][n]["max_file_descriptors"]):
          colorPrnt("  max_file_descriptors %s on %s(%s) (recommended ~ %s) [WARN]"
@@ -161,7 +162,7 @@ def extendedTest(client):
 
        heapmax = int(elsdata["nodes"][n]["heap_max_in_bytes"])
        totalmem = int(elsdata["nodes"][n]["mem_total_in_bytes"])
-       if heapmax != totalmem/2:
+       if heapmax < totalmem/2:
          colorPrnt("  heap_max_in_bytes %s on %s(%s) (recommended ~ %s) [WARN]"
            %(heapmax, n, elsdata["nodes"][n]["host"], totalmem/2), color="YELLOW", colored=colored)
 
@@ -177,6 +178,9 @@ def extendedTest(client):
   except Exception, e:
     colorPrnt(" %s" %str(e), colored=colored)
   print
+
+def internalTest():
+  pass
 
 def main():
   init(autoreset=True)

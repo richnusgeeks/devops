@@ -1,0 +1,9 @@
+---
+- name: install required runtime
+  yum: name="{{package_openjdk}}"
+       update_cache=yes
+       state=present
+
+- name: import elasticsearch PGP key
+  rpm_key: key=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+           state=present

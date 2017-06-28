@@ -1,0 +1,35 @@
+---
+- name: add logstash repo
+  yum_repository: name=logstash
+                  description="Logstash repository for {{version_logstash}} packages"
+                  baseurl="https://artifacts.elastic.co/packages/5.x/yum"
+                  gpgkey="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+                  gpgcheck=yes
+                  enabled=yes
+                  state=present
+
+- name: install logstash package
+  yum: name="{{package_logstash}}"
+       update_cache=yes
+       state=present
+
+- name: render logstash config
+  template: src="logstash.yml_{{version_logstash}}.j2"
+            dest=/etc/logstash/logstash.yml
+            owner=root
+            group=logstash
+  notify:
+    - restart logstash
+
+- name: render filter config
+  template: src="filters.conf_{{version_logstash}}.j2"
+            dest=/etc/logstash/conf.d/filters.conf
+            owner=root
+            group=logstash
+  notify:
+    - restart logstash
+
+- name: start and enable logstash service
+  service: name=logstash
+           state=started
+           enabled=true

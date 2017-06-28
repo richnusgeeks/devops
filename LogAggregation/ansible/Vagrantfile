@@ -1,0 +1,29 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.box_check_update = true
+  config.vm.box = "centos/7"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "4096"
+    vb.cpus   = "2"
+  end
+
+  (1..2).each do |i|
+    config.vm.define "els#{format('%02d', i)}" do |els|
+      els.vm.hostname = "els#{format('%02d', i)}"
+      els.vm.network "private_network", ip: "192.168.50.#{i+2}"
+      els.vm.network "forwarded_port", guest: 9200, host: 59200, auto_correct: true
+    end
+  end
+
+  (1..1).each do |i|
+    config.vm.define "kls#{format('%02d', i)}" do |kls|
+      kls.vm.hostname = "kls#{format('%02d', i)}"
+      kls.vm.network "private_network", ip: "192.168.50.#{i+2+2}"
+      kls.vm.network "forwarded_port", guest: 5044, host: 55044, auto_correct: true
+      kls.vm.network "forwarded_port", guest: 5601, host: 55601, auto_correct: true
+      kls.vm.network "forwarded_port", guest: 19191, host: 59191, auto_correct: true
+      kls.vm.network "forwarded_port", guest: 54001, host: 54001, auto_correct: true
+    end
+  end
+
+end

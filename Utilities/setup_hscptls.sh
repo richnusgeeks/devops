@@ -15,18 +15,18 @@
 ############################################################################
 
 RM='rm'
-TEE=$(which tee)
-AWK=$(which awk)
-SED=$(which sed)
-HEAD=$(which head)
-ECHO=$(which echo)
-GREP=$(which grep)
-DATE=$(which date)
-CURL=$(which curl)
-UNME=$(which uname)
-UNZIP=$(which unzip)
-BSNME=$(which basename)
-UNZIP=$(which unzip)
+TEE=$(which --skip-alias tee)
+AWK=$(which --skip-alias awk)
+SED=$(which --skip-alias sed)
+HEAD=$(which --skip-alias head)
+ECHO=$(which --skip-alias echo)
+GREP=$(which --skip-alias grep)
+DATE=$(which --skip-alias date)
+CURL=$(which --skip-alias curl)
+UNME=$(which --skip-alias uname)
+UNZIP=$(which --skip-alias unzip)
+BSNME=$(which --skip-alias basename)
+UNZIP=$(which --skip-alias unzip)
 PRGNME=$("$ECHO" $("$BSNME" "$0") | "$SED" -n 's/\.sh//p')
 SDLY=5
 SWTCH="$1"
@@ -42,11 +42,10 @@ HCTLS="consul \
        consul-replicate \
        consul-template \
        envconsul \
+       vault \
        nomad \
        packer \
-       terraform \
-       vault"
-#       vault-ssh-helper
+       terraform"
 
 exitOnErr() {
 
@@ -127,7 +126,7 @@ instlDvopsTls() {
   do
     local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
 
-    local c=$(${t} -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+    local c=$("${HCTLSLOC}/${t}" -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
  
     if [[ "${v}" != "${c}" ]]
     then
@@ -144,7 +143,7 @@ instlDvopsTls() {
     fi
   done
 
-  instlHCrpUI
+#  instlHCrpUI
 
 }
 
@@ -162,7 +161,7 @@ dumpDvopsTls() {
   for t in $HCTLS
   do
     ls -lhrt "${HCTLSLOC}/${t}"
-    "${t}" -v
+    "${HCTLSLOC}/${t}" -v
   done
 
 }

@@ -1,0 +1,43 @@
+---
+- name: turn off swap
+  command: swapoff -a
+
+- name: remove swap entry
+  lineinfile: name=/etc/fstab
+              regexp='swap'
+              state=absent
+
+- name: add elasticsearch repo
+  yum_repository: name=elasticsearch
+                  description="Elasticsearch repository for {{version_elasticsearch}} packages"
+                  baseurl="https://artifacts.elastic.co/packages/5.x/yum"
+                  gpgkey="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+                  gpgcheck=yes
+                  enabled=yes
+                  state=present
+
+- name: install elasticsearch package
+  yum: name="{{package_elasticsearch}}"
+       update_cache=yes
+       state=present
+
+- name: render elasticsearch config
+  template: src="elasticsearch.yml_{{version_elasticsearch}}.j2"
+            dest=/etc/elasticsearch/elasticsearch.yml
+            owner=root
+            group=elasticsearch
+  notify:
+    - restart elasticsearch
+
+- name: render jvm.options config
+  template: src="jvm.options_{{version_elasticsearch}}.j2"
+            dest=/etc/elasticsearch/jvm.options
+            owner=root
+            group=elasticsearch
+  notify:
+    - restart elasticsearch
+
+- name: start and enable elasticsearch service
+  service: name=elasticsearch
+           state=started
+           enabled=true

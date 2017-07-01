@@ -1,0 +1,56 @@
+input {
+  beats {
+    port => 5044
+  }
+
+  tcp {
+    port => 54001
+    codec => json
+  }
+}
+
+input {
+  log4j {
+    mode => "server"
+    host => "{{ansible_eth1.ipv4.address}}"
+    port => "19191"
+    type => "log4j"
+  }
+}
+
+filter {
+  if [type] =~ "postfix" {
+    grok {
+      match => [ "message", "%{SYSLOGBASE} %{GREEDYDATA:message}" ]
+      overwrite => [ "message" ]
+    }
+  }
+}
+
+filter {
+    grok {
+        match => {
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} %{HOSTNAME:hostname} (<junk1>nagios\:) (?<announcement>\w*_?\w*)(?<junk2>\:) %{HOSTNAME:hostname2}(?<junk2>\:) %{IP:ip}(?<junk2>\:) %{GREEDYDATA:log_message}"
+        }
+    }
+    mutate {
+       split => ["host", "."]
+    }
+    mutate {
+      replace => ["fqdn", "%{[host][1]}"]
+    }
+}
+
+filter {
+  if [type] == "apache-access" {
+    grok {
+      match => { "message" => "%{COMBINEDAPACHELOG}" }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["{{groups['els']|join(',')|replace(',','","')}}"]
+  }
+}

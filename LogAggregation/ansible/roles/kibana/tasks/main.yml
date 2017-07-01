@@ -1,0 +1,27 @@
+---
+- name: add kibana repo
+  yum_repository: name=kibana
+                  description="Kibana repository for {{version_kibana}} packages"
+                  baseurl="https://artifacts.elastic.co/packages/5.x/yum"
+                  gpgkey="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+                  gpgcheck=yes
+                  enabled=yes
+                  state=present
+
+- name: install kibana package
+  yum: name="{{package_kibana}}"
+       update_cache=yes
+       state=present
+
+- name: render kibana config
+  template: src="kibana.yml_{{version_kibana}}.j2"
+            dest=/etc/kibana/kibana.yml
+            owner=root
+            group=kibana
+  notify:
+    - restart kibana
+
+- name: start and enable kibana service
+  service: name=kibana
+           state=started
+           enabled=true

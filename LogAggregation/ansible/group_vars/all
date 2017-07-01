@@ -1,0 +1,15 @@
+---
+min_cpu_cores: 2
+min_ram_mb: 4096
+rqrd_os_family: "redhat"
+rqrd_distribution: "centos"
+rqrd_major_version: 7
+
+version_openjdk: 1.8.0
+package_openjdk: "java-{{version_openjdk}}-openjdk"
+version_elasticsearch: 5.4
+package_elasticsearch: elasticsearch
+version_logstash: "{{version_elasticsearch}}"
+package_logstash: logstash
+version_kibana: "{{version_elasticsearch}}"
+package_kibana: kibana

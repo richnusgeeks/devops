@@ -1,0 +1,20 @@
+---
+- name: verify the required os family
+  fail: msg="ansible_os_family={{ ansible_os_family }} != rqrd_os_family={{ rqrd_os_family }}"
+  when: ansible_os_family|lower != rqrd_os_family
+
+- name: verify the required os distribution and major version
+  fail: msg="{{ ansible_distribution|lower }} != {{ rqrd_distribution }}, {{ ansible_distribution_major_version }} != {{ rqrd_major_version }}"
+  when:
+    - (ansible_distribution|lower != rqrd_distribution) and (ansible_distribution_major_version != rqrd_major_version)
+
+- name: verify the minimum cpu cores
+  fail: msg="ansible_processor_vcpus={{ansible_processor_vcpus}} < min_cpu_cores={{min_cpu_cores}}"
+  when: ansible_processor_vcpus < min_cpu_cores
+
+- name: verify the minimum memory
+  fail: msg="ansible_memtotal_mb={{ansible_memtotal_mb}} < min_ram_mb={{min_ram_mb}}"
+  when: ansible_memtotal_mb < min_ram_mb
+
+- name: dump the mb ram for the els heap
+  debug: msg="total ram={{ansible_memory_mb.real.total}}mb els heap={{ansible_memory_mb.real.total/2}}mb"

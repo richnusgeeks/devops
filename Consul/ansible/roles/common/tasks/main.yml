@@ -1,0 +1,13 @@
+---
+- name: create necessary directories
+  file: path="{{item}}"
+        state="directory"
+        mode=0644
+  with_items: "{{dirs_consul}}"
+
+- name: upload consul binary
+  copy: src=consul
+        dest="/opt/consul/consul"
+        owner="root"
+        group="root"
+        mode=0754

@@ -1,0 +1,8 @@
+{
+  "data_dir": "/var/lib/consul",
+  "log_level": "DEBUG",
+  "server": false,
+  "bind_addr": "{{ansible_eth1.ipv4.address}}",
+  "retry_join": ["{{groups['server']|join(',')|replace(',','","')}}"],
+  "disable_remote_exec": false
+}

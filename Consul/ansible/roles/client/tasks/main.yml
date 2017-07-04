@@ -1,0 +1,19 @@
+---
+- name: render consul client configuration
+  template: src="consul.json.j2"
+            dest=/etc/consul.d/consul.json
+            owner=root
+            group=root
+  notify:
+    - restart consul
+
+- name: render consul systemd unit
+  template: src="consul.service.j2"
+            dest=/etc/systemd/system/consul.service
+            owner=root
+            group=root
+
+- name: start and enable consul service
+  service: name=consul
+           state=started
+           enabled=true  

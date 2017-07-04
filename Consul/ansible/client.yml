@@ -1,0 +1,6 @@
+---
+- hosts: client
+  gather_facts: yes
+  become: yes
+  roles:
+    - client

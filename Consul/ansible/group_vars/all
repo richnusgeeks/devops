@@ -1,0 +1,6 @@
+---
+dirs_consul: [
+  "/opt/consul",
+  "/etc/consul.d",
+  "/var/lib/consul",
+]

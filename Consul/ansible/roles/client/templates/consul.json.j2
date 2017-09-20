@@ -2,7 +2,12 @@
   "data_dir": "/var/lib/consul",
   "log_level": "DEBUG",
   "server": false,
+{% if 'eth1' in ansible_interfaces %}
   "bind_addr": "{{ansible_eth1.ipv4.address}}",
+{% else %}
+  "bind_addr": "{{ansible_eth0.ipv4.address}}",
+{% endif %}
   "retry_join": ["{{groups['server']|join(',')|replace(',','","')}}"],
-  "disable_remote_exec": false
+  "disable_remote_exec": false,
+  "encrypt": "{{gosenckey.stdout_lines[0]}}"
 }

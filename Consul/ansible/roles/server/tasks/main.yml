@@ -1,4 +1,9 @@
 ---
+- name: generate gossip encryption key
+  command: /opt/consul/consul keygen
+  register: gosenckey
+  run_once: true
+
 - name: render consul server configuration
   template: src="consul.json.j2"
             dest=/etc/consul.d/consul.json

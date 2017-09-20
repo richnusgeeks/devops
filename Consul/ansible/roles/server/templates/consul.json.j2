@@ -3,9 +3,14 @@
   "log_level": "DEBUG",
   "bootstrap_expect": {{groups['server']|count}},
   "server": true,
+{% if 'eth1' in ansible_interfaces %}
   "bind_addr": "{{ansible_eth1.ipv4.address}}",
+{% else %}
+  "bind_addr": "{{ansible_eth0.ipv4.address}}",
+{% endif %}
   "retry_join": ["{{groups['server']|join(',')|replace(',','","')}}"],
   "client_addr": "0.0.0.0",
   "disable_remote_exec": false,
-  "ui": true
+  "ui": true,
+  "encrypt": "{{gosenckey.stdout_lines[0]}}"
 }

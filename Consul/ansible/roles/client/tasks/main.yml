@@ -1,4 +1,16 @@
 ---
+- name: upload consul-template binary
+  copy: src=consul-template
+        dest="/opt/consul/consul-template"
+        owner="root"
+        group="root"
+        mode=0754
+
+- name: extract gossip encryption key
+  shell: grep encrypt /etc/consul.d/consul.json|awk -F'"' '{print $4}'
+  delegate_to: "{{groups['server'][0]}}"
+  register: gosenckey
+
 - name: render consul client configuration
   template: src="consul.json.j2"
             dest=/etc/consul.d/consul.json

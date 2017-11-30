@@ -1,0 +1,39 @@
+---
+- name: upload hashiui binaries
+  copy: src="{{item}}"
+        dest="/opt/consul/{{item}}"
+        owner="root"
+        group="root"
+        mode=0754
+  with_items: "{{hashiui_binaries}}"
+
+- name: render hashiui crt file
+  template: src="{{hashiui_cert}}.j2"
+            dest="{{hashiui_certs_loc}}/{{hashiui_cert}}"
+            owner=root
+            group=root
+  notify:
+    - restart hashiui
+
+- name: render hashiui key file
+  template: src="{{hashiui_key}}.j2"
+            dest="{{hashiui_certs_loc}}/{{hashiui_key}}"
+            owner=root
+            group=root
+  notify:
+    - restart hashiui
+
+- name: render hashiui systemd units
+  template: src="{{item}}.service.j2"
+            dest="/etc/systemd/system/{{item}}.service"
+            owner=root
+            group=root
+  with_items: "{{hashiui_services}}"
+  notify:
+    - reload hashiui
+
+- name: start and enable hashiui services
+  service: name="{{item}}"
+           state=started
+           enabled=true
+  with_items: "{{hashiui_services}}"

@@ -1,10 +1,11 @@
 ---
-- name: upload consul-template binary
-  copy: src=consul-template
-        dest="/opt/consul/consul-template"
+- name: upload agent binaries
+  copy: src="{{item}}"
+        dest="/opt/consul/{{item}}"
         owner="root"
         group="root"
         mode=0754
+  with_items: "{{agent_binaries}}"
 
 - name: extract gossip encryption key
   shell: grep encrypt /etc/consul.d/consul.json|awk -F'"' '{print $4}'
@@ -12,20 +13,22 @@
   register: gosenckey
 
 - name: render consul client configuration
-  template: src="consul.json.j2"
-            dest=/etc/consul.d/consul.json
+  template: src="client.json.j2"
+            dest=/etc/consul.d/client.json
             owner=root
             group=root
   notify:
-    - restart consul
+    - restart consul client
 
-- name: render consul systemd unit
-  template: src="consul.service.j2"
-            dest=/etc/systemd/system/consul.service
+- name: render agents systemd units
+  template: src="{{item}}.service.j2"
+            dest="/etc/systemd/system/{{item}}.service"
             owner=root
             group=root
+  with_items: "{{agent_services}}"
 
-- name: start and enable consul service
-  service: name=consul
+- name: start and enable agents services
+  service: name="{{item}}"
            state=started
-           enabled=true  
+           enabled=true
+  with_items: "{{agent_services}}"

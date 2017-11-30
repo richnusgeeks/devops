@@ -1,0 +1,13 @@
+---
+service_scripts: [
+  "elkscan.sh",
+]
+
+base_url: "http://packages/richnusgeeks/elk/"
+update_cache: no
+version_oraclejre:  "1.8.0_141"
+package_oraclejre: "jre{{version_oraclejre}}"
+max_heap_mb: 30720
+
+package_elasticsearch: elasticsearch
+version_elasticsearch: 5.5.0

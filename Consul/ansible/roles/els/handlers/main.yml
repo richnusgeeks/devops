@@ -1,0 +1,11 @@
+---
+- name: restart consul
+  service: name=consul
+           state=restarted
+
+- name: reload config
+  shell: /usr/bin/consul reload
+
+- name: restart elasticsearch
+  service: name=elasticsearch
+           state=restarted

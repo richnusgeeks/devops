@@ -1,0 +1,16 @@
+---
+dirs_consul: [
+  "/opt/consul",
+  "/etc/consul.d",
+  "/var/lib/consul",
+]
+
+agent_binaries: [
+  "consul-alerts",
+  "consul-template",
+]
+
+agent_services: [
+  "client",
+  "alerts",
+]

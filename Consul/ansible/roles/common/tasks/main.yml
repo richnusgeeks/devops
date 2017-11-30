@@ -1,4 +1,7 @@
 ---
+- name: ensure libselinux-python is installed
+  raw: yum install -y libselinux-python
+
 - name: create necessary directories
   file: path="{{item}}"
         state="directory"
@@ -7,7 +10,47 @@
 
 - name: upload consul binary
   copy: src=consul
-        dest="/opt/consul/consul"
+        dest="/usr/bin"
         owner="root"
         group="root"
-        mode=0754
+        mode=0755
+
+- name: render system checks scripts
+  template: src="{{item.value}}.j2"
+            dest="/opt/{{item.value}}"
+            owner=root
+            group=root
+            mode=0754
+  with_dict: "{{sys_chks}}"
+
+- name: render system checks templates
+  template: src="{{item.key}}.j2"
+            dest="/etc/consul.d/{{item.key}}"
+            owner=root
+            group=root
+  with_dict: "{{sys_chks}}"
+  notify:
+    - reload consul configs
+
+- name: add epel repo
+  yum_repository: name=epel
+                  description="Extra Packages for Enterprise Linux 7 - $basearch"
+                  baseurl="http://download.fedoraproject.org/pub/epel/7/$basearch"
+                  metalink="https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch"
+                  failovermethod=priority
+                  enabled=yes
+                  gpgcheck=no
+                  gpgkey="file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+  when: ansible_virtualization_type == "virtualbox"
+
+- name: install monit
+  yum: name="{{package_monit}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: render monit control file
+  template: src="{{monit_ctlfl}}.j2"
+            dest="/etc/{{monit_ctlfl}}"
+            owner=root
+            group=root
+            mode=0600

@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "rds",
+    "tags": ["redis"],
+    "address": "",
+    "port": 6379,
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "script": "/opt/rdsscan.sh",
+        "interval": "10s"
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 ---
 - name: generate gossip encryption key
-  command: /opt/consul/consul keygen
+  shell: "if [[ -z $(sudo grep encrypt /etc/consul.d/consul.json|awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ]];then consul keygen;fi"
   register: gosenckey
   run_once: true
 
@@ -9,6 +9,7 @@
             dest=/etc/consul.d/consul.json
             owner=root
             group=root
+  when: gosenckey.stdout_lines|length > 0
   notify:
     - restart consul
 

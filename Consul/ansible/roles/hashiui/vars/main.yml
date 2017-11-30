@@ -1,0 +1,13 @@
+---
+hashiui_binaries: [
+  "hashi-ui",
+]
+
+hashiui_services: [
+  "hashiui",
+]
+
+hashiui_port: 443
+hashiui_cert: localhost.crt
+hashiui_key:  localhost.key
+hashiui_certs_loc: /etc/pki/tls/certs

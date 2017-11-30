@@ -1,0 +1,48 @@
+---
+- name: upload service script
+  copy: src="{{item}}"
+        dest="/opt/{{item}}"
+        owner="root"
+        group="root"
+        mode=0754
+  with_items: "{{service_scripts}}"
+
+- name: create redis config directory
+  file: path="{{config_dir_redis}}"
+        state="directory"
+        mode=0644
+
+- name: create redis data directory
+  file: path="{{data_dir_redis}}"
+        state="directory"
+        mode=0644
+
+- name: upload redis binaries
+  copy: src="{{item}}"
+        dest="{{dir_binaries_redis}}/{{item}}"
+        owner="root"
+        group="root"
+        mode=0755
+  with_items: "{{binaries_redis}}"
+
+- name: render redis configuration
+  template: src="{{config_redis}}_{{version_redis}}.j2"
+            dest="{{config_dir_redis}}/{{config_redis}}"
+            owner=root
+            group=root
+  notify:
+    - restart redis
+
+- name: render redis service definition
+  template: src="rds.json.j2"
+            dest=/etc/consul.d/rds.json
+            owner=root
+            group=root
+  notify:
+    - reload config
+
+- name: render redis systemd unit
+  template: src="redis.service.j2"
+            dest=/etc/systemd/system/redis.service
+            owner=root
+            group=root

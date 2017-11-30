@@ -1,7 +1,6 @@
 ---
-- hosts: server
+- hosts: tstrds
   gather_facts: yes
   become: yes
   roles:
-    - server
-    - hashiui
+    - rds

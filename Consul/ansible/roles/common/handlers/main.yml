@@ -1,0 +1,2 @@
+- name: reload consul configs
+  shell: /usr/bin/consul reload

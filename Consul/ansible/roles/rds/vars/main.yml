@@ -1,0 +1,22 @@
+---
+service_scripts: [
+  "rdsscan.sh",
+]
+
+service_configs: [
+  "rds.json"
+]
+
+dir_binaries_redis: "/usr/local/bin"
+binaries_redis: [
+  "redis-server",
+  "redis-benchmark",
+  "redis-cli",
+  "redis-check-rdb",
+  "redis-check-aof",
+]
+
+version_redis: "4.0.2"
+config_redis: "redis.conf"
+config_dir_redis: "/etc/redis"
+data_dir_redis: "/var/lib/redis"

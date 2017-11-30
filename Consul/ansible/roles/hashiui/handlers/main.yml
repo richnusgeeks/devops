@@ -1,0 +1,7 @@
+---
+- name: restart hashiui
+  service: name=hashiui
+           state=restarted
+
+- name: reload hashiui
+  shell: systemctl daemon-reload

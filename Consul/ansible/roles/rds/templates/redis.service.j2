@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Restart=on-failure
-ExecStart=/opt/consul/consul agent -config-dir=/etc/consul.d
+ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]

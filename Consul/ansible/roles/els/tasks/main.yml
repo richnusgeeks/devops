@@ -1,0 +1,63 @@
+---
+- name: upload service script
+  copy: src="{{item}}"
+        dest="/opt/{{item}}"
+        owner="root"
+        group="root"
+        mode=0754
+  with_items: "{{service_scripts}}"
+
+- name: turn off swap
+  command: swapoff -a
+
+- name: remove swap entry
+  lineinfile: name=/etc/fstab
+              regexp='swap'
+              state=absent
+
+- name: add richnusgeeks elk repo
+  yum_repository: name=elk
+                  description="richnusgeeks ELK repository"
+                  baseurl="{{base_url}}"
+                  gpgcheck=no
+                  enabled=yes
+                  state=present
+
+- name: install oracle jre package
+  yum: name="{{package_oraclejre}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: install elasticsearch package
+  yum: name="{{package_elasticsearch}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: render elasticsearch config
+  template: src="elasticsearch.yml_{{version_elasticsearch}}.j2"
+            dest=/etc/elasticsearch/elasticsearch.yml
+            owner=root
+            group=elasticsearch
+  notify:
+    - restart elasticsearch
+
+- name: render jvm.options config
+  template: src="jvm.options_{{version_elasticsearch}}.j2"
+            dest=/etc/elasticsearch/jvm.options
+            owner=root
+            group=elasticsearch
+  notify:
+    - restart elasticsearch
+
+- name: start and enable elasticsearch service
+  service: name=elasticsearch
+           state=started
+           enabled=true
+
+- name: render els service definition
+  template: src="els.json.j2"
+            dest=/etc/consul.d/els.json
+            owner=root
+            group=root
+  notify:
+    - reload config

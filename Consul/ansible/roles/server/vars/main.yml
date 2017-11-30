@@ -4,3 +4,8 @@ dirs_consul: [
   "/etc/consul.d",
   "/var/lib/consul",
 ]
+
+agent_binaries: [
+  "consul-alerts",
+  "consul-template",
+]

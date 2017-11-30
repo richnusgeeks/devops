@@ -1,0 +1,24 @@
+[Unit]
+Description=consul alert
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Environment=LOG_LEVEL=debug
+{% if 'eth1' in ansible_interfaces %}
+Environment=LISTEN_ADDRESS={{ansible_eth1.ipv4.address}}:{{hashiui_port}}
+{% else %}
+Environment=LISTEN_ADDRESS={{ansible_eth0.ipv4.address}}:{{hashiui_port}}
+{% endif %}
+Environment=HTTPS_ENABLE=true
+Environment=SERVER_CERT={{hashiui_certs_loc}}/{{hashiui_cert}}
+Environment=SERVER_KEY={{hashiui_certs_loc}}/{{hashiui_key}}
+Environment=CONSUL_ENABLE=true
+Environment=CONSUL_READ_ONLY=true
+
+Restart=on-failure
+ExecStart=/opt/consul/hashi-ui 
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

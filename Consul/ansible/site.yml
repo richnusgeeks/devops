@@ -2,5 +2,11 @@
 - include: server.yml
   tags: server
 
+- include: rds.yml
+  tags: rds
+
+- include: els.yml
+  tags: els
+
 - include: client.yml
   tags: client

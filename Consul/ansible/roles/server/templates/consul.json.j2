@@ -11,6 +11,7 @@
   "retry_join": ["{{groups['server']|join(',')|replace(',','","')}}"],
   "client_addr": "0.0.0.0",
   "disable_remote_exec": false,
-  "ui": true,
-  "encrypt": "{{gosenckey.stdout_lines[0]}}"
+  "ui": false,
+  "encrypt": "{{gosenckey.stdout_lines[0]}}",
+  "enable_script_checks": true
 }

@@ -1,0 +1,19 @@
+---
+dirs_consul: [
+  "/opt/consul",
+  "/etc/consul.d",
+  "/var/lib/consul",
+]
+
+sys_chks: {
+  "system.json": "syschks.sh",
+}
+
+dsk_wmkl: 85
+dsk_wmkh: 95
+els_dprtn: /var/lib/elasticsearch
+
+update_cache: no
+package_monit: monit
+monit_ctlfl: monitrc
+monit_http_port: 8080

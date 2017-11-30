@@ -1,0 +1,30 @@
+#! /usr/bin/env bash
+
+WARNP={{dsk_wmkl}}
+ERRP={{dsk_wmkh}}
+RETS=0
+DSKP="/ \
+      {{els_dprtn}}"
+
+msgstr=''
+for p in ${DSKP}
+do
+  if [[ -d ${p} ]]
+  then
+    curp=$(df -kh|grep -Ew ${p}|awk '{print $(NF-1)}'|sed 's/%//')
+
+    if [[ ${curp} -gt ${WARNP} ]] && [[ ${curp} -lt ${ERRP} ]]
+    then
+      RETS=1
+    elif [[ ${curp} -gt ${ERRP} ]]
+    then
+      RETS=2
+    fi
+  fi
+
+  msgstr+="$(df -kh|grep -Ew ${p})\n"
+done
+
+df -kh|grep Filesystem
+echo -ne "${msgstr}"
+exit ${RETS}

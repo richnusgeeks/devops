@@ -5,11 +5,14 @@ set idfile /var/.monit.id
 set statefile /var/.monit.state
 
 set httpd port {{monit_http_port}} and
+  use address localhost
 {% if 'eth1' in ansible_interfaces %}
-    use address {{ansible_eth1.ipv4.address}}
+#  use address {{ansible_eth1.ipv4.address}}
 {% else %}
-    use address {{ansible_eth0.ipv4.address}}
+#  use address {{ansible_eth0.ipv4.address}}
 {% endif %}
-    allow consul:consul read-only     # require user:password
+  allow localhost
+#  allow 0.0.0.0/0
+#  allow {{monit_user}}:{{monit_pswrd}} read-only     # require user:password
 
 include /etc/monit.d/*

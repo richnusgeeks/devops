@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "elasticsearch master",
+    "tags": ["elsm"],
+    "address": "",
+    "port": 9200,
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "script": "/opt/elkscan.sh",
+        "interval": "10s"
+      }
+    ]
+  }
+}

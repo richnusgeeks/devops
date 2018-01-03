@@ -4,7 +4,7 @@
         dest="/opt/{{item}}"
         owner="root"
         group="root"
-        mode=0754
+        mode=0750
   with_items: "{{service_scripts}}"
 
 - name: create redis config directory
@@ -37,7 +37,7 @@
   template: src="rds.json.j2"
             dest=/etc/consul.d/rds.json
             owner=root
-            group=root
+            group=consul
   notify:
     - reload config
 

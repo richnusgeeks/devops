@@ -4,7 +4,7 @@
            state=restarted
 
 - name: reload config
-  shell: /usr/bin/consul reload
+  shell: /usr/sbin/consul reload
 
 - name: restart redis
   service: name=redis

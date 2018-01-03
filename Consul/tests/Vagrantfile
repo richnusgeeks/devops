@@ -1,3 +1,8 @@
+numSrvr = 1
+numClnt = 0
+numRds = 1
+numEls = 1
+
 Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = true
@@ -7,31 +12,31 @@ Vagrant.configure("2") do |config|
     vb.cpus   = "1"
   end
 
-  (1..1).each do |i|
+  (1..numSrvr).each do |i|
     config.vm.define "consul#{format('%02d', i)}" do |consul|
       consul.vm.hostname = "consul#{format('%02d', i)}"
-      consul.vm.network "private_network", ip: "192.168.50.#{i+2}"
+      consul.vm.network "private_network", ip: "192.168.50.#{i+52}"
     end
   end
 
-  (1..1).each do |i|
+  (1..numRds).each do |i|
     config.vm.define "rds#{format('%02d', i)}" do |rds|
       rds.vm.hostname = "rds#{format('%02d', i)}"
-      rds.vm.network "private_network", ip: "192.168.50.#{i+5}"
+      rds.vm.network "private_network", ip: "192.168.50.#{i+55}"
     end
   end
 
-  (1..1).each do |i|
-    config.vm.define "els#{format('%02d', i)}" do |els|
-      els.vm.hostname = "els#{format('%02d', i)}"
-      els.vm.network "private_network", ip: "192.168.50.#{i+7}"
+  (1..numEls).each do |i|
+    config.vm.define "elsmd#{format('%02d', i)}" do |els|
+      els.vm.hostname = "elsmd#{format('%02d', i)}"
+      els.vm.network "private_network", ip: "192.168.50.#{i+57}"
     end
   end
 
-  (1..1).each do |i|
+  (1..numClnt).each do |i|
     config.vm.define "client#{format('%02d', i)}" do |client|
       client.vm.hostname = "client#{format('%02d', i)}"
-      client.vm.network "private_network", ip: "192.168.50.#{i+12}"
+      client.vm.network "private_network", ip: "192.168.50.#{i+62}"
     end
   end
 

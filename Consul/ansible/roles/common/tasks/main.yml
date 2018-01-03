@@ -2,32 +2,45 @@
 - name: ensure libselinux-python is installed
   raw: yum install -y libselinux-python
 
+- name: create dedicated consul user
+  user: name="consul"
+        shell="/sbin/nologin"
+        home="/srv/consul"
+
+- name: ensure correct user for consul
+  file: path="/srv/consul"
+        owner="consul"
+        mode=0750
+
 - name: create necessary directories
   file: path="{{item}}"
         state="directory"
-        mode=0644
+        owner="root"
+        group="consul"
+        mode=0750
   with_items: "{{dirs_consul}}"
 
-- name: upload consul binary
-  copy: src=consul
-        dest="/usr/bin"
+- name: upload consul binaries
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="/usr/sbin/{{item.key}}"
         owner="root"
-        group="root"
-        mode=0755
+        group="consul"
+        mode=0750
+  with_dict: "{{consul_binaries}}"
 
 - name: render system checks scripts
   template: src="{{item.value}}.j2"
             dest="/opt/{{item.value}}"
-            owner=root
-            group=root
-            mode=0754
+            owner="root"
+            group="consul"
+            mode=0750
   with_dict: "{{sys_chks}}"
 
 - name: render system checks templates
   template: src="{{item.key}}.j2"
             dest="/etc/consul.d/{{item.key}}"
-            owner=root
-            group=root
+            owner="root"
+            group="consul"
   with_dict: "{{sys_chks}}"
   notify:
     - reload consul configs
@@ -54,3 +67,5 @@
             owner=root
             group=root
             mode=0600
+  notify:
+    - reload monit configs

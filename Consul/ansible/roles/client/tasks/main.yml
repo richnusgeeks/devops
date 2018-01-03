@@ -1,11 +1,11 @@
 ---
 - name: upload agent binaries
-  copy: src="{{item}}"
-        dest="/opt/consul/{{item}}"
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="/opt/consul/{{item.key}}"
         owner="root"
-        group="root"
-        mode=0754
-  with_items: "{{agent_binaries}}"
+        group="consul"
+        mode=0750
+  with_dict: "{{agent_binaries}}"
 
 - name: extract gossip encryption key
   shell: grep encrypt /etc/consul.d/consul.json|awk -F'"' '{print $4}'
@@ -16,7 +16,7 @@
   template: src="client.json.j2"
             dest=/etc/consul.d/client.json
             owner=root
-            group=root
+            group=consul
   notify:
     - restart consul client
 
@@ -26,9 +26,54 @@
             owner=root
             group=root
   with_items: "{{agent_services}}"
+  notify:
+    - reload services
+    - restart consul client
 
 - name: start and enable agents services
   service: name="{{item}}"
            state=started
            enabled=true
   with_items: "{{agent_services}}"
+
+- name: render elsm checks template
+  template: src="els.elsm.j2"
+            dest="/etc/consul.d/els.json"
+            owner="root"
+            group="consul"
+  when: ansible_hostname | search("^elsm")
+  notify:
+    - reload consul configs
+
+- name: render elsd checks template
+  template: src="els.elsd.j2"
+            dest="/etc/consul.d/els.json"
+            owner="root"
+            group="consul"
+  when: ansible_hostname | search("^elsd")
+  notify:
+    - reload consul configs
+
+- name: render elsm monit config
+  template: src="elsm.j2"
+            dest="/etc/monit.d/elsm"
+            owner="root"
+            group="root"
+  when: ansible_hostname | search("^elsm")
+  notify:
+    - reload monit configs
+
+- name: render elsd monit config
+  template: src="elsd.j2"
+            dest="/etc/monit.d/elsd"
+            owner="root"
+            group="root"
+  when: ansible_hostname | search("^elsd")
+  notify:
+    - reload monit configs
+
+- name: start and enable monit service
+  service: name=monit
+           state=started
+           enabled=true
+  when: ansible_hostname | search("^els[md]")

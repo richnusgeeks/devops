@@ -1,2 +1,5 @@
+- name: reload monit configs
+  shell: /usr/bin/monit reload
+
 - name: reload consul configs
-  shell: /usr/bin/consul reload
+  shell: /usr/sbin/consul reload

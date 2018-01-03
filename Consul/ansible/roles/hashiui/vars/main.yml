@@ -1,7 +1,7 @@
 ---
-hashiui_binaries: [
-  "hashi-ui",
-]
+hashiui_binaries: {
+  "hashi-ui": "0.22.0",
+}
 
 hashiui_services: [
   "hashiui",

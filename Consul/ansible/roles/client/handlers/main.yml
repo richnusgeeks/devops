@@ -1,7 +1,13 @@
 ---
+- name: reload services
+  shell: systemctl daemon-reload
+
 - name: restart consul client
   service: name=client
            state=restarted
 
 - name: reload consul configs
-  shell: /usr/bin/consul reload
+  shell: /usr/sbin/consul reload
+
+- name: reload monit configs
+  shell: /usr/bin/monit reload

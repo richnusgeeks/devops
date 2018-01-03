@@ -1,11 +1,11 @@
 ---
 - name: upload hashiui binaries
-  copy: src="{{item}}"
-        dest="/opt/consul/{{item}}"
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="/opt/consul/{{item.key}}"
         owner="root"
         group="root"
         mode=0754
-  with_items: "{{hashiui_binaries}}"
+  with_dict: "{{hashiui_binaries}}"
 
 - name: render hashiui crt file
   template: src="{{hashiui_cert}}.j2"
@@ -31,6 +31,7 @@
   with_items: "{{hashiui_services}}"
   notify:
     - reload hashiui
+    - restart hashiui
 
 - name: start and enable hashiui services
   service: name="{{item}}"

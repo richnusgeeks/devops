@@ -8,16 +8,19 @@
   template: src="consul.json.j2"
             dest=/etc/consul.d/consul.json
             owner=root
-            group=root
+            group=consul
   when: gosenckey.stdout_lines|length > 0
   notify:
-    - restart consul
+    - restart consul server
 
 - name: render consul systemd unit
   template: src="consul.service.j2"
             dest=/etc/systemd/system/consul.service
             owner=root
             group=root
+  notify:
+    - reload services
+    - restart consul server
 
 - name: start and enable consul service
   service: name=consul

@@ -5,15 +5,23 @@ dirs_consul: [
   "/var/lib/consul",
 ]
 
+consul_version: "1.0.1"
+
+consul_binaries: {
+  "consul": "{{consul_version}}",
+}
+
 sys_chks: {
   "system.json": "syschks.sh",
 }
 
 dsk_wmkl: 85
 dsk_wmkh: 95
-els_dprtn: /var/lib/elasticsearch
+els_dprtn: /data
 
 update_cache: no
 package_monit: monit
 monit_ctlfl: monitrc
-monit_http_port: 8080
+monit_http_port: 2181
+monit_user: "monit"
+monit_pswrd: "monit"

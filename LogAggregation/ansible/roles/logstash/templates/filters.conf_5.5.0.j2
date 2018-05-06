@@ -10,7 +10,7 @@ input {
 }
 
 filter {
-  if [type] in ["fim", "ioc", "certview", "upgrade-utility", "alerting","other"] {
+  if [type] in ["test1", "test2", "test3", "test4", "test5", "test6"] {
     mutate {
         convert => { "code" => "integer" }
     }
@@ -19,10 +19,10 @@ filter {
 
 output {
 
-  if [type] in ["fim", "ioc", "certview", "upgrade-utility", "alerting","other"] {
+  if [type] in ["test1", "test2", "test3", "test4", "test5", "test6"] {
     elasticsearch {
       hosts => ["{{groups['elsmops']|join(':ELSM_PORT,')|replace(',','","')}}:ELSM_PORT"]
-      index => "%{type}-microservices-%{+YYYY.MM.dd}"
+      index => "%{type}-test-%{+YYYY.MM.dd}"
     }
   } else {
       elasticsearch {

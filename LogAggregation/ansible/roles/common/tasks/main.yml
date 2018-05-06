@@ -1,9 +1,42 @@
 ---
-- name: install required runtime
-  yum: name="{{package_openjdk}}"
-       update_cache=yes
-       state=present
+- name: ensure libselinux-python is installed
+  raw: yum install -y libselinux-python
 
-- name: import elasticsearch PGP key
-  rpm_key: key=https://artifacts.elastic.co/GPG-KEY-elasticsearch
-           state=present
+- name: add richnusgeeks common repo
+  yum_repository: name=richnusgeeks-common
+                  description="richnusgeeks common repository"
+                  baseurl="{{common_url}}"
+                  gpgcheck=no
+                  enabled=yes
+                  exclude="*cos*"
+                  gpgkey="{{gpgkey}}"
+                  state=present
+
+- name: add richnusgeeks elk repo
+  yum_repository: name=elk
+                  description="richnusgeeks ELK repository"
+                  baseurl="{{base_url}}"
+                  gpgcheck=no
+                  enabled=yes
+                  state=present
+
+- name: add epel repo
+  yum_repository: name=epel
+                  description="Extra Packages for Enterprise Linux 7 - $basearch"
+                  baseurl="http://download.fedoraproject.org/pub/epel/7/$basearch"
+                  metalink="https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch"
+                  failovermethod=priority
+                  enabled=yes
+                  gpgcheck=no
+                  gpgkey="file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+  when: ansible_virtualization_type == "virtualbox"
+
+- name: install monit
+  yum: name="{{package_monit}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: install server jre package
+  yum: name="{{package_serverjre}}"
+       state=present
+       update_cache={{update_cache}}

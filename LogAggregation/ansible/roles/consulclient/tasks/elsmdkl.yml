@@ -1,0 +1,91 @@
+---
+- name: render elkscan scripts
+  template: src="{{item.value}}.j2"
+            dest="{{bindir_consul}}/{{item.value}}"
+            owner="root"
+            group="{{consul_group}}"
+            mode=0750
+  with_dict: "{{elkscan_checks}}"
+
+- name: render elkscanapi scripts
+  template: src="{{item.value}}.j2"
+            dest="{{bindir_consul}}/{{item.value}}"
+            owner="root"
+            group="{{consul_group}}"
+            mode=0750
+  with_dict: "{{elkscanapi_checks}}"
+  when: ansible_hostname | search("^{{hstptrn_esmstr}}") or ansible_hostname | search("^{{hstptrn_kiblgs}}")
+
+- name: render elkscanapi checks templates
+  template: src="{{item.key}}.j2"
+            dest="/etc/consul.d/{{item.key}}"
+            owner="root"
+            group="{{consul_group}}"
+  with_dict: "{{elkscanapi_checks}}"
+  notify:
+    - reload consul configs
+  when: ansible_hostname | search("^{{hstptrn_esmstr}}")
+
+- name: render elkscanapilgs checks templates
+  template: src="{{item.key}}.j2"
+            dest="/etc/consul.d/{{item.key}}"
+            owner="root"
+            group="{{consul_group}}"
+  with_dict: "{{elkscanapilgs_checks}}"
+  notify:
+    - reload consul configs
+  when: ansible_hostname | search("^{{hstptrn_kiblgs}}")
+
+- name: render elsm checks template
+  template: src="els.elsm.j2"
+            dest="/etc/consul.d/els.json"
+            owner="root"
+            group="{{consul_group}}"
+  when: ansible_hostname | search("^{{hstptrn_esmstr}}")
+  notify:
+    - reload consul configs
+
+- name: render elsd checks template
+  template: src="els.elsd.j2"
+            dest="/etc/consul.d/els.json"
+            owner="root"
+            group="{{consul_group}}"
+  when: ansible_hostname | search("^{{hstptrn_esdata}}")
+  notify:
+    - reload consul configs
+
+- name: render kls checks template
+  template: src="elk.kls.j2"
+            dest="/etc/consul.d/kls.json"
+            owner="root"
+            group="{{consul_group}}"
+  when: ansible_hostname | search("^{{hstptrn_kiblgs}}")
+  notify:
+    - reload consul configs
+
+- name: render elsm monit config
+  template: src="elsm.j2"
+            dest="/etc/monit.d/elsm"
+            owner="root"
+            group="root"
+  when: ansible_hostname | search("^{{hstptrn_esmstr}}")
+  notify:
+    - reload monit configs
+
+- name: render elsd monit config
+  template: src="elsd.j2"
+            dest="/etc/monit.d/elsd"
+            owner="root"
+            group="root"
+  when: ansible_hostname | search("^{{hstptrn_esdata}}")
+  notify:
+    - reload monit configs
+
+- name: render kls monit config
+  template: src="kls.j2"
+            dest="/etc/monit.d/kls"
+            owner="root"
+            group="root"
+  when: ansible_hostname | search("^{{hstptrn_kiblgs}}")
+  notify:
+    - reload monit configs

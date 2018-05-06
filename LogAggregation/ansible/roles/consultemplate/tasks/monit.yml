@@ -1,0 +1,13 @@
+---
+- name: render alerts monit config
+  template: src="{{template_service}}.j2"
+            dest="/etc/monit.d/{{template_service}}"
+            owner="root"
+            group="root"
+  notify:
+    - reload monit configs
+
+- name: start and enable monit service
+  service: name=monit
+           state=started
+           enabled=true

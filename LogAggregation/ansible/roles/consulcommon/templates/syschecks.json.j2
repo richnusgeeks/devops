@@ -1,0 +1,36 @@
+{
+  "checks": [
+  {
+    "id": "cpuCheck",
+    "notes": "CPU: Warning >{{cpu_wmkl}}% , Critical >{{cpu_wmkh}}%",
+    "name": "CPU Check",
+    "script": "{{bindir_consul}}/syschecks.sh -p -w {{cpu_wmkl}} -c {{cpu_wmkh}}",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "diskCheck",
+    "notes": "Disk: Warning >{{dsk_wmkl}}% , Critical >{{dsk_wmkh}}",
+    "name": "Disk Check",
+    "script": "{{bindir_consul}}/syschecks.sh -d -w {{dsk_wmkl}} -c {{dsk_wmkh}}",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "loadCheck",
+    "notes": "Load: Warning 5m >{{ansible_processor_vcpus * 1.5}} , Critical 15m >{{ansible_processor_vcpus * 1.5}}",
+    "name": "Load Check",
+    "script": "{{bindir_consul}}/syschecks.sh -l",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "memCheck",
+    "notes": "Memory: Warning >{{mem_wmkl}}% , Critical >{{mem_wmkh}}%",
+    "name": "Memory Check",
+    "script": "{{bindir_consul}}/syschecks.sh -m -w {{mem_wmkl}} -c {{mem_wmkh}}",
+    "interval": "10s",
+    "timeout": "10s"
+  }
+  ]
+}

@@ -1,0 +1,30 @@
+server {
+{% if 'eth1' in ansible_interfaces %}
+  listen {{ansible_eth1.ipv4.address}}:{{kibana_port}} ssl;
+{% else %}
+  listen {{ansible_eth0.ipv4.address}}:{{kibana_port}} ssl;
+{% endif %} 
+{% if 'eth1' in ansible_interfaces %}
+  server_name {{ansible_eth1.ipv4.address}};
+{% else %}
+  server_name {{ansible_fqdn}};
+{% endif %}
+
+  error_page 497 https://$host:$server_port$request_uri;
+  ssl_certificate                 /etc/pki/tls/certs/localhost.crt;
+  ssl_certificate_key             /etc/pki/tls/private/localhost.key;
+  ssl_session_cache shared:SSL:10m;
+  ssl_prefer_server_ciphers   on;
+  auth_basic                            "Username and Password Required";
+  auth_basic_user_file                  /etc/nginx/.htpasswd;
+
+  location / {
+    proxy_set_header        Host $host;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+
+    proxy_pass          http://localhost:{{kibana_port}}/;
+    proxy_read_timeout  90;
+  }
+}

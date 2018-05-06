@@ -1,0 +1,17 @@
+[Unit]
+Description=consul alert
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart=/bin/bash -c 'PATH=/opt/consul:$PATH exec {{bindir_consul}}/consul-alerts start \
+  --consul-addr=localhost:{{consul_port_http}} \
+  --consul-dc={{consul_datacenter}} \
+  --watch-events \
+  --watch-checks \
+  --log-level=debug'
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

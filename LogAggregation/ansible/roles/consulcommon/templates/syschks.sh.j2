@@ -1,0 +1,102 @@
+#! /usr/bin/env bash
+
+WARNP={{dsk_wmkl}}
+ERRP={{dsk_wmkh}}
+WARNM={{mem_wmkl}}
+ERRM={{mem_wmkh}}
+WARNC={{cpu_wmkl}}
+ERRC={{cpu_wmkh}}
+RETS=0
+DSKP="/ \
+      {{els_dprtn}}"
+MSGSTR=''
+
+diskUsage() {
+
+  for p in ${DSKP}
+  do
+    if [[ -d ${p} ]]
+    then
+      curp=$(df -kh|grep -Ew ${p}|awk '{print $(NF-1)}'|sed 's/%//')
+
+      if [[ ${curp} -gt ${WARNP} ]] && [[ ${curp} -lt ${ERRP} ]]
+      then
+        RETS=1
+      elif [[ ${curp} -gt ${ERRP} ]]
+      then
+        RETS=2
+      fi
+    fi
+
+    MSGSTR+="$(df -kh|grep -Ew ${p})\n"
+  done
+
+  MSGSTR="$(df -kh|grep Filesystem)\n${MSGSTR}"
+
+}
+
+memUsage() {
+
+  memusg=$(sudo monit status $(hostname)|grep -E 'memory'|sed 's/^ \{1,\}//')
+  curmem=$(echo "${memusg}"| \
+           awk '{print $NF}'| \
+           sed -e 's/\[//' -e 's/\]//' -e 's/%//'| \
+           awk -F "." '{print $1}')
+
+  if [[ ${curmem} -gt ${WARNM} ]] && [[ ${curmem} -lt ${ERRM} ]]
+  then
+    RETS=1
+  elif [[ ${curmem} -gt ${ERRM} ]]
+  then
+    RETS=2
+  fi
+
+  MSGSTR="${MSGSTR}\n${memusg}\n\n$(free -h)"
+
+}
+
+cpuLoad() {
+
+  loadavg=$(sudo monit status $(hostname)|grep load|sed 's/^ \{1,\}//')
+  loadavg1=$(echo ${loadavg}|sed 's/^ *load average *//'|awk '{print $1}'|sed 's/[][]//g'|awk -F"." '{print $1}')
+  loadavg5=$(echo ${loadavg}|sed 's/^ *load average *//'|awk '{print $2}'|sed 's/[][]//g'|awk -F"." '{print $1}')
+  loadavg10=$(echo ${loadavg}|sed 's/^ *load average *//'|awk '{print $3}'|sed 's/[][]//g'|awk -F"." '{print $1}')
+  np=$(nproc)
+
+  if [[ ${loadavg1} -gt ${np} ]] || [[ ${loadavg5} -gt ${np} ]]
+  then
+    RETS=1
+  fi
+
+  if [[ ${loadavg10} -gt ${np} ]]
+  then
+    RETS=2
+  fi
+
+  # Reference: https://stackoverflow.com/questions/9229333/how-to-get-overall-cpu-usage-e-g-57-on-linux
+  cpuper=$(top -b -n2 -p 1|fgrep "Cpu(s)"|tail -1)
+  cpusage=$(echo ${cpuper}|awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ",");v=vs[length(vs)];sub("%", "", v); printf "%s%.1f%%\n", prefix, 100 - v }'|awk -F"." '{print $1}')
+
+  if [[ ${cpusage} -gt ${WARNC} ]] && [[ ${cpusage} -lt ${ERRC} ]]
+  then
+    RETS=1
+  elif [[ ${cpusage} -gt ${ERRC} ]]
+  then
+    RETS=2
+  fi
+
+  MSGSTR="${MSGSTR}\n\n${loadavg}\n\n${cpuper}"
+
+}
+
+main() {
+
+  diskUsage
+  memUsage
+  cpuLoad
+  echo -ne "${MSGSTR}"
+  exit ${RETS}
+
+}
+
+main

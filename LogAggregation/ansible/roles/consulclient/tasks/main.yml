@@ -1,0 +1,4 @@
+---
+- include: client.yml
+- include: monit.yml
+- include: elsmdkl.yml

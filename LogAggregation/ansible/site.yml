@@ -1,7 +1,0 @@
----
-- include: prereq.yml
-- include: els.yml
-- include: logstash.yml
-- include: kibana.yml
-- include: runtime.yml
-- include: output.yml

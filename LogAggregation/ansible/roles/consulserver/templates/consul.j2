@@ -1,0 +1,4 @@
+check process consul with pidfile /var/run/consul.pid
+  start program = "/usr/bin/systemctl start consul"
+  stop program = "/usr/bin/systemctl stop consul"
+  if 5 restarts within 5 cycles then timeout

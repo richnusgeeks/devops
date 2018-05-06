@@ -1,0 +1,7 @@
+---
+- name: reload services
+  shell: systemctl daemon-reload
+
+- name: restart template service
+  service: name=template
+           state=restarted

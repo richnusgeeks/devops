@@ -1,0 +1,10 @@
+{
+  "check": {
+    "id": "systemChecks",
+    "notes": "Disk Warn >{{dsk_wmkl}}% Critical >{{dsk_wmkh}}%, Memory Warn >{{mem_wmkl}}% Critical >{{mem_wmkh}}%, Load Warn 1m/5m >{{ansible_processor_vcpus}} Critical 15m >{{ansible_processor_vcpus}}, CPU Warn >{{cpu_wmkl}}% Critical >{{cpu_wmkh}}%",
+    "name": "System Checks",
+    "script": "/opt/syschks.sh",
+    "interval": "10s",
+    "timeout": "10s"
+  }
+}

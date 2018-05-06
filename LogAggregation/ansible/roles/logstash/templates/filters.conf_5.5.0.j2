@@ -1,0 +1,32 @@
+input {
+  beats {
+    port => {{beats_port}}
+  }
+
+  tcp {
+    port => {{logstash_port}}
+    codec => json
+  }
+}
+
+filter {
+  if [type] in ["fim", "ioc", "certview", "upgrade-utility", "alerting","other"] {
+    mutate {
+        convert => { "code" => "integer" }
+    }
+  }
+}
+
+output {
+
+  if [type] in ["fim", "ioc", "certview", "upgrade-utility", "alerting","other"] {
+    elasticsearch {
+      hosts => ["{{groups['elsmops']|join(':ELSM_PORT,')|replace(',','","')}}:ELSM_PORT"]
+      index => "%{type}-microservices-%{+YYYY.MM.dd}"
+    }
+  } else {
+      elasticsearch {
+        hosts => ["{{groups['elsmops']|join(':ELSM_PORT,')|replace(',','","')}}:ELSM_PORT"]
+    }
+  }
+}

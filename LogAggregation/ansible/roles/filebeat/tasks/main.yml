@@ -1,0 +1,25 @@
+---
+- name: install filebeat package
+  yum: name="{{package_filebeat}}"
+       update_cache={{update_cache}}
+       state=present
+
+- name: render filebeat config
+  template: src="filebeat.yml_{{version_filebeat}}.j2"
+            dest=/etc/filebeat/filebeat.yml
+            owner=root
+            group=root
+  notify:
+    - restart filebeat
+
+- name: port substitution in filebeat config
+  replace: dest=/etc/filebeat/filebeat.yml
+           regexp='BEATS_PORT'
+           replace="{{beats_port}}"
+  notify:
+    - restart filebeat
+
+- name: start and enable filebeat service
+  service: name=filebeat
+           state=started
+           enabled=true

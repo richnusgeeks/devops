@@ -1,0 +1,12 @@
+[Unit]
+Description=consul agent
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{bindir_consul}}/consul agent -config-dir=/etc/consul.d -pid-file=/var/run/client.pid
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

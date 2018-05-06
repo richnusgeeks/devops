@@ -1,0 +1,68 @@
+{
+  "checks": [
+  {
+    "id": "esStatus",
+    "notes": "ES Status: Warning == yellow , Critical == red",
+    "name": "ES Status",
+    "script": "{{bindir_consul}}/elkscanapi.sh -s",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esDataNodes",
+    "notes": "ES Data Nodes: Warning < {{esdnds_min}} , Critical < {{esdnds_min-1}}",
+    "name": "ES Data Nodes",
+    "script": "{{bindir_consul}}/elkscanapi.sh -n",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esPendingTasks",
+    "notes": "ES Pending Tasks: Warning > 0  , Critical > {{espts_max}}",
+    "name": "ES Pending Tasks",
+    "script": "{{bindir_consul}}/elkscanapi.sh -p",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esUnasgndShards",
+    "notes": "ES Unassigned Shards: Warning > 0 , Critical > {{esuas_max}}",
+    "name": "ES Unassigned Shards",
+    "script": "{{bindir_consul}}/elkscanapi.sh -u",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esVersionCheck",
+    "notes": "ES Version: Critical != v{{version_elasticsearch}}",
+    "name": "ES Version",
+    "script": "{{bindir_consul}}/elkscanapi.sh -e",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esjreVersionCheck",
+    "notes": "ES JRE Version: Critical != v{{version_serverjre}}",
+    "name": "ES JRE Version",
+    "script": "{{bindir_consul}}/elkscanapi.sh -j",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esJVMHeap",
+    "notes": "ES JVM Heap: Warning > {{esjhp_wmkl}}% , Critical > {{esjhp_wmkh}}%",
+    "name": "ES JVM Heap",
+    "script": "{{bindir_consul}}/elkscanapi.sh -h",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "esFileDescriptors",
+    "notes": "ES File Descriptors: Warning > {{esfds_wmkl}}% , Critical > {{esfds_wmkh}}%",
+    "name": "ES File Descriptors",
+    "script": "{{bindir_consul}}/elkscanapi.sh -f",
+    "interval": "10s",
+    "timeout": "10s"
+  }
+  ]
+}

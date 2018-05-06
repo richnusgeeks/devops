@@ -1,0 +1,10 @@
+---
+- name: reload services
+  shell: systemctl daemon-reload
+
+- name: restart template service
+  service: name=template
+           state=restarted
+
+- name: reload monit configs
+  shell: /usr/bin/monit reload

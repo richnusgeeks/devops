@@ -1,17 +1,22 @@
 ---
-- name: add logstash repo
-  yum_repository: name=logstash
-                  description="Logstash repository for {{version_logstash}} packages"
-                  baseurl="https://artifacts.elastic.co/packages/5.x/yum"
-                  gpgkey="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
-                  gpgcheck=yes
-                  enabled=yes
-                  state=present
-
 - name: install logstash package
   yum: name="{{package_logstash}}"
-       update_cache=yes
        state=present
+       update_cache={{update_cache}}
+
+- name: get xpack archive
+  yum: name="{{package_xpack}}"
+       state=present
+       update_cache={{update_cache}}
+  when: apply_xpack
+
+- name: gather current plugins list
+  command: /usr/share/logstash/bin/logstash-plugin list
+  register: lstplgns
+
+- name: install xpack on logstash node
+  command: /usr/share/logstash/bin/logstash-plugin install "file:///opt/{{package_xpack}}-{{version_xpack}}.zip"
+  when: apply_xpack and "x-pack" not in lstplgns.stdout_lines
 
 - name: render logstash config
   template: src="logstash.yml_{{version_logstash}}.j2"
@@ -26,8 +31,19 @@
             dest=/etc/logstash/conf.d/filters.conf
             owner=root
             group=logstash
+
+- name: port substitution in filter config
+  replace: dest=/etc/logstash/conf.d/filters.conf
+           regexp='ELSM_PORT'
+           replace="{{http_port}}"
   notify:
     - restart logstash
+
+- name: ensure proper permissions for data mount
+  file: path="{{path_data}}"
+        owner="logstash"
+        group="logstash"
+        recurse=yes
 
 - name: start and enable logstash service
   service: name=logstash

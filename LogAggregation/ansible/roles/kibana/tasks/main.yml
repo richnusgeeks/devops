@@ -1,17 +1,22 @@
 ---
-- name: add kibana repo
-  yum_repository: name=kibana
-                  description="Kibana repository for {{version_kibana}} packages"
-                  baseurl="https://artifacts.elastic.co/packages/5.x/yum"
-                  gpgkey="https://artifacts.elastic.co/GPG-KEY-elasticsearch"
-                  gpgcheck=yes
-                  enabled=yes
-                  state=present
-
 - name: install kibana package
   yum: name="{{package_kibana}}"
-       update_cache=yes
        state=present
+       update_cache={{update_cache}}
+
+- name: get xpack archive
+  yum: name="{{package_xpack}}"
+       state=present
+       update_cache={{update_cache}}
+  when: apply_xpack
+
+- name: gather current plugins list
+  command: /usr/share/kibana/bin/kibana-plugin list
+  register: lstplgns
+
+- name: install xpack on kibana node
+  command: /usr/share/kibana/bin/kibana-plugin install "file:///opt/{{package_xpack}}-{{version_xpack}}.zip"
+  when: apply_xpack and "x-pack@{{version_kibana}}" not in lstplgns.stdout_lines
 
 - name: render kibana config
   template: src="kibana.yml_{{version_kibana}}.j2"
@@ -22,6 +27,31 @@
     - restart kibana
 
 - name: start and enable kibana service
-  service: name=kibana
+  systemd: name=kibana
            state=started
+           daemon_reload=yes
            enabled=true
+
+- name: poll for the http api to get ready
+  wait_for: port="{{http_port}}"
+            delay=10
+            connect_timeout=300
+
+#- name: upload xpack monitoring license
+#  copy: src="{{package_xpack}}-{{version_xpack}}-license.json"
+#        dest=/tmp
+#  when: apply_xpack
+
+- name: apply xpack monitoring license
+  uri:  url="http://localhost:{{http_port}}/_xpack/license?acknowledge=true"
+        method=PUT
+        user=elastic
+        body="{{lookup('file',"{{package_xpack}}-{{version_xpack}}-license.json")}}"
+        body_format=json
+  when: apply_xpack
+  run_once: true
+
+#- name: cleanup xpack monitoring license
+#  file: path="/opt/{{package_xpack}}-{{version_xpack}}-license.json"
+#        state=absent
+#  when: apply_xpack

@@ -1,0 +1,14 @@
+filebeat.modules:
+- module: system
+  syslog:
+    enabled: true
+
+filebeat.prospectors:
+- input_type: log
+  paths:
+    - /var/log/*.log
+    - /data/log/*.log
+
+output.logstash:
+  hosts: ["{{groups['logstash']|join(':BEATS_PORT,')|replace(',','","')}}:BEATS_PORT"]
+  loadbalance: true

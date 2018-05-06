@@ -1,0 +1,51 @@
+---
+- name: stat consul presence
+  stat: path="{{bindir_consul}}/consul"
+  register: consulstat
+
+- name: install elasticsearch curator
+  yum: name="{{package_curator}}"
+       state=present
+       update_cache={{update_cache}}
+  when: consulstat.stat.exists is defined and consulstat.stat.exists
+
+- name: install elasticsearch curator once
+  yum: name="{{package_curator}}"
+       state=present
+       update_cache={{update_cache}}
+  when: consulstat.stat.exists is defined and not consulstat.stat.exists
+  run_once: true
+
+- name: render curator configs
+  template: src="{{item.key}}_{{item.value}}.j2"
+            dest="{{cnfgdir_curator}}/{{item.key}}"
+            owner=root
+            group=root
+  with_dict: "{{curator_configs}}"
+  when: consulstat.stat.exists is defined and consulstat.stat.exists
+
+- name: render curator configs once
+  template: src="{{item.key}}_{{item.value}}.j2"
+            dest="{{cnfgdir_curator}}/{{item.key}}"
+            owner=root
+            group=root
+  with_dict: "{{curator_configs}}"
+  when: consulstat.stat.exists is defined and not consulstat.stat.exists
+  run_once: true
+
+- name: render curator cron config
+  template: src="{{script_crondaily}}.j2"
+            dest="{{dir_crondaily}}/curator"
+            owner=root
+            group=root
+            mode=0700
+  when: consulstat.stat.exists is defined and consulstat.stat.exists
+
+- name: render curator cron config once
+  template: src="{{script_crondaily}}.j2"
+            dest="{{dir_crondaily}}/curator"
+            owner=root
+            group=root
+            mode=0700
+  when: consulstat.stat.exists is defined and not consulstat.stat.exists
+  run_once: true

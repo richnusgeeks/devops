@@ -1,0 +1,22 @@
+---
+- name: upload template binary
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{bindir_consul}}/{{item.key}}"
+        owner="root"
+        group="consul"
+        mode=0750
+  with_dict: "{{template_binary}}"
+
+- name: render template systemd unit
+  template: src="{{template_service}}.service.j2"
+            dest="/etc/systemd/system/{{template_service}}.service"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart template service
+
+- name: start and enable template service
+  service: name="{{template_service}}"
+           state=started
+           enabled=true

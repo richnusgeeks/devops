@@ -1,0 +1,41 @@
+---
+- name: create necessary directories
+  file: path="{{template_cnfgdir}}"
+        state=directory
+        owner=root
+        group=root
+        mode=0750
+
+- name: upload template binary
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{bindir_consul}}/{{item.key}}"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+  with_dict: "{{template_binary}}"
+  when: consul_group == "consul"
+
+- name: render template config file
+  template: src="template.hcl.j2"
+            dest="{{template_cnfgdir}}/template.hcl"
+            owner=root
+            group=root
+            mode=0700
+  notify:
+    - restart template service
+
+- include: elsmdkl.yml
+
+- name: render template systemd unit
+  template: src="{{template_service}}.service.j2"
+            dest="/etc/systemd/system/{{template_service}}.service"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart template service
+
+- name: start and enable template service
+  service: name="{{template_service}}"
+           state=started
+           enabled=true

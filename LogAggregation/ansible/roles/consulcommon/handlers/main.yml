@@ -1,0 +1,5 @@
+- name: reload monit configs
+  shell: /usr/bin/monit reload
+
+- name: reload consul configs
+  shell: "{{bindir_consul}}/consul reload -http-addr=http://127.0.0.1:{{consul_port_http}}"

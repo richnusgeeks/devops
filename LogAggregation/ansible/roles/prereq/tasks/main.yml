@@ -1,6 +1,6 @@
 ---
 - name: verify the required os family
-  fail: msg="ansible_os_family={{ ansible_os_family }} != rqrd_os_family={{ rqrd_os_family }}"
+  fail: msg="ansible_os_family={{ ansible_os_family|lower }} != rqrd_os_family={{ rqrd_os_family }}"
   when: ansible_os_family|lower != rqrd_os_family
 
 - name: verify the required os distribution and major version
@@ -10,11 +10,20 @@
 
 - name: verify the minimum cpu cores
   fail: msg="ansible_processor_vcpus={{ansible_processor_vcpus}} < min_cpu_cores={{min_cpu_cores}}"
-  when: ansible_processor_vcpus < min_cpu_cores
+  when: ansible_processor_vcpus|int < min_cpu_cores|int
 
 - name: verify the minimum memory
   fail: msg="ansible_memtotal_mb={{ansible_memtotal_mb}} < min_ram_mb={{min_ram_mb}}"
-  when: ansible_memtotal_mb < min_ram_mb
+  when: ansible_memtotal_mb|int < min_ram_mb|int
+
+- name: stat the data volume
+  stat: path="{{ path_data }}"
+  register: path
+
+- name: verify the presence of data volume
+  fail: msg="required volume {{ path_data }} not found"
+  when: path.stat.isdir is not defined and not path.stat.isdir
 
 - name: dump the mb ram for the els heap
   debug: msg="total ram={{ansible_memory_mb.real.total}}mb els heap={{ansible_memory_mb.real.total/2}}mb"
+  when: ansible_hostname | search("^els[md]")

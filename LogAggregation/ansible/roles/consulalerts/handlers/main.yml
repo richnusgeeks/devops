@@ -1,0 +1,7 @@
+---
+- name: reload services
+  shell: systemctl daemon-reload
+
+- name: restart alerts service
+  service: name=alerts
+           state=restarted

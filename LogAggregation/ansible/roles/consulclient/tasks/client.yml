@@ -1,0 +1,34 @@
+---
+- name: extract gossip encryption key
+  shell: grep encrypt /etc/consul.d/consul.json|awk -F'"' '{print $4}'
+  delegate_to: "{{groups['elsmops'][0]}}"
+  register: gosenckey
+
+- name: create consul client datadir
+  file: path="{{datadir_consul_client}}"
+        state="directory"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+
+- name: render consul client configuration
+  template: src="{{client_service}}.json.j2"
+            dest="/etc/consul.d/{{client_service}}.json"
+            owner=root
+            group="{{consul_group}}"
+  notify:
+    - restart consul client
+
+- name: render consul client systemd unit
+  template: src="{{client_service}}.service.j2"
+            dest="/etc/systemd/system/{{client_service}}.service"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart consul client
+
+- name: start and enable consul client service
+  service: name="{{client_service}}"
+           state=started
+           enabled=true

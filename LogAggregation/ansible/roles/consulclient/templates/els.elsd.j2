@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "elasticsearch data",
+    "tags": ["elsd"],
+    "address": "",
+    "port": {{tcp_port}},
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "script": "{{bindir_consul}}/elkscan.sh",
+        "interval": "10s"
+      }
+    ]
+  }
+}

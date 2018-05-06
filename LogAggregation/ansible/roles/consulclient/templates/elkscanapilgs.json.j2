@@ -1,0 +1,20 @@
+{
+  "checks": [
+  {
+    "id": "lgsVersionCheck",
+    "notes": "Logstash Version: Critical != v{{version_logstash}}",
+    "name": "Logstash Version",
+    "script": "/opt/consul/elkscanapi.sh -g",
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "lgsJVMHeap",
+    "notes": "Logstash JVM Heap: Warning > {{lsjhp_wmkl}}% , Critical > {{lsjhp_wmkh}}%",
+    "name": "Logstash JVM Heap",
+    "script": "/opt/consul/elkscanapi.sh -l",
+    "interval": "10s",
+    "timeout": "10s"
+  }
+  ]
+}

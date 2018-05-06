@@ -1,0 +1,42 @@
+---
+# Remember, leave a key empty if there is no value.  None will be a string,
+# not a Python "NoneType"
+actions:
+  1:
+    action: delete_indices
+    description: >-
+      Delete indices older than {{days_data_retention}} days (based on index name), for
+      regex'ed indices. Ignore the error if the filter does not result in an
+      actionable list of indices (ignore_empty_list) and exit cleanly.
+    options:
+      ignore_empty_list: True
+      disable_action: False
+    filters:
+    - filtertype: pattern
+      kind: regex
+      value: '^[^.]*-'
+    - filtertype: age
+      source: name
+      direction: older
+      timestring: '%Y.%m.%d'
+      unit: days
+      unit_count: {{days_data_retention}}
+  2:
+    action: delete_indices
+    description: >-
+      Delete kpi indices older than {{days_kpidata_retention}} days (based on index name), for
+      regex'ed indices. Ignore the error if the filter does not result in an
+      actionable list of indices (ignore_empty_list) and exit cleanly.
+    options:
+      ignore_empty_list: True
+      disable_action: False
+    filters:
+    - filtertype: pattern
+      kind: regex
+      value: '^kpi-'
+    - filtertype: age
+      source: name
+      direction: older
+      timestring: '%Y.%m.%d'
+      unit: days
+      unit_count: {{days_kpidata_retention}}

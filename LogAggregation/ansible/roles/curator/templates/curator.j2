@@ -1,0 +1,8 @@
+#! /bin/sh
+
+{% if consulstat.stat.exists is defined and consulstat.stat.exists %}
+consul lock -timeout=30m services/curator/lock \
+  'curator --config /opt/elasticsearch-curator/curator.yml /opt/elasticsearch-curator/action.yml'
+{% else %}
+curator --config /opt/elasticsearch-curator/curator.yml /opt/elasticsearch-curator/action.yml
+{% endif %}

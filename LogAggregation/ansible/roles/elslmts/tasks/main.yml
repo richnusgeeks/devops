@@ -1,0 +1,14 @@
+---
+- name: create elasticsearch limits config dir
+  file: path="{{path_elsys_limits}}"
+        owner=root
+        group=root
+        state=directory
+
+- name: render elasticsearch limits config
+  template: src="{{conf_elsys_limits}}.j2"
+            dest="{{path_elsys_limits}}/{{conf_elsys_limits|replace('.js', '')}}"
+            owner=root
+            group=root
+  notify:
+    - restart elasticsearch with daemon reload

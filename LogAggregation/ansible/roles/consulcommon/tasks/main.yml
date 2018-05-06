@@ -1,0 +1,90 @@
+---
+- name: ensure libselinux-python is installed
+  raw: yum install -y libselinux-python
+
+- name: add richnusgeeks elk repo
+  yum_repository: name=elk
+                  description="richnusgeeks ELK repository"
+                  baseurl="{{base_url}}"
+                  gpgcheck=no
+                  enabled=yes
+                  state=present
+
+- name: create dedicated consul user
+  user: name="{{consul_group}}"
+        shell="/sbin/nologin"
+        home="/srv/consul"
+  when: consul_group == "consul"
+
+- name: ensure correct user for consul
+  file: path="/srv/consul"
+        owner="{{consul_group}}"
+        mode=0750
+  when: consul_group == "consul"
+
+- name: create necessary directories
+  file: path="{{item}}"
+        state="directory"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+  with_items: "{{dirs_consul}}"
+
+- name: upload consul binaries
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{bindir_consul}}/{{item.key}}"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+  with_dict: "{{consul_binaries}}"
+  when: consul_group == "consul"
+
+- name: install elkconsul
+  yum: name="{{package_elkconsul}}"
+       state=present
+       update_cache={{update_cache}}
+  when: consul_group != "consul"
+
+- name: render system checks scripts
+  template: src="{{item.value}}.j2"
+            dest="{{bindir_consul}}/{{item.value}}"
+            owner="root"
+            group="{{consul_group}}"
+            mode=0750
+  with_dict: "{{system_checks}}"
+  when: item.value != ""
+
+- name: render system checks templates
+  template: src="{{item.key}}.j2"
+            dest="/etc/consul.d/{{item.key}}"
+            owner="root"
+            group="{{consul_group}}"
+  with_dict: "{{system_checks}}"
+  notify:
+    - reload consul configs
+  when: item.value != ""
+
+- name: add epel repo
+  yum_repository: name=epel
+                  description="Extra Packages for Enterprise Linux 7 - $basearch"
+                  baseurl="http://download.fedoraproject.org/pub/epel/7/$basearch"
+                  metalink="https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch"
+                  failovermethod=priority
+                  enabled=yes
+                  gpgcheck=no
+                  gpgkey="file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+  when: ansible_virtualization_type == "virtualbox"
+
+- name: install monit
+  yum: name="{{package_monit}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: render monit control file
+  template: src="{{monit_ctlfl}}.j2"
+            dest="/etc/{{monit_ctlfl}}"
+            owner=root
+            group=root
+            mode=0600
+  notify:
+    - reload monit configs

@@ -1,0 +1,18 @@
+[all:vars]
+ansible_ssh_user=vagrant
+
+[elsmops]
+192.168.50.3 ansible_ssh_private_key_file=../tests/.vagrant/machines/master01/virtualbox/private_key
+#192.168.50.4 ansible_ssh_private_key_file=../tests/.vagrant/machines/elsmops02/virtualbox/private_key
+
+[elsdops]
+192.168.50.13 ansible_ssh_private_key_file=../tests/.vagrant/machines/data01/virtualbox/private_key
+#192.168.50.14 ansible_ssh_private_key_file=../tests/.vagrant/machines/elsdops02/virtualbox/private_key
+
+[logstash]
+192.168.50.23 ansible_ssh_private_key_file=../tests/.vagrant/machines/klsops01/virtualbox/private_key
+#192.168.50.24 ansible_ssh_private_key_file=../tests/.vagrant/machines/klsops02/virtualbox/private_key
+
+[kibana]
+192.168.50.23 ansible_ssh_private_key_file=../tests/.vagrant/machines/klsops01/virtualbox/private_key
+#192.168.50.24 ansible_ssh_private_key_file=../tests/.vagrant/machines/klsops02/virtualbox/private_key

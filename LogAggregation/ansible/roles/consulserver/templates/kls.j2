@@ -1,0 +1,38 @@
+check process logstash matching logstash
+  start program = "/usr/bin/systemctl start logstash"
+  stop program = "/usr/bin/systemctl stop logstash"
+{% if 'eth1' in ansible_interfaces %}
+  if failed host {{ansible_eth1.ipv4.address}} port {{logstash_port}} then restart
+  if failed host {{ansible_eth1.ipv4.address}} port {{beats_port}} then restart
+{% else %}
+  if failed host {{ansible_eth0.ipv4.address}} port {{logstash_port}} then restart
+  if failed host {{ansible_eth0.ipv4.address}} port {{beats_port}} then restart
+{% endif %}
+  if 5 restarts within 5 cycles then timeout
+
+check process elasticsearch with pidfile /var/run/elasticsearch/elasticsearch.pid
+  start program = "/usr/bin/systemctl start elasticsearch"
+  stop program = "/usr/bin/systemctl stop elasticsearch"
+  if failed host localhost port {{http_port}} then restart
+{% if 'eth1' in ansible_interfaces %}
+  if failed host {{ansible_eth1.ipv4.address}} port {{tcp_port}} then restart
+{% else %}
+  if failed host {{ansible_eth0.ipv4.address}} port {{tcp_port}} then restart
+{% endif %}
+  if 5 restarts within 5 cycles then timeout
+
+check process nginx with pidfile /run/nginx.pid
+  start program = "/usr/bin/systemctl start nginx"
+  stop program = "/usr/bin/systemctl stop nginx"
+{% if 'eth1' in ansible_interfaces %}
+  if failed host {{ansible_eth1.ipv4.address}} port {{kibana_port}} then restart
+{% else %}
+  if failed host {{ansible_eth0.ipv4.address}} port {{kibana_port}} then restart
+{% endif %}
+  if 5 restarts within 5 cycles then timeout
+
+check process kibana matching kibana
+  start program = "/usr/bin/systemctl start kibana"
+  stop program = "/usr/bin/systemctl stop kibana"
+  if failed host localhost port {{kibana_port}} then restart
+  if 5 restarts within 5 cycles then timeout

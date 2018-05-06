@@ -1,0 +1,50 @@
+numElsm = 1
+numElsd = 1
+numKls = 1
+hstptrn_esmstr = "master"
+hstptrn_esdata = "data"
+hstptrn_kiblgs = "klsops"
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box_check_update = true
+  config.vm.box = "centos/7"
+  config.vm.provision "shell",
+    inline: "sudo mkdir /data || true"
+
+  (1..numElsm).each do |i|
+    config.vm.define "#{hstptrn_esmstr}#{format('%02d', i)}" do |elsm|
+      elsm.vm.hostname = "#{hstptrn_esmstr}#{format('%02d', i)}"
+      elsm.vm.network "private_network", ip: "192.168.50.#{i+2}"
+      config.vm.provider "virtualbox" do |vb|
+        vb.memory = "2048"
+        vb.cpus   = "1"
+      end
+    end
+  end
+
+  (1..numElsd).each do |i|
+    config.vm.define "#{hstptrn_esdata}#{format('%02d', i)}" do |elsd|
+      elsd.vm.hostname = "#{hstptrn_esdata}#{format('%02d', i)}"
+      elsd.vm.network "private_network", ip: "192.168.50.#{i+12}"
+      config.vm.provider "virtualbox" do |vb|
+        vb.memory = "2048"
+        vb.cpus   = "1"
+      end
+    end
+  end
+
+  (1..numKls).each do |i|
+    config.vm.define "#{hstptrn_kiblgs}#{format('%02d', i)}" do |kls|
+      kls.vm.hostname = "#{hstptrn_kiblgs}#{format('%02d', i)}"
+      kls.vm.network "private_network", ip: "192.168.50.#{i+22}"
+      config.vm.provider "virtualbox" do |vb|
+        vb.memory = "4096"
+        vb.cpus   = "2"
+      end
+    end
+  end
+
+end
+
+#for r in $(ls roles); do ls -lhrt roles/$r/templates/* 2>&1|grep -v 'No such'|awk '{print $NF}'|xargs -I % echo "mv % %"|sed 's/5.5/5.5.0/2'; done

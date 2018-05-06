@@ -1,0 +1,9 @@
+check process elasticsearch with pidfile /var/run/elasticsearch/elasticsearch.pid
+  start program = "/usr/bin/systemctl start elasticsearch"
+  stop program = "/usr/bin/systemctl stop elasticsearch"
+{% if 'eth1' in ansible_interfaces %}
+  if failed host {{ansible_eth1.ipv4.address}} port {{tcp_port}} then restart
+{% else %}
+  if failed host {{ansible_eth0.ipv4.address}} port {{tcp_port}} then restart
+{% endif %}
+  if 5 restarts within 5 cycles then timeout

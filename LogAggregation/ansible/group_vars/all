@@ -1,15 +1,148 @@
 ---
 min_cpu_cores: 2
 min_ram_mb: 4096
-rqrd_os_family: "redhat"
 rqrd_distribution: "centos"
 rqrd_major_version: 7
+rqrd_os_family: "redhat"
+hstptrn_esmstr: elsm
+hstptrn_esdata: elsd
+hstptrn_kiblgs: kls
 
-version_openjdk: 1.8.0
-package_openjdk: "java-{{version_openjdk}}-openjdk"
-version_elasticsearch: 5.4
+base_url: "http://packages/richnusgeeks/elk/"
+common_url: "{{base_url|replace('elk','common')}}"
+gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OPS"
+update_cache: no
+version_serverjre: "1.8.0_152"
+package_serverjre: "server-jre-{{version_serverjre}}"
+package_monit: "monit"
+max_heap_mb: 30720
+
+path_elsys_limits: /etc/systemd/system/elasticsearch.service.d
+vals_elsys_limits: {
+  "LimitNOFILE": "102400",
+}
+conf_elsys_limits: elasticsearch.conf
+cluster_name: "elsops.elk"
+tcp_port: 9300
+http_port: 9200
+beats_port: 10200
+kibana_port: 5601
+kibana_esreq_timeout: 60000
+nginx_base_url: "http://nginx.org/packages/centos/7/$basearch/"
+package_nginx: "nginx"
+logstash_port: 54001
+logstash_http_port: 9600
+path_data: "/data"
+path_logs: "{{path_data}}/log"
+
 package_elasticsearch: elasticsearch
-version_logstash: "{{version_elasticsearch}}"
-package_logstash: logstash
-version_kibana: "{{version_elasticsearch}}"
+version_elasticsearch: 5.5.0
+package_curator: elasticsearch-curator
+version_curator: 5.1.1
+curator_configs: {
+  "action.yml": "{{version_curator}}",
+  "curator.yml": "{{version_curator}}",
+}
+days_data_retention: 7
+days_kpidata_retention: 1
+cnfgdir_curator: "/opt/elasticsearch-curator"
+dir_crondaily: "/etc/cron.daily"
+script_crondaily: curator
+package_filebeat: filebeat
+version_filebeat: 5.5.0
 package_kibana: kibana
+version_kibana: 5.5.0
+package_logstash: logstash
+version_logstash: 5.5.0
+package_elasticsearch_curator: elasticsearch-curator
+version_elasticsearch_curator: 5.1.1
+package_xpack: x-pack
+version_xpack: 5.5.0
+apply_xpack: false
+
+consul_group: root
+version_elkconsul: "1.0.0"
+package_elkconsul: "elkconsul-{{version_elkconsul}}"
+dirs_consul: [
+  "/opt/consul",
+  "/etc/consul.d",
+]
+consul_version: "1.0.2"
+consul_binaries: {
+  "consul": "{{consul_version}}",
+}
+alerts_binary: {
+  "consul-alerts": "0.5.0"
+}
+system_checks: {
+  "syschecks.json": "syschecks.sh",
+}
+elkscan_checks: {
+  "elkscan.json": "elkscan.sh",
+}
+elkscanapi_checks: {
+  "elkscanapi.json": "elkscanapi.sh",
+}
+elkscanapilgs_checks: {
+  "elkscanapilgs.json": "elkscanapi.sh",
+}
+hashiui_binary: {
+  "hashi-ui": "0.22.0"
+}
+template_binary: {
+  "consul-template": "0.19.4"
+}
+hashiui_port: 443
+hashiui_cert: localhost.crt
+hashiui_key:  localhost.key
+hashiui_certs_loc: /etc/pki/tls/certs
+dsk_wmkl: 80
+dsk_wmkh: 90
+mem_wmkl: 85
+mem_wmkh: 95
+cpu_wmkl: 80
+cpu_wmkh: 90
+esjhp_wmkl: 85
+esjhp_wmkh: 95
+esfds_wmkl: 85
+esfds_wmkh: 95
+lsjhp_wmkl: 85
+lsjhp_wmkh: 95
+esdnds_min: 2
+espts_max: 50
+esuas_max: 50
+esmfds_wmkl: 65000
+esmfds_wmkh: 100000
+els_dprtn: /data
+monit_ctlfl: monitrc
+monit_http_port: 2181
+monit_user: "monit"
+monit_pswrd: "monit"
+consul_datacenter: unittest
+bindir_consul: /opt/consul
+datadir_consul_server: "/var/lib/consul"
+datadir_consul_client: "/var/lib/client"
+consul_port_dns: 8600
+consul_port_http: 8500
+consul_port_serflan: 8301
+consul_port_serfwan: 8302
+consul_port_rpcserver: 8300
+consul_service: "consul"
+client_service: "client"
+alerts_service: "alerts"
+hashiui_service: "hashiui"
+template_cnfgdir: /etc/template.d
+template_service: "template"
+template_curator_kvpair: {
+  "service/elsm/curator/retention_days_all": 7,
+  "service/elsm/curator/retention_days_kpi": 1,
+}
+template_kibana_kvpair: {
+  "service/kibana/elasticsearch.requestTimeout": "{{kibana_esreq_timeout}}",
+}
+template_logstash_kvpair: {
+  "service/logstash/filters.conf": "@/etc/logstash/conf.d/filters.conf",
+}
+apply_elkconsul: false
+
+apply_prometheus: false

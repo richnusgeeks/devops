@@ -1,0 +1,30 @@
+{
+  "services": [
+  {
+    "name": "logstash",
+    "tags": ["logstash"],
+    "address": "",
+    "port": {{logstash_port}},
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "script": "{{bindir_consul}}/elkscan.sh",
+        "interval": "10s"
+      }
+    ]
+  },
+  {
+    "name": "kibana",
+    "tags": ["kibana"],
+    "address": "",
+    "port": {{kibana_port}},
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "script": "{{bindir_consul}}/elkscan.sh",
+        "interval": "10s"
+      }
+    ]
+  }
+  ]
+}

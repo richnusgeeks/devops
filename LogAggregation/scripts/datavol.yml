@@ -1,0 +1,42 @@
+---
+- hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: create volume group
+      lvg: vg=vg_data
+           pvs=/dev/sdb
+           state=present
+
+    - name: create logical volume
+      lvol: vg=vg_data
+           lv=lv_data
+           size="100%FREE"
+           pvs="/dev/sdb"
+           state=present
+
+    - name: create xfs filesystem
+      filesystem: fstype=xfs
+                  dev="/dev/vg_data/lv_data"
+
+    - name: create data directory
+      file: path="/data"
+            state=directory
+
+    - name: install libselinux-python
+      yum: name=libselinux-python
+           update_cache=yes
+           state=present
+
+    - name: append fstab entry
+      lineinfile: name="/etc/fstab"
+                  line="/dev/vg_data/lv_data /data xfs defaults 0 0"
+                  regexp="^ */dev/vg_data/lv_data"
+                  state=present
+
+    - name: mount data volume
+      command: mount -a      
+
+    - name: dump mounted volumes
+      command: df -kh

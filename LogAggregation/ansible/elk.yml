@@ -1,0 +1,46 @@
+---
+- hosts: all
+  roles:
+    - prereq
+  tags: prereq
+
+- hosts: elsmops
+  become: yes
+  roles:
+    - { role: consulserver, when: apply_elkconsul }
+    - { role: consulalerts, when: apply_elkconsul }
+    - { role: consulhashiui, when: apply_elkconsul }
+#    - { role: consultemplate, when: apply_elkconsul }
+    - elsm
+    - elslmts
+    - curator
+    - filebeat
+  tags: elsm
+
+- hosts: elsdops
+  become: yes
+  roles:
+    - { role: consulclient, when: apply_elkconsul }
+    - elsd
+    - elslmts
+    - filebeat
+  tags: elsd
+
+- hosts: logstash
+  become: yes
+  roles:
+    - { role: consulclient, when: apply_elkconsul }
+    - logstash
+#    - { role: consultemplate, when: apply_elkconsul }
+    - filebeat
+  tags: logstash
+
+- hosts: kibana
+  become: yes
+  roles:
+    - { role: consulclient, when: apply_elkconsul }
+    - kibana
+#    - { role: consultemplate, when: apply_elkconsul }
+    - authproxy
+    - filebeat
+  tags: kibana

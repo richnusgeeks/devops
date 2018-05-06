@@ -1,0 +1,13 @@
+---
+- name: reload services
+  shell: systemctl daemon-reload
+
+- name: restart consul client
+  service: name=client
+           state=restarted
+
+- name: reload consul configs
+  shell: "{{bindir_consul}}/consul reload -http-addr=http://127.0.0.1:{{consul_port_http}}"
+
+- name: reload monit configs
+  shell: /usr/bin/monit reload

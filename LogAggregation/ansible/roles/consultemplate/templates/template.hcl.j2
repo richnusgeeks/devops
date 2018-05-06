@@ -1,0 +1,80 @@
+consul {
+  address = "127.0.0.1:{{consul_port_http}}"
+
+  retry {
+    enabled = true
+    attempts = 12
+    backoff = "250ms"
+    max_backoff = "1m"
+  }
+}
+
+reload_signal = "SIGHUP"
+kill_signal = "SIGINT"
+max_stale = "10m"
+log_level = "debug"
+pid_file = "/var/run/template.pid"
+
+wait {
+  min = "5s"
+  max = "10s"
+}
+
+syslog {
+  enabled = true
+  facility = "LOCAL5"
+}
+
+deduplicate {
+  enabled = true
+  prefix = "consul-template/dedup/"
+}
+
+template {
+{% if ansible_hostname|search("^{{hstptrn_esmstr}}") %}
+  source = "/etc/template.d/action.ctmpl"
+  destination = "/opt/elasticsearch-curator/action.yml"
+{% elif ansible_hostname|search("^{{hstptrn_kiblgs}}") %}
+  source = "/etc/template.d/kibana.ctmpl"
+  destination = "/etc/kibana/kibana.yml"
+{% endif %}
+  create_dest_dirs = false
+
+{% if ansible_hostname|search("^{{hstptrn_kiblgs}}") %}
+  command = "chown root:kibana /etc/kibana/kibana.yml;systemctl restart kibana"
+{% endif %}
+  command_timeout = "60s"
+  error_on_missing_key = false
+
+{% if ansible_hostname|search("^{{hstptrn_esmstr}}") %}
+  perms = 0700
+{% elif ansible_hostname|search("^{{hstptrn_kiblgs}}") %}
+  perms = 0640
+{% endif %}
+  backup = true
+  left_delimiter  = "[["
+  right_delimiter = "]]"
+  wait {
+    min = "2s"
+    max = "10s"
+  }
+}
+
+{% if ansible_hostname|search("^{{hstptrn_kiblgs}}") %}
+template {
+  source = "/etc/template.d/filters.ctmpl"
+  destination = "/etc/logstash/conf.d/filters.conf"
+  create_dest_dirs = false
+  command = "chown root:logstash /etc/logstash/conf.d/filters.conf"
+  command_timeout = "60s"
+  error_on_missing_key = false
+  perms = 0640
+  backup = true
+  left_delimiter  = "[["
+  right_delimiter = "]]"
+  wait {
+    min = "2s"
+    max = "10s"
+  }
+}
+{% endif %}

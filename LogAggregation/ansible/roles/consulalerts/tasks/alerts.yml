@@ -1,0 +1,38 @@
+---
+- name: upload alerts binary
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{bindir_consul}}/{{item.key}}"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+  with_dict: "{{alerts_binary}}"
+  when: consul_group == "consul"
+
+- name: render alerts systemd unit
+  template: src="{{alerts_service}}.service.j2"
+            dest="/etc/systemd/system/{{alerts_service}}.service"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart alerts service
+
+- name: start and enable alerts service
+  service: name="{{alerts_service}}"
+           state=started
+           enabled=true
+
+- name: render exported alerts email keys
+  template: src="email-alerts.json.j2"
+            dest="/tmp/email-alerts.json"
+  run_once: true
+
+- name: poll for the consul api to get ready
+  wait_for: port="{{consul_port_http}}"
+            delay=10
+            connect_timeout=300
+  run_once: true
+
+- name: import alerts email keys
+  shell: "{{bindir_consul}}/consul kv import -http-addr=http://127.0.0.1:{{consul_port_http}} @/tmp/email-alerts.json"
+  run_once: true

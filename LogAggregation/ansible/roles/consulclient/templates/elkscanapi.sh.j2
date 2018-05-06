@@ -1,0 +1,466 @@
+#! /usr/bin/env bash
+############################################################################
+# File name : elkscanapi.sh
+# Purpose   : ELK external acceptance testing.
+# Usages    : ./elkscanapi.sh <-s|--status|-n|--datands|-p|--pndgtsk|
+#                              -u|--unasgnd|-v|--elsver|-j|--jrever|
+#                              -h|--elshper|-f|--fledsc|-g|--lgsver|
+#                              -r|--lgsjver|-l|--lgshper>
+#             (make it executable using chmod +x).
+# Start date : 03/05/2018
+# End date   : 03/06/2018
+# Author : Ankur Kumar <richnusgeeks@gmail.com>
+# Download link : http://www.richnusgeeks.com
+# License : richnusgeeks
+# Version : 0.0.1
+# Modification history :
+# Notes : TODO - 1. Eliminate hard coded stuff,
+#                2. Break code in more subroutines,
+############################################################################
+# <start of global section>
+IP=$(which ip)
+WC=$(which wc)
+AWK=$(which awk)
+CAT=$(which cat)
+SED=$(which sed)
+RPM=$(which rpm)
+ECHO=$(which echo)
+GREP=$(which grep)
+CURL=$(which curl)
+SORT=$(which sort)
+BSNME=$(which basename)
+SWTCH="$1"
+NUMARG=$#
+ESMROLE=false
+ESDROLE=false
+KLSROLE=false
+FAILFLAG=false
+WARNFLAG=false
+STATUSF=false
+DATANDSF=false
+PNDGTSKF=false
+UNASGNDF=false
+ELSVERF=false 
+JREVERF=false
+ELSHPERF=false
+FLEDSCF=false
+LGSJVERF=false
+LGSVERF=false
+LGSHPERF=false
+ELSCNFG='/etc/elasticsearch/elasticsearch.yml'
+ESPCKGS='elasticsearch'
+KLSPCKGS='logstash kibana'
+VERJRE='{{version_serverjre}}'
+VERES='{{version_elasticsearch}}'
+VERLGS='{{version_logstash}}'
+ESHPRT='{{http_port}}'
+KLSHPRT='{{logstash_http_port}}'
+MINDNDS={{esdnds_min}}
+PNDGTSKSL={{espts_max}}
+UASGNDSDL={{esuas_max}}
+FLDSCSWR={{esmfds_wmkl}}
+FLDSCSER={{esmfds_wmkh}}
+ESJHPWR={{esjhp_wmkl}}
+ESJHPER={{esjhp_wmkh}}
+ESFDSWR={{esfds_wmkl}}
+ESFDSER={{esfds_wmkh}}
+LSJHPWR={{lsjhp_wmkl}}
+LSJHPER={{lsjhp_wmkh}}
+let ETHI=$("${IP}" address|"${GREP}" eth[0-9]:|"${WC}" -l)-1
+ETHIP=$("${IP}" address show dev "eth${ETHI}"|"${GREP}" -w inet|"${AWK}" '{print $2}'|"${AWK}" -F"/" '{print $1}')
+PRGNME=$("$ECHO" $("$BSNME" "$0") | "$SED" -n 's/\.sh//p')
+# <end of global section>
+
+# <start of helper section>
+preChecks() {
+
+  if [ "${EUID}" -ne 0 ]
+  then
+    "${ECHO}" " Error: This script needs superuser rights"
+  fi
+
+}
+
+prntUsage() {
+
+  "${CAT}" <<EOF
+  Usage: ${PRGNME} <-s|--status|-n|--datands|-p|--pndgtsk|
+                    -u|--unasgnd|-e|--elsver|-j|--jrever|
+                    -h|--elshper|-f|--fledsc|-g|--lgsver|
+                    -r|--lgsjver|-l|--lgshper>
+EOF
+  exit 0
+
+}
+
+parseArgs() {
+
+  if [[ ${NUMARG} -ne 1 ]] 
+  then
+    prntUsage
+  elif [[ ${NUMARG} -eq 1 ]]
+  then
+    if [[ "${SWTCH}" = '-s' ]] || [[ "${SWTCH}" = '--status' ]]
+    then
+      STATUSF=true
+    elif [[ "${SWTCH}" = '-n' ]] || [[ "${SWTCH}" = '--datands' ]]
+    then
+      DATANDSF=true
+    elif [[ "${SWTCH}" = '-p' ]] || [[ "${SWTCH}" = '--pndgtsk' ]]
+    then
+      PNDGTSKF=true
+    elif [[ "${SWTCH}" = '-u' ]] || [[ "${SWTCH}" = '--unasgnd' ]]
+    then
+      UNASGNDF=true
+    elif [[ "${SWTCH}" = '-e' ]] || [[ "${SWTCH}" = '--elsver' ]]
+    then
+      ELSVERF=true 
+    elif [[ "${SWTCH}" = '-j' ]] || [[ "${SWTCH}" = '--jrever' ]]
+    then
+      JREVERF=true
+    elif [[ "${SWTCH}" = '-h' ]] || [[ "${SWTCH}" = '--elshper' ]]
+    then
+      ELSHPERF=true
+    elif [[ "${SWTCH}" = '-f' ]] || [[ "${SWTCH}" = '--fledsc' ]]
+    then
+      FLEDSCF=true
+    elif [[ "${SWTCH}" = '-g' ]] || [[ "${SWTCH}" = '--lgsver' ]]
+    then
+      LGSVERF=true
+    elif [[ "${SWTCH}" = '-l' ]] || [[ "${SWTCH}" = '--lgshper' ]]
+    then
+      LGSHPERF=true
+    elif [[ "${SWTCH}" = '-r' ]] || [[ "${SWTCH}" = '--lgsjver' ]]
+    then
+      LGSJVER=true
+    else
+      prntUsage
+    fi
+  fi
+
+}
+
+isELSRole() {
+
+  if "${RPM}" -qa | "${GREP}" "${ESPCKGS}" > /dev/null 2>&1
+  then
+    if "${GREP}" '^ *node.master: true' "${ELSCNFG}" > /dev/null 2>&1
+    then
+      ESMROLE=true
+    else
+      ESDROLE=true
+    fi
+  fi
+
+}
+
+isKLSRole() {
+
+  if "${RPM}" -qa | "${GREP}" logstash > /dev/null 2>&1 && \
+     "${RPM}" -qa | "${GREP}" kibana > /dev/null 2>&1 && \
+     "${RPM}" -qa | "${GREP}" elasticsearch > /dev/null 2>&1
+  then
+    ESMROLE=false
+    ESDROLE=false
+    KLSROLE=true
+  fi
+
+}
+
+whichRoles() {
+
+  isELSRole
+  isKLSRole
+
+}
+
+clstrSttsChk() {
+
+  if "${ECHO}" "${ctapihlt}" | "${GREP}" -v epoch | "${GREP}" -i yellow > /dev/null 2>&1
+  then
+    WARNFLAG=true
+  elif "${ECHO}" "${ctapihlt}" | "${GREP}" -v epoch | "${GREP}" -i red > /dev/null 2>&1
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapihlt}" | "${AWK}" '{print $3,$4}'
+
+}
+
+nodeDataChk() {
+
+  local dtands=$("${ECHO}" "${ctapihlt}"|"${GREP}" -v epoch|"${AWK}" '{print $6}')
+
+  if [[ ${dtands} -lt ${MINDNDS} ]] && [[ ${dtands} -gt 0 ]]
+  then
+    WARNFLAG=true
+  elif [[ ${dtands} -eq 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapihlt}" | "${AWK}" '{print $3,$5,$6}'
+
+}
+
+pndgTaksChk() {
+
+  local pndgtsks=$("${ECHO}" "${ctapihlt}"|"${GREP}" -v epoch|"${AWK}" '{print $12}')
+
+  if [[ ${pndgtsks} -gt 0 ]] && [[ ${pndgtsks} -le ${PNDGTSKSL} ]]
+  then
+    WARNFLAG=true
+  elif [[ ${pndgtsks} -gt ${PNDGTSKSL} ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapihlt}" | "${AWK}" '{print $3,$12}'
+
+}
+
+unasgnShrdsChk() {
+
+  local unasgndshrds=$("${ECHO}" "${ctapihlt}"|"${GREP}" -v epoch|"${AWK}" '{print $11}')
+
+  if [[ ${unasgndshrds} -gt 0 ]] && [[ ${unasgndshrds} -le ${UASGNDSDL} ]]
+  then
+    WARNFLAG=true
+  elif [[ ${unasgndshrds} -gt ${UASGNDSDL} ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapihlt}" | "${AWK}" '{print $3,$7,$8,$9,$10,$11}'
+
+}
+
+esVrsnCkh() {
+
+  local numvrsn=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v veres="${VERES}" '$3 !~ veres'|"${WC}" -l)
+
+if [[ ${numvrsn} -ne 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapinds}"|"${AWK}" '{print $1,$2,$3}'|"${SORT}" -nk3
+
+}
+
+lgsVrsnChk() {
+
+  local numvrsn=$("${ECHO}" "${apindsts}"|"${GREP}" version|"${GREP}" "${VERLGS}"|"${WC}" -l)
+
+  if [[ ${numvrsn} -eq 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${apindsts}"|"${GREP}" -E 'host|version|http_address'|"${SED}" 's/^ \{1,\}//'|"${SED}" 's/,$//'
+
+}
+
+esJdkverChk() {
+
+  local numvjre=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v verjre="${VERJRE}" '$4 !~ verjre'|"${WC}" -l)
+
+  if [[ ${numvjre} -ne 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapinds}"|"${AWK}" '{print $1,$2,$4}'|"${SORT}" -nk3
+
+}
+
+esHeapChk() {
+
+  local numheapw=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v esjhpwr="${ESJHPWR}" -v esjhper="${ESJHPER}" '$7 >= esjhpwr && $7 <= esjhper'|"${WC}" -l)
+  local numheape=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v esjhper="${ESJHPER}" '$7 > esjhper'|"${WC}" -l)
+
+  if [[ ${numheapw} -gt 0 ]]
+  then
+    WARNFLAG=true
+  fi
+
+  if [[ ${numheape} -gt 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapinds}"|"${AWK}" '{print $1,$2,$5,$6,$7}'
+
+}
+
+esFldscChk() {
+
+  local numfldsw=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v esfdswr="${ESFDSWR}" -v esfdser="${ESFDSER}" '$10 >= esfdswr && $10 <= esfdser'|"${WC}" -l)
+  local numfldse=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v esfdser="${ESFDSER}" '$10 > esfdser'|"${WC}" -l)
+  local numfdsmxw=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v fldscswr="${FLDSCSWR}" -v fldscser="${FLDSCSER}" '$9 >= fldscswr && $9 < fldscser'|"${WC}" -l)
+  local numfdsmxe=$("${ECHO}" "${ctapinds}"|"${GREP}" -v version|"${AWK}" -v fldscswr="${FLDSCSWR}" '$9 < fldscswr'|"${WC}" -l)
+
+  if [[ ${numfldsw} -gt 0 ]] || [[ ${numfdsmw} -gt 0 ]]
+  then
+    WARNFLAG=true
+  fi
+
+  if [[ ${numfldse} -gt 0 ]] || [[ ${numfdsmxe} -gt 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${ctapinds}"|"${AWK}" '{print $1,$2,$8,$9,$10}'
+
+}
+
+lgsHeapChk() {
+
+  local numlgshcw=$("${ECHO}" "${apindsts}"|"${GREP}" heap_used_percent|"${AWK}" -F":" '{print $NF}'|"${SED}" 's/^ \{1,\}//'|"${SED}" 's/,$//'|"${AWK}" -v lsjhpwr="${LSJHPWR}" -v lsjhper="${LSJHPER}" '$1 >= lsjhpwr && $1 <= lsjhper'|"${WC}" -l)
+  local numlgshce=$("${ECHO}" "${apindsts}"|"${GREP}" heap_used_percent|"${AWK}" -F":" '{print $NF}'|"${SED}" 's/^ \{1,\}//'|"${SED}" 's/,$//'|"${AWK}" -v lsjhper="${LSJHPER}" '$1 > lsjhper'|"${WC}" -l)
+
+  if [[ ${numheapw} -gt 0 ]]
+  then
+    WARNFLAG=true
+  fi
+
+  if [[ ${numheape} -gt 0 ]]
+  then
+    FAILFLAG=true
+  fi
+
+  "${ECHO}" "${apindsts}"|"${GREP}" heap_used_percent|"${SED}" 's/^ \{1,\}//'|"${SED}" 's/,$//'
+
+}
+
+dumpELS() {
+
+  if ${ESMROLE}
+  then
+    # epoch timestamp cluster status node.total node.data shards pri relo init unassign pending_tasks max_task_wait_time active_shards_percent
+    if ${STATUSF}  || \
+       ${DATANDSF} || \
+       ${PNDGTSKF} || \
+       ${UNASGNDF}
+    then
+      ctapihlt=$("${CURL}" -s "http://${ETHIP}:${ESHPRT}/_cat/health?v")
+
+      if ${STATUSF}
+      then
+        clstrSttsChk
+      elif ${DATANDSF}
+      then
+        nodeDataChk
+      elif ${PNDGTSKF}
+      then
+        pndgTaksChk 
+      elif ${UNASGNDF}
+      then
+        unasgnShrdsChk 
+      fi
+ 
+    fi
+    # name ip version jdk heap.current heap.max heap.percent file_desc.current file_desc.max file_desc.percent
+    if ${ELSVERF}  || \
+       ${JREVERF}  || \
+       ${ELSHPERF} || \
+       ${FLEDSCF}  || \
+       ${LGSVERF}  || \
+       ${LGSHPERF}
+    then
+      ctapinds=$("${CURL}" -s "http://${ETHIP}:${ESHPRT}/_cat/nodes?v&h=name,ip,version,jdk,heap.current,heap.max,heap.percent,file_desc.current,file_desc.max,file_desc.percent")
+
+      if ${ELSVERF}
+      then
+        esVrsnCkh
+      elif ${JREVERF}
+      then
+        esJdkverChk
+      elif ${ELSHPERF}
+      then
+        esHeapChk
+      elif ${FLEDSCF}
+      then
+        esFldscChk
+      fi
+
+    fi
+
+  fi
+
+}
+
+dumpLogstash() {
+
+  if ${KLSROLE}
+  then
+    if ${LGSVERF}  || \
+       ${LGSHPERF}
+    then
+      apindsts=$("${CURL}" -s "http://${ETHIP}:${KLSHPRT}/_node/stats?pretty")
+
+      if ${LGSVERF}
+      then
+        lgsVrsnChk
+      elif ${LGSHPERF}
+      then
+        lgsHeapChk
+      fi
+
+    fi
+
+  fi
+
+}
+
+dumpKLS() {
+
+  dumpLogstash
+
+}
+
+dumpRoles() {
+
+  dumpELS
+  dumpKLS
+
+}
+
+main() {
+
+  preChecks
+  parseArgs
+  whichRoles
+  dumpRoles
+
+}
+# <end of helper section>
+
+
+# <start of test section>
+
+# <end of test section>
+
+
+# <start of init section>
+
+# <end of init section>
+
+
+# <start of cleanup section>
+
+# <end of cleanup section>
+
+
+# <start of main section>
+#set -u
+main 2>&1
+if ${WARNFLAG}
+then
+  exit 1
+elif ${FAILFLAG}
+then
+  exit 2
+fi
+# <end of main section>

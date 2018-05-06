@@ -1,0 +1,35 @@
+---
+- name: generate gossip encryption key
+  shell: "if [[ -z $(sudo grep encrypt /etc/consul.d/consul.json|awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ]];then {{bindir_consul}}/consul keygen;fi"
+  register: gosenckey
+  run_once: true
+
+- name: create consul server datadir
+  file: path="{{datadir_consul_server}}"
+        state="directory"
+        owner="root"
+        group="{{consul_group}}"
+        mode=0750
+
+- name: render consul server configuration
+  template: src="{{consul_service}}.json.j2"
+            dest="/etc/consul.d/{{consul_service}}.json"
+            owner=root
+            group="{{consul_group}}"
+  when: gosenckey.stdout_lines|length > 0
+  notify:
+    - restart consul server
+
+- name: render consul systemd unit
+  template: src="{{consul_service}}.service.j2"
+            dest="/etc/systemd/system/{{consul_service}}.service"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart consul server
+
+- name: start and enable consul service
+  service: name="{{consul_service}}"
+           state=started
+           enabled=true

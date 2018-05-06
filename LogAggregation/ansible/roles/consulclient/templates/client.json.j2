@@ -1,0 +1,21 @@
+{
+  "datacenter": "{{consul_datacenter}}",
+  "data_dir": "{{datadir_consul_client}}",
+  "log_level": "DEBUG",
+  "server": false,
+  "ports": {
+    "dns": {{consul_port_dns}},
+    "http": {{consul_port_http}},
+    "serf_lan": {{consul_port_serflan}}
+  },
+{% if 'eth1' in ansible_interfaces %}
+  "bind_addr": "{{ansible_eth1.ipv4.address}}",
+{% else %}
+  "bind_addr": "{{ansible_eth0.ipv4.address}}",
+{% endif %}
+  "retry_join": ["{{groups['elsmops']|join(',')|replace(',','","')}}"],
+  "disable_update_check": true,
+  "disable_remote_exec": false,
+  "encrypt": "{{gosenckey.stdout_lines[0]}}",
+  "enable_script_checks": true
+}

@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "prometheus elasticsearch exporter",
+    "tags": ["prmelsexprtr"],
+    "address": "",
+    "port": {{elsexporter_port}},
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "http": "http://localhost:{{elsexporter_port}}",
+        "interval": "10s"
+      }
+    ]
+  }
+}

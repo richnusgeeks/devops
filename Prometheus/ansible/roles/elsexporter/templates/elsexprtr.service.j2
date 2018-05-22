@@ -1,0 +1,19 @@
+[Unit]
+Description=elasticsearch exporter
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{elsexprtr_bindir}}/elasticsearch_exporter -es.all \
+  -es.timeout "{{elsexporter_timeout}}" \
+{% if 'eth1' in ansible_interfaces %}
+  -es.uri "http://{{ansible_eth1.ipv4.address}}:{{es_http_port}}" \
+{% else %}
+  -es.uri "http://{{ansible_eth0.ipv4.address}}:{{es_http_port}}" \
+{% endif %}
+  -web.listen-address ":{{elsexporter_port}}"
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

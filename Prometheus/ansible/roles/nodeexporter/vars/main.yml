@@ -1,0 +1,12 @@
+---
+nodexprtr_bindir: /opt/nodexprtr
+
+dirs_nodexprtr: [
+  "{{nodexprtr_bindir}}",
+]
+
+nodexprtr_binaries: {
+  "node_exporter": "0.15.2",
+}
+
+nodexprtr_port: 9090

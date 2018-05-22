@@ -1,0 +1,3 @@
+---
+- name: ensure libselinux-python is installed
+  raw: yum install -y libselinux-python

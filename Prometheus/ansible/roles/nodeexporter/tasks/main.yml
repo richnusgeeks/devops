@@ -1,0 +1,46 @@
+---
+- name: create necessary directories
+  file: path="{{item}}"
+        state=directory
+        owner=root
+        group=root
+        mode=0750
+  with_items: "{{dirs_nodexprtr}}"
+
+- name: upload nodexprtr binaries
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{nodexprtr_bindir}}/{{item.key}}"
+        owner=root
+        group=root
+        mode=0750
+  with_dict: "{{nodexprtr_binaries}}"
+
+#- name: render nodexprtr server configuration
+#  template: src="nodexprtr.yml.j2"
+#            dest="{{nodexprtr_cnfgdir}}/nodexprtr.yml"
+#            owner=root
+#            group=root
+#  notify:
+#    - restart nodexprtr
+
+- name: render nodexprtr systemd unit
+  template: src="nodexprtr.service.j2"
+            dest=/etc/systemd/system/nodexprtr.service
+            owner=root
+            group=root
+  notify:
+    - reload nodexprtr
+    - restart nodexprtr
+
+- name: start and enable nodexprtr service
+  service: name=nodexprtr
+           state=started
+           enabled=true
+
+- name: render consul service definition for nodexprtr
+  template: src="prmndexprtr.json.j2"
+            dest=/etc/consul.d/prmndexprtr.json
+            owner=root
+            group=root
+  notify:
+    - reload consul configs

@@ -1,0 +1,10 @@
+---
+- name: reload nodexprtr
+  shell: systemctl daemon-reload
+
+- name: restart nodexprtr
+  service: name=nodexprtr
+           state=restarted
+
+- name: reload consul configs
+  shell: consul reload

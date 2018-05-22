@@ -1,0 +1,46 @@
+---
+- name: create necessary directories
+  file: path="{{item}}"
+        state=directory
+        owner=root
+        group=root
+        mode=0750
+  with_items: "{{dirs_elsexprtr}}"
+
+- name: upload elsexprtr binaries
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{elsexprtr_bindir}}/{{item.key}}"
+        owner=root
+        group=root
+        mode=0750
+  with_dict: "{{elsexprtr_binaries}}"
+
+#- name: render elsexprtr server configuration
+#  template: src="elsexprtr.yml.j2"
+#            dest="{{elsexprtr_cnfgdir}}/elsexprtr.yml"
+#            owner=root
+#            group=root
+#  notify:
+#    - restart elsexprtr
+
+- name: render elsexprtr systemd unit
+  template: src="elsexprtr.service.j2"
+            dest=/etc/systemd/system/elsexprtr.service
+            owner=root
+            group=root
+  notify:
+    - reload elsexprtr
+    - restart elsexprtr
+
+- name: start and enable elsexprtr service
+  service: name=elsexprtr
+           state=started
+           enabled=true
+
+- name: render consul service definition for elsexprtr
+  template: src="prmelsexprtr.json.j2"
+            dest=/etc/consul.d/prmelsexprtr.json
+            owner=root
+            group=root
+  notify:
+    - reload consul configs

@@ -1,0 +1,18 @@
+[Unit]
+Description=prometheus server
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{prometheus_bindir}}/prometheus \
+  --config.file={{prometheus_cnfgdir}}/prometheus.yml \
+  --storage.tsdb.path={{prometheus_datadir}} \
+  --storage.tsdb.retention={{prometheus_retention}} \
+  --web.console.templates={{prometheus_bindir}}/consoles \
+  --web.console.libraries={{prometheus_bindir}}/console_libraries \
+  --log.level=debug
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

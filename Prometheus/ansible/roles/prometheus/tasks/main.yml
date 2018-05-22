@@ -1,0 +1,46 @@
+---
+- name: create necessary directories
+  file: path="{{item}}"
+        state=directory
+        owner=root
+        group=root
+        mode=0750
+  with_items: "{{dirs_prometheus}}"
+
+- name: upload prometheus binaries
+  copy: src="{{item.key}}_{{item.value}}"
+        dest="{{prometheus_bindir}}/{{item.key}}"
+        owner=root
+        group=root
+        mode=0750
+  with_dict: "{{prometheus_binaries}}"
+
+- name: upload prometheus console templates
+  copy: src="{{item}}"
+        dest="{{prometheus_bindir}}"
+        owner=root
+        group=root
+        mode=0750
+  with_items: "{{prometheus_cnsltmplts}}"
+
+- name: render prometheus server configuration
+  template: src="prometheus.yml.j2"
+            dest="{{prometheus_cnfgdir}}/prometheus.yml"
+            owner=root
+            group=root
+  notify:
+    - restart prometheus
+
+- name: render prometheus systemd unit
+  template: src="prometheus.service.j2"
+            dest=/etc/systemd/system/prometheus.service
+            owner=root
+            group=root
+  notify:
+    - reload prometheus
+    - restart prometheus
+
+- name: start and enable prometheus service
+  service: name=prometheus
+           state=started
+           enabled=true

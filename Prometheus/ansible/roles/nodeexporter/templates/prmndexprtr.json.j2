@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "prometheus node exporter",
+    "tags": ["prmndexprtr"],
+    "address": "",
+    "port": {{nodexporter_port}},
+    "enableTagOverride": false,
+    "checks": [
+      {
+        "http": "http://localhost:{{nodexporter_port}}",
+        "interval": "10s"
+      }
+    ]
+  }
+}

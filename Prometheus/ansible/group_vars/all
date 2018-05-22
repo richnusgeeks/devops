@@ -1,0 +1,57 @@
+---
+prometheus_bindir: /opt/prometheus
+prometheus_cnfgdir: /etc/prometheus.d
+prometheus_datadir: /data
+dirs_prometheus: [
+  "{{prometheus_bindir}}",
+  "{{prometheus_cnfgdir}}",
+  "{{prometheus_datadir}}",
+]
+version_prometheus: 2.1.0
+prometheus_binaries: {
+  "prometheus": "{{version_prometheus}}",
+  "promtool": "{{version_prometheus}}",
+}
+prometheus_cnsltmplts: [
+  "consoles",
+  "console_libarary",
+]
+prometheus_port: 9090
+prometheus_retention: "7d"
+consul_port_api: 8500
+consul_services: [
+'prometheus elasticsearch exporter',
+'prometheus node exporter',
+]
+
+alertmanager_bindir: /opt/alertmanager
+dirs_alertmanager: [
+  "{{alertmanager_bindir}}",
+]
+version_alertmanager: 
+alertmanager_binaries: [
+  "alertmanager": "{{version_alertmanager}}",
+]
+alertmanager_port: 9093
+
+nodexporter_bindir: /opt/nodexporter
+dirs_nodexporter: [
+  "{{nodexporter_bindir}}",
+]
+version_nodexporter: 0.15.2
+nodexporter_binaries: {
+  "node_exporter": "{{version_nodexporter}}",
+}
+nodexporter_port: 9100
+
+elsexprtr_bindir: /opt/elsexprtr
+dirs_elsexprtr: [
+  "{{elsexprtr_bindir}}",
+]
+version_elsexporter: 1.0.2
+elsexprtr_binaries: {
+  "elasticsearch_exporter": "{{version_elsexporter}}",
+}
+elsexporter_timeout: 20s
+es_http_port: 9200
+elsexporter_port: 9108

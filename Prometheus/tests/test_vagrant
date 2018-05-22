@@ -1,0 +1,11 @@
+[all:vars]
+ansible_ssh_user=vagrant
+
+[server]
+192.168.50.63 ansible_ssh_private_key_file=../tests/.vagrant/machines/prometheus01/virtualbox/private_key
+
+[alertmgr]
+192.168.50.66 ansible_ssh_private_key_file=../tests/.vagrant/machines/alertmgr01/virtualbox/private_key
+
+[pushgtwy]
+192.168.50.78 ansible_ssh_private_key_file=../tests/.vagrant/machines/pushgtwy01/virtualbox/private_key

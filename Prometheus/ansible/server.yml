@@ -1,0 +1,7 @@
+---
+- hosts: server
+  gather_facts: yes
+  become: yes
+  roles:
+    - nodeexporter
+    - prometheus

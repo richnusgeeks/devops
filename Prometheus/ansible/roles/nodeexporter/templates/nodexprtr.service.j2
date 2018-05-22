@@ -1,0 +1,12 @@
+[Unit]
+Description=node exporter
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{nodexprtr_bindir}}/node_exporter
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

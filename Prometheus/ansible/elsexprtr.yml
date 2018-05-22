@@ -1,0 +1,6 @@
+---
+- hosts: elsmops
+  gather_facts: yes
+  become: yes
+  roles:
+    - elsexporter

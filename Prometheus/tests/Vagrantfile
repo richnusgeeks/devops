@@ -1,0 +1,61 @@
+numProm = 1
+numAmgr = 0
+numNxprtr = 0
+numBxprtr = 0 
+numCxprtr = 0
+numPgtwy = 0
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box_check_update = true
+  config.vm.box = "centos/7"
+  config.vm.provision "shell",
+    inline: "sudo mkdir /data || true"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus   = "1"
+  end
+
+  (1..numProm).each do |i|
+    config.vm.define "prometheus#{format('%02d', i)}" do |prom|
+      prom.vm.hostname = "prometheus#{format('%02d', i)}"
+      prom.vm.network "private_network", ip: "192.168.50.#{i+62}"
+    end
+  end
+
+  (1..numAmgr).each do |i|
+    config.vm.define "alertmgr#{format('%02d', i)}" do |amgr|
+      amgr.vm.hostname = "alertmgr#{format('%02d', i)}"
+      amgr.vm.network "private_network", ip: "192.168.50.#{i+65}"
+    end
+  end
+
+  (1..numNxprtr).each do |i|
+    config.vm.define "nodexprtr#{format('%02d', i)}" do |nxprtr|
+      nxprtr.vm.hostname = "nodexprtr#{format('%02d', i)}"
+      nxprtr.vm.network "private_network", ip: "192.168.50.#{i+67}"
+    end
+  end
+
+  (1..numCxprtr).each do |i|
+    config.vm.define "consulxprtr#{format('%02d', i)}" do |cxprtr|
+      cxprtr.vm.hostname = "consulxprtr#{format('%02d', i)}"
+      cxprtr.vm.network "private_network", ip: "192.168.50.#{i+72}"
+    end
+  end
+
+  (1..numBxprtr).each do |i|
+    config.vm.define "blkboxprtr#{format('%02d', i)}" do |bxprtr|
+      bxprtr.vm.hostname = "blkboxprtr#{format('%02d', i)}"
+      bxprtr.vm.network "private_network", ip: "192.168.50.#{i+75}"
+    end
+  end
+
+  (1..numPgtwy).each do |i|
+    config.vm.define "pushgtwy#{format('%02d', i)}" do |pgtwy|
+      pgtwy.vm.hostname = "pushgtwy#{format('%02d', i)}"
+      pgtwy.vm.network "private_network", ip: "192.168.50.#{i+77}"
+    end
+  end
+
+end

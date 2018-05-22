@@ -1,0 +1,10 @@
+---
+- name: reload elsexprtr
+  shell: systemctl daemon-reload
+
+- name: restart elsexprtr
+  service: name=elsexprtr
+           state=restarted
+
+- name: reload consul configs
+  shell: consul reload

@@ -68,7 +68,7 @@ prntUsage() {
 
     "$ECHO" "Usages: $PRGNME <-i|--install|-r|--remove|-d|--dump>"
     "$ECHO" "        -i|--install Install DevOps tools,"
-    "$ECHO" "        -r|--remove  Configure DevOps tools,"
+    "$ECHO" "        -r|--remove  Remove DevOps tools,"
     "$ECHO" "        -d|--dump    Dump various DevOps tools related info,"
     exit 0
 

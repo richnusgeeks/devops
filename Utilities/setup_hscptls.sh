@@ -15,18 +15,18 @@
 ############################################################################
 
 RM='rm'
-TEE=$(which --skip-alias tee)
-AWK=$(which --skip-alias awk)
-SED=$(which --skip-alias sed)
-HEAD=$(which --skip-alias head)
-ECHO=$(which --skip-alias echo)
-GREP=$(which --skip-alias grep)
-DATE=$(which --skip-alias date)
-CURL=$(which --skip-alias curl)
-UNME=$(which --skip-alias uname)
-UNZIP=$(which --skip-alias unzip)
-BSNME=$(which --skip-alias basename)
-UNZIP=$(which --skip-alias unzip)
+TEE=$(which tee)
+AWK=$(which awk)
+SED=$(which sed)
+HEAD=$(which head)
+ECHO=$(which echo)
+GREP=$(which grep)
+DATE=$(which date)
+CURL=$(which curl)
+UNME=$(which uname)
+UNZIP=$(which unzip)
+BSNME=$(which basename)
+UNZIP=$(which unzip)
 PRGNME=$("$ECHO" $("$BSNME" "$0") | "$SED" -n 's/\.sh//p')
 SDLY=5
 SWTCH="$1"

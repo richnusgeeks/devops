@@ -38,7 +38,8 @@ HCTLSLOC='/usr/local/bin'
 CMNTLS="hashi-ui"
 CMNTLSURL="https://github.com/jippi"
 HCTLSURL='https://releases.hashicorp.com'
-HCTLS="consul \
+HCTLS="serf \
+       consul \
        consul-esm \
        consul-replicate \
        consul-template \

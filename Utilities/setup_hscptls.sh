@@ -39,6 +39,7 @@ CMNTLS="hashi-ui"
 CMNTLSURL="https://github.com/jippi"
 HCTLSURL='https://releases.hashicorp.com'
 HCTLS="consul \
+       consul-esm \
        consul-replicate \
        consul-template \
        envconsul \
@@ -161,7 +162,14 @@ dumpDvopsTls() {
   for t in $HCTLS
   do
     ls -lhrt "${HCTLSLOC}/${t}"
-    "${HCTLSLOC}/${t}" -v
+
+    if [[ "${t}" = "consul-esm" ]]
+    then
+      "${HCTLSLOC}/${t}" -version
+    else
+      "${HCTLSLOC}/${t}" -v
+    fi
+
   done
 
 }

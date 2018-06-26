@@ -126,6 +126,9 @@ instlDvopsTls() {
 
   for t in ${HCTLS}
   do
+    # TODO: Hashicorp folks run https://checkpoint.hashicorp.com/ for the latest version info.
+    # XXX:  But they have exposed only selected services through
+    #       v1/check/<product> https://github.com/hashicorp/ruby-checkpoint.
     local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
 
     local c=$("${HCTLSLOC}/${t}" -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')

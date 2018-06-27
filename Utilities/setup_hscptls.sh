@@ -15,6 +15,7 @@
 ############################################################################
 
 RM='rm'
+TAR=$(which tar)
 TEE=$(which tee)
 AWK=$(which awk)
 SED=$(which sed)
@@ -35,8 +36,10 @@ INSTL=false
 RMVE=false
 DUMP=false
 HCTLSLOC='/usr/local/bin'
-CMNTLS="hashi-ui"
-CMNTLSURL="https://github.com/jippi"
+CMNTLS='hashi-ui'
+CMNTLSURL='https://github.com/jippi'
+CNSLALRTS='consul-alerts'
+CNSLALRTSURL='https://github.com/AcalephStorage'
 HCTLSURL='https://releases.hashicorp.com'
 HCTLS="serf \
        consul \
@@ -113,12 +116,35 @@ instlHCrpUI() {
 
     if [[ ! -z "${c}" ]]
     then
-      if ! "${CURL}" -sSLK -o "${HCTLSLOC}/${ct}" "${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
+      if ! "${CURL}" -sSLk -o "${HCTLSLOC}/${ct}" "${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
       then
-        exitOnErr "${CURL} -sSLK -o ${HCTLSLOC}/${ct} ${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
+        exitOnErr "${CURL} -sSLk -o ${HCTLSLOC}/${ct} ${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
       fi
     fi
   done
+
+}
+
+instlCnslAlrts() {
+
+  local v=$("${CURL}" -sSLk "${CNSLALRTSURL}/${CNSLALRTS}/releases"|"${GREP}" href|"${GREP}" "${OS}-amd64"|"${HEAD}" -1|"${AWK}" '{print $(NF-1)}'|"${AWK}" -F'/' '{print $NF}'|"${SED}" 's/"//')
+
+  local c=$("${HCTLSLOC}/${CNSLALRTS}" --version|"${GREP}" -E '[0-9.]+'|"${AWK}" '{print $3}')
+
+  if [[ "${v}" != "${c}" ]]
+  then
+    if ! "${CURL}" -sSLk -o /tmp/${CNSLALRTS}.tar \
+         "${CNSLALRTSURL}/${CNSLALRTS}/releases/download/v$("${ECHO}" "${v}"|"${AWK}" -F"-" '{print $3}')/${v}"
+    then
+      exitOnErr "${CURL} -sSLk -o /tmp/${CNSLALRTS}.tar ${CNSLALRTSURL}/${CNSLALRTS}/releases/download/v$(${ECHO} ${v}|${AWK}-F'-' '{print $3}')/${v}"
+
+    else
+      if ! "${TAR}" -xvf "/tmp/${CNSLALRTS}.tar" -C "${HCTLSLOC}"
+      then
+        exitOnErr "${TAR} -xvf /tmp/${CNSLALRTS}.tar -C ${HCTLSLOC}"
+      fi
+    fi
+  fi
 
 }
 
@@ -131,7 +157,15 @@ instlDvopsTls() {
     #       v1/check/<product> https://github.com/hashicorp/ruby-checkpoint.
     local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
 
-    local c=$("${HCTLSLOC}/${t}" -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+    if [[ "${t}" = 'packer' ]]
+    then
+     local c=$("${HCTLSLOC}/${t}" -v|"${GREP}" -E '[0-9.]+'|"${AWK}" '{print $1}')
+    elif [[ "${t}" = 'consul-esm' ]]
+    then
+     local c=$("${HCTLSLOC}/${t}" -version|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+    else
+     local c=$("${HCTLSLOC}/${t}" -v|"${GREP}" -E 'v[0-9.]+'|"${AWK}" '{print $2}'|"${SED}" 's/v//')
+    fi
  
     if [[ "${v}" != "${c}" ]]
     then
@@ -148,6 +182,7 @@ instlDvopsTls() {
     fi
   done
 
+  instlCnslAlrts
 #  instlHCrpUI
 
 }
@@ -159,6 +194,8 @@ rmveDvopsTls() {
     "${RM}" -rfv "${HCTLSLOC}/${t}"
   done
 
+  "${RM}" -rfv "${HCTLSLOC}/${CMNTLS}" "${HCTLSLOC}/${CNSLALRTS}"
+
 }
 
 dumpDvopsTls() {
@@ -167,14 +204,16 @@ dumpDvopsTls() {
   do
     ls -lhrt "${HCTLSLOC}/${t}"
 
-    if [[ "${t}" = "consul-esm" ]]
+    if [[ "${t}" = 'consul-esm' ]]
     then
       "${HCTLSLOC}/${t}" -version
     else
       "${HCTLSLOC}/${t}" -v
     fi
-
   done
+
+  ls -lhrt "${HCTLSLOC}/${CNSLALRTS}"
+  "${HCTLSLOC}/${CNSLALRTS}" --version
 
 }
 

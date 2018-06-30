@@ -25,6 +25,7 @@ GREP=$(which grep)
 DATE=$(which date)
 CURL=$(which curl)
 UNME=$(which uname)
+CHMOD=$(which chmod)
 UNZIP=$(which unzip)
 BSNME=$(which basename)
 UNZIP=$(which unzip)
@@ -119,6 +120,8 @@ instlHCrpUI() {
       if ! "${CURL}" -sSLk -o "${HCTLSLOC}/${ct}" "${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
       then
         exitOnErr "${CURL} -sSLk -o ${HCTLSLOC}/${ct} ${CMNTLSURL}/${ct}/releases/download/v${c}/${ct}-${OS}-amd64"
+      else
+        "${CHMOD}" +x "${HCTLSLOC}/${ct}"
       fi
     fi
   done
@@ -183,7 +186,7 @@ instlDvopsTls() {
   done
 
   instlCnslAlrts
-#  instlHCrpUI
+  instlHCrpUI
 
 }
 
@@ -200,7 +203,7 @@ rmveDvopsTls() {
 
 dumpDvopsTls() {
 
-  for t in $HCTLS
+  for t in ${HCTLS}
   do
     ls -lhrt "${HCTLSLOC}/${t}"
 
@@ -210,6 +213,11 @@ dumpDvopsTls() {
     else
       "${HCTLSLOC}/${t}" -v
     fi
+  done
+
+  for c in ${CMNTLS}
+  do
+    ls -lhrt "${HCTLSLOC}/${c}"
   done
 
   ls -lhrt "${HCTLSLOC}/${CNSLALRTS}"

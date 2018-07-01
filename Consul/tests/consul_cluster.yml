@@ -31,5 +31,16 @@ services:
     environment:
       - CONSUL_UI_BETA=true
 
+  hashi-ui:
+    image: jippi/hashi-ui:v0.25.0
+    ports:
+      - "3000:3000"
+    environment:
+      - CONSUL_ENABLE=1
+      - CONSUL_READ_ONLY=1
+      - CONSUL_ADDR=consul-server-bootstrap:8500
+    networks:
+      - consul-demo
+
 networks:
   consul-demo:

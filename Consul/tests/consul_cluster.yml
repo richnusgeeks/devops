@@ -31,15 +31,19 @@ services:
     environment:
       - CONSUL_UI_BETA=true
 
-#  consul-esm:
-#    depends_on:
-#      - consul-server-bootstrap
-#    image: hashicorp/consul-esm:v0.2.0
-#    environment:
-#      - CONSUL_ADDR=consul-server-bootstrap:8500
-#    command: sh -c "wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm.sh"
-#    networks:
-#      - consul-demo
+  consul-esm:
+    depends_on:
+      - consul-server-bootstrap
+    image: consul-esm:v0.2.0
+    volumes:
+      - type: bind
+        source: ../scripts
+        target: /mnt
+    environment:
+      - CONSUL_HTTP_ADDR=consul-server-bootstrap:8500
+    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm"
+    networks:
+      - consul-demo
 
   hashi-ui:
     depends_on:

@@ -1,0 +1,12 @@
+FROM alpine
+
+# we need ca-certificates for any external https communication
+RUN apk --update upgrade && \
+    apk add curl ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/cache/apk/* && \
+    wget https://releases.hashicorp.com/consul-esm/0.2.0/consul-esm_0.2.0_linux_amd64.zip -O /tmp/consul-esm.zip && \
+    unzip /tmp/consul-esm.zip -d /usr/local/bin/ && \
+    rm /tmp/consul-esm.zip
+
+CMD ["consul-esm"]     

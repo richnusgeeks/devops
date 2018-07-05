@@ -1,4 +1,4 @@
-version: '3'
+version: '3.2'
 
 services:
 
@@ -31,14 +31,37 @@ services:
     environment:
       - CONSUL_UI_BETA=true
 
+#  consul-esm:
+#    depends_on:
+#      - consul-server-bootstrap
+#    image: hashicorp/consul-esm:v0.2.0
+#    environment:
+#      - CONSUL_ADDR=consul-server-bootstrap:8500
+#    command: sh -c "wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm.sh"
+#    networks:
+#      - consul-demo
+
   hashi-ui:
+    depends_on:
+      - consul-server-bootstrap
     image: jippi/hashi-ui:v0.25.0
+    volumes:
+      - type: bind
+        source: ../scripts/certs/out
+        target: /etc/ssl/certs
+      - type: bind
+        source: ../scripts
+        target: /usr/local/bin
     ports:
       - "3000:3000"
     environment:
       - CONSUL_ENABLE=1
       - CONSUL_READ_ONLY=1
       - CONSUL_ADDR=consul-server-bootstrap:8500
+      - HTTPS_ENABLE=true
+      - SERVER_CERT=/etc/ssl/certs/test.crt
+      - SERVER_KEY=/etc/ssl/certs/test.key
+    command: sh -c "wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && /hashi-ui"
     networks:
       - consul-demo
 

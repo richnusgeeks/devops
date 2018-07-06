@@ -35,6 +35,9 @@ services:
     depends_on:
       - consul-server-bootstrap
     image: consul-esm:v0.2.0
+    build:
+      context: ../scripts
+      dockerfile: Dockerfile_ConsulESM
     volumes:
       - type: bind
         source: ../scripts
@@ -49,6 +52,9 @@ services:
     depends_on:
       - consul-server-bootstrap
     image: consul-alerts
+    build:
+      context: ../scripts
+      dockerfile: Dockerfile_ConsulAlerts
     volumes:
       - type: bind
         source: ../scripts

@@ -71,3 +71,4 @@ pam-auth
 ssh-credentials
 workflow-durable-task-step
 subversion
+configuration-as-code

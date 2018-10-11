@@ -19,7 +19,7 @@ if "${UNME}" -v | "${GREP}" -i darwin 2>&1 > /dev/null
  else
     OS='linux'
 fi
-echo "Operation System is --> ${OS}"
+#echo "Operation System is --> ${OS}"
 CMPSEFILE="jenkins_stack_${OS}.yml"
 
 

@@ -31,3 +31,5 @@ else
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"
   fi
 fi
+
+#docker exec -i -u root scripts_jenkins_1 chown jenkins /var/run/docker.sock || true

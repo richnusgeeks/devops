@@ -3,7 +3,8 @@
 OPTN=${1}
 NUMOPTNMX=2
 CMPSFLDIR='.'
-CMPSEFILE='jenkins_stack.yml'
+GREP=$(which grep)
+UNME=$(which uname)
 
 printUsage() {
 
@@ -11,6 +12,16 @@ printUsage() {
   exit 0
 
 }
+
+if "${UNME}" -v | "${GREP}" -i darwin 2>&1 > /dev/null
+ then
+    OS='darwin'
+ else
+    OS='linux'
+fi
+echo "Operation System is --> ${OS}"
+CMPSEFILE="jenkins_stack_${OS}.yml"
+
 
 if [[ $# -gt ${NUMOPTNMX} ]]
 then

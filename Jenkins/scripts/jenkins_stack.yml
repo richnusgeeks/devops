@@ -8,6 +8,7 @@ services:
       context: .
       dockerfile: Dockerfile_JenkinsAuto
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - jenkins_home_lts_auto:/var/jenkins_home
     ports:
       - "5000:5000"

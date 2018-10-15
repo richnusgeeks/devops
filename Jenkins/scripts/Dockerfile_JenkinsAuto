@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.138.1-alpine
+FROM jenkins/jenkins:2.138.2-alpine
  
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
  
@@ -7,3 +7,25 @@ COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/init.groovy
 COPY plugins.list /usr/share/jenkins/ref/plugins.list
 
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.list
+
+USER root
+
+RUN apk add --no-cache python3 \
+  && pip3 install -U pip \
+  && pip3 install awscli
+
+RUN curl -sSLk -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)/terraform_$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)_linux_amd64.zip \
+  && unzip -o /tmp/terraform.zip -d /usr/local/bin \
+  && rm -fv /tmp/terraform.zip
+
+RUN curl -sSLk -o /tmp/consul.zip https://releases.hashicorp.com/consul/$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)/consul_$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)_linux_amd64.zip \
+  && unzip -o /tmp/consul.zip -d /usr/local/bin \
+  && rm -fv /tmp/consul.zip
+
+RUN curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && cd /tmp \
+  && tar zxvf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rfv docker docker.tgz
+
+#USER jenkins

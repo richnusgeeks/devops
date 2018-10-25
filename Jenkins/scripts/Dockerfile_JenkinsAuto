@@ -12,13 +12,15 @@ USER root
 
 RUN apk add --no-cache python3 \
   && pip3 install -U pip \
-  && pip3 install awscli
+                     awscli \
+                     boto3 \
+                     docker-compose
 
-RUN curl -sSLk -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)/terraform_$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)_linux_amd64.zip \
+RUN curl -sSLk -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|alpha|beta)'|head -1)/terraform_$(curl -s https://releases.hashicorp.com/terraform/|grep '^ *<a'|grep terraform|awk -F "/" '{print $3}'|grep -Ev '\-(rc|alpha|beta)'|head -1)_linux_amd64.zip \
   && unzip -o /tmp/terraform.zip -d /usr/local/bin \
   && rm -fv /tmp/terraform.zip
 
-RUN curl -sSLk -o /tmp/consul.zip https://releases.hashicorp.com/consul/$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)/consul_$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|beta)'|head -1)_linux_amd64.zip \
+RUN curl -sSLk -o /tmp/consul.zip https://releases.hashicorp.com/consul/$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|alpha|beta)'|head -1)/consul_$(curl -s https://releases.hashicorp.com/consul/|grep '^ *<a'|grep consul|awk -F "/" '{print $3}'|grep -Ev '\-(rc|alpha|beta)'|head -1)_linux_amd64.zip \
   && unzip -o /tmp/consul.zip -d /usr/local/bin \
   && rm -fv /tmp/consul.zip
 

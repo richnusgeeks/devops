@@ -1,0 +1,36 @@
+---
+version: '3.2'
+
+services:
+  redis-server:
+    image: redis:alpine
+    volumes:
+      - redis_data_server:/data
+    ports:
+      - "6379:6379"
+    extra_hosts:
+      - "moby:127.0.0.1"
+      - "localhost: 127.0.0.1"
+    networks:
+      - redis-demo
+
+  redis-replica:
+    image: redis:alpine
+    volumes:
+      - ./wait-for-command.sh:/mnt/wait-for-command.sh
+      - redis_data_replica:/data
+    ports:
+      - "16379:6379"
+    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz redis-server 6379' -s 0 && redis-server --replicaof redis-server 6379 --replica-read-only no"
+    extra_hosts:
+      - "moby:127.0.0.1"
+      - "localhost: 127.0.0.1"
+    networks:
+      - redis-demo
+
+volumes:
+  redis_data_server:
+  redis_data_replica:
+
+networks:
+  redis-demo:

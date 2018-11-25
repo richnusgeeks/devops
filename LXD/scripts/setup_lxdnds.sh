@@ -15,6 +15,7 @@ BSNME=$(which basename)
 NUMOPTN=${#}
 NUMOPTNE=1
 SSHDCNFG='/etc/ssh/shd_config'
+SDRSCNFG='/etc/'
 LXDIMAGS="ubuntu:18.04/amd64 \
           ubuntu:16.04/amd64 \
           images:centos/7/amd64"
@@ -25,7 +26,7 @@ printUsage() {
 
   "${TEE}" <<EOF
   Usage: ${PRGNME} -b|--bringup|-c|--cleanup
-                   -s|--setup|-d|--dump
+                   -s|--setup|-d|--dump|-a|--all
 EOF
   exit 0
 
@@ -48,18 +49,6 @@ getOsInfo() {
   "${AWK}" '{print $2}'| \
   "${XARGS}" -I % "${LXC}" exec % -- "${GREP}" '^PRETTY_NAME=' /etc/os-release|\
   "${SED}" 's/"//g'
-
-}
-
-setupCentOS() {
-
-  true
-
-}
-
-setupUbuntu() {
-
-  true
 
 }
 
@@ -118,6 +107,11 @@ main() {
     teardownLXDCntnrs
   elif [[ "${OPTN}" = "-d" ]] || [[ "${OPTN}" = "--dump" ]]
   then
+    dumpLXDInfo
+  elif [[ "${OPTN}" = "-a" ]] || [[ "${OPTN}" = "--all" ]]
+  then
+    bringupLXDCntnrs
+    setupLXDCntnrs
     dumpLXDInfo
   else
     printUsage

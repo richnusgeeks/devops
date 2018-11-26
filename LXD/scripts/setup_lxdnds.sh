@@ -12,10 +12,14 @@ GREP=$(which grep)
 XARG=$(which xargs)
 OPTN="${1}"
 BSNME=$(which basename)
+SLEEP=$(which sleep)
+ANSBL=$(which ansible)
+SSHPASS=$(which sshpass)
+SSHCPID=$(which ssh-copy-id)
 NUMOPTN=${#}
+SLPDRTN=10
 NUMOPTNE=1
-SSHDCNFG='/etc/ssh/shd_config'
-SDRSCNFG='/etc/'
+ANSBLRPO='ansible.repo'
 LXDIMAGS="ubuntu:18.04/amd64 \
           ubuntu:16.04/amd64 \
           images:centos/7/amd64"
@@ -54,7 +58,63 @@ getOsInfo() {
 
 setupSSHLogin() {
 
-  true
+  local cnms=$("${LXC}" list| \
+         "${GREP}" -Ev '^\+'| \
+         "${GREP}" -iv name| \
+         "${AWK}" '{print $2}')
+
+  for c in ${cnms}
+  do
+
+    "${LXC}" file push ./setup_sshlgn.sh "${c}"/tmp/setup_sshlgn.sh
+    "${LXC}" exec "${c}" -- /tmp/setup_sshlgn.sh
+
+  done
+
+}
+
+pushSSHKey() {
+
+  local cnms=$("${LXC}" list| \
+         "${GREP}" -Ev '^\+'| \
+         "${GREP}" -iv name| \
+         "${AWK}" '{print $2}')
+
+  > "${ANSBLRPO}"
+
+  for c in ${cnms}
+  do
+
+    local cip=$("${LXC}" list -c4 "${c}"| \
+         "${GREP}" -Ev '^\+'| \
+         "${GREP}" -iv ipv4| \
+         "${AWK}" '{print $2}')
+
+    if [[ ! -z "${cip}" ]]
+    then
+
+      if "${ECHO}" "${c}"|"${GREP}" centos > /dev/null 2>&1
+      then
+        PSWD=centos
+      elif "${ECHO}" "${c}"|"${GREP}" ubuntu > /dev/null 2>&1
+      then
+        PSWD=ubuntu
+      fi
+
+      "${SSHPASS}" -p "${PSWD}" "${SSHCPID}" -oStrictHostKeyChecking=no \
+      "${PSWD}"@"${cip}"
+
+      if [[ "${PSWD}" = "centos" ]]
+      then
+        "${ECHO}" "${PSWD}@${cip}" >> "${ANSBLRPO}"
+      elif [[ "${PSWD}" = "ubuntu" ]]
+      then
+        "${ECHO}" "${PSWD}@${cip} ansible_python_interpreter=/usr/bin/python3" >> "${ANSBLRPO}"
+      fi
+
+    fi
+
+  done
 
 }
 
@@ -71,6 +131,7 @@ bringupLXDCntnrs() {
 setupLXDCntnrs() {
 
   setupSSHLogin
+  pushSSHKey
 
 }
 
@@ -78,7 +139,8 @@ dumpLXDInfo() {
 
   "${LXC}" list
   "${ECHO}"
-  "${LXC}" image list
+  "${ANSBL}" all -m ping -i "${ANSBLRPO}"
+  #"${LXC}" image list
 
 }
 
@@ -111,6 +173,7 @@ main() {
   elif [[ "${OPTN}" = "-a" ]] || [[ "${OPTN}" = "--all" ]]
   then
     bringupLXDCntnrs
+    "${SLEEP}" "${SLPDRTN}"
     setupLXDCntnrs
     dumpLXDInfo
   else

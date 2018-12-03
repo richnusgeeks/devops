@@ -2,12 +2,12 @@
 
 apt-get update && apt-get install -y build-essential
 
-curl -o /tmp/redis.tar.gz http://download.redis.io/releases/redis-4.0.11.tar.gz \
+curl -o /tmp/redis.tar.gz http://download.redis.io/redis-stable.tar.gz \
     && tar zxvf /tmp/redis.tar.gz -C /tmp \
-    && make install -C /tmp/redis-4.0.11 \
+    && make install -C /tmp/redis-stable \
     && mkdir /etc/redis \
-    && for p in $(seq 6379 6408);do cp /tmp/redis-4.0.11/redis.conf /etc/redis/redis${p}.conf; sed -i -e "/^port/ s/\([1-9]\{1,\}\)/$p/" -e "/^bind/s/127.0.0.1/0.0.0.0/" /etc/redis/redis${p}.conf; done \
-    && rm -rf /tmp/{redis-4.0.11,redis.tar.gz}
+    && for p in $(seq 6379 6408);do cp /tmp/redis-stable/redis.conf /etc/redis/redis${p}.conf; sed -i -e "/^port/ s/\([1-9]\{1,\}\)/$p/" -e "/^bind/s/127.0.0.1/0.0.0.0/" /etc/redis/redis${p}.conf; done \
+    && rm -rf /tmp/{redis-stable,redis.tar.gz}
 
 apt-get remove -y build-essential \
     && rm -rf /var/lib/apt/lists/*

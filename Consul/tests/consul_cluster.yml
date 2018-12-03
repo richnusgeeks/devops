@@ -3,7 +3,7 @@ version: '3.2'
 services:
 
   consul-agent-1: &consul-agent
-    image: consul:1.2.3
+    image: consul:1.4.0
     networks:
       - consul-demo
     command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0"
@@ -32,7 +32,7 @@ services:
   consul-esm:
     depends_on:
       - consul-server-bootstrap
-    image: consul-esm:v0.3.0
+    image: consul-esm:v0.3.1
     build:
       context: ../scripts
       dockerfile: Dockerfile_ConsulESM
@@ -42,7 +42,7 @@ services:
         target: /mnt
     environment:
       - CONSUL_HTTP_ADDR=consul-server-bootstrap:8500
-    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm"
+    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm -config-dir=/etc/consul-esm.d"
     networks:
       - consul-demo
 
@@ -66,7 +66,7 @@ services:
   hashi-ui:
     depends_on:
       - consul-server-bootstrap
-    image: jippi/hashi-ui:v0.26.1
+    image: jippi/hashi-ui:v1.0.0
     volumes:
       - type: bind
         source: ../scripts/certs/out
@@ -78,7 +78,7 @@ services:
       - "3000:3000"
     environment:
       - CONSUL_ENABLE=1
-      - CONSUL_READ_ONLY=1
+#      - CONSUL_READ_ONLY=1
       - CONSUL_ADDR=consul-server-bootstrap:8500
       - HTTPS_ENABLE=true
       - SERVER_CERT=/etc/ssl/certs/test.crt

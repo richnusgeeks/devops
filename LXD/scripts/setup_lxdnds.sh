@@ -20,9 +20,10 @@ NUMOPTN=${#}
 SLPDRTN=10
 NUMOPTNE=1
 ANSBLRPO='ansible.repo'
-LXDIMAGS="ubuntu:18.04/amd64 \
-          ubuntu:16.04/amd64 \
+LXDIMAGS="ubuntu:18.04/amd64
+          ubuntu:16.04/amd64
           images:centos/7/amd64"
+PCKGSTOI="monit"
 PRGNME=$("${BSNME}" "${0}")
 LOGNME=$("${ECHO}" "${PRGNME}" | "${SED}" 's/\.sh/\.log/')
 
@@ -95,10 +96,10 @@ pushSSHKey() {
 
       if "${ECHO}" "${c}"|"${GREP}" centos > /dev/null 2>&1
       then
-        PSWD=centos
+        local PSWD=centos
       elif "${ECHO}" "${c}"|"${GREP}" ubuntu > /dev/null 2>&1
       then
-        PSWD=ubuntu
+        local PSWD=ubuntu
       fi
 
       "${SSHPASS}" -p "${PSWD}" "${SSHCPID}" -oStrictHostKeyChecking=no \

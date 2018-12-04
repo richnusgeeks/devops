@@ -5,20 +5,26 @@ set -o pipefail
 # FIXME: surprisingly the centos/7/amd64 Linux Container image doesn't have
 #        a very basic which command.
 OSVRSNFL='/etc/os-release'
+CMNPCKGS="monit"
 if grep -i '^ *PRETTY_NAME="centos' "${OSVRSNFL}" > /dev/null 2>&1
 then
   yum update
-  yum install -y which
+  rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  yum install -y which ${CMNPCKGS}
 fi
 
-YUM=$(which yum)
+CAT=$(which cat)
+TEE=$(which tee)
 SED=$(which sed)
 GREP=$(which grep)
 SRVC=$(which service)
 ECHO=$(which echo)
 DATE=$(which date)
+CHMOD=$(which chmod)
 CHPSWD=$(which chpasswd)
 ADDUSR=$(which adduser)
+SYSCTL=$(which systemctl)
+USRMOD='/usr/sbin/usermod'
 CTOSPKGS="openssh-server
           sudo"
 SSHDCNFL='/etc/ssh/sshd_config'
@@ -34,10 +40,7 @@ exitOnErr() {
 
 if "${GREP}" -i '^ *PRETTY_NAME="centos' "${OSVRSNFL}" > /dev/null 2>&1
 then
-  if ! "${YUM}" update
-  then
-    exitOnErr "${YUM} update"
-  fi
+  YUM=$(which yum)
 
   if ! "${YUM}" install -y ${CTOSPKGS}
   then
@@ -59,7 +62,12 @@ then
 
   if ! "${ECHO}"  'centos:centos'|"${CHPSWD}"
   then
-   exitOnErr "${ECHO} -n 'centos:centos'|${CHPSWD}"
+    exitOnErr "${ECHO} -n 'centos:centos'|${CHPSWD}"
+  fi
+
+  if ! "${USRMOD}" -aG wheel centos
+  then
+    exitOnErr "${USERMOD} -aG wheel centos"
   fi
 
   if ! "${SED}" -i '/NOPASSWD: ALL/s/^#//' "${SUDORSFL}"
@@ -69,6 +77,9 @@ then
 
 elif "${GREP}" -i '^ *PRETTY_NAME="ubuntu' "${OSVRSNFL}" > /dev/null 2>&1 
 then
+  APT=$(which apt-get)
+  "${APT}" update
+  "${APT}" install -y ${CMNPCKGS}
 
   if ! "${ECHO}" -n 'ubuntu:ubuntu'|"${CHPSWD}"
   then
@@ -91,3 +102,29 @@ then
   fi
 
 fi
+
+"${SYSCTL}" enable monit
+#"${CAT}" <<EOF|"${TEE}" /etc/monitrc
+#set daemon 120
+#set log /var/log/monit.log
+#
+#set idfile /var/lib/monit/id
+#set statefile /var/lib/monit/state
+#
+#set eventqueue
+#  basedir /var/lib/monit/events
+#  slots 100
+#
+#set httpd port 2812 and
+#  use address 0.0.0.0
+#  allow localhost
+#  allow 0.0.0.0/0
+#  allow admin:monit
+#  allow guest:guest readonly
+#
+#include /etc/monit/conf.d/*
+#include /etc/monit/conf-enabled/*
+#EOF
+#"${CHMOD}" 0600 /etc/monitrc
+"${SYSCTL}" start monit
+monit reload

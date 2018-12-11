@@ -130,14 +130,14 @@ instlHCrpUI() {
 
 instlCnslAlrts() {
 
-  local v=$("${CURL}" -sSLk "${CNSLALRTSURL}/${CNSLALRTS}/releases"|"${GREP}" href|"${GREP}" "${OS}-amd64"|"${HEAD}" -1|"${AWK}" '{print $(NF-1)}'|"${AWK}" -F'/' '{print $NF}'|"${SED}" 's/"//')
-
+  local v=$("${CURL}" -sSLk "${CNSLALRTSURL}/${CNSLALRTS}/releases"|"${GREP}" href|"${GREP}" "${OS}-amd64"|"${HEAD}" -1|"${AWK}" '{print $(NF-3)}'|"${AWK}" -F'/' '{print $NF}'|"${SED}" 's/"//')
+  local ver=$("${ECHO}" "${v}"|"${AWK}" -F"-" '{print $3}')
   local c=$("${HCTLSLOC}/${CNSLALRTS}" --version|"${GREP}" -E '[0-9.]+'|"${AWK}" '{print $3}')
 
-  if [[ "${v}" != "${c}" ]]
+  if [[ "${ver}" != "${c}" ]]
   then
     if ! "${CURL}" -sSLk -o /tmp/${CNSLALRTS}.tar \
-         "${CNSLALRTSURL}/${CNSLALRTS}/releases/download/v$("${ECHO}" "${v}"|"${AWK}" -F"-" '{print $3}')/${v}"
+         "${CNSLALRTSURL}/${CNSLALRTS}/releases/download/v${ver}/${v}"
     then
       exitOnErr "${CURL} -sSLk -o /tmp/${CNSLALRTS}.tar ${CNSLALRTSURL}/${CNSLALRTS}/releases/download/v$(${ECHO} ${v}|${AWK}-F'-' '{print $3}')/${v}"
 
@@ -158,7 +158,7 @@ instlDvopsTls() {
     # TODO: Hashicorp folks run https://checkpoint.hashicorp.com/ for the latest version info.
     # XXX:  But they have exposed only selected services through
     #       v1/check/<product> https://github.com/hashicorp/ruby-checkpoint.
-    local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta)'|${HEAD} -1)
+    local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta|alpha)'|${HEAD} -1)
 
     if [[ "${t}" = 'packer' ]]
     then

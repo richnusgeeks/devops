@@ -75,6 +75,22 @@ then
     exitOnErr "${SED} -i '/NOPASSWD: ALL/s/^#//' ${SUDORSFL}"
   fi
 
+  "${CAT}" <<EOF|"${TEE}" /etc/monitrc
+set daemon  30
+set log syslog
+
+set httpd port 2812 and
+  use address 0.0.0.0
+  allow localhost
+  allow 0.0.0.0/0
+  allow admin:monit
+  allow guest:guest readonly
+
+include /etc/monit.d/*
+EOF
+
+  "${CHMOD}" 0600 /etc/monitrc
+
 elif "${GREP}" -i '^ *PRETTY_NAME="ubuntu' "${OSVRSNFL}" > /dev/null 2>&1 
 then
   APT=$(which apt-get)
@@ -101,30 +117,32 @@ then
     exitOnErr "${SRVC} sshd restart"
   fi
 
+  "${CAT}" <<EOF|"${TEE}" /etc/monit/monitrc
+  set daemon 30
+  set log /var/log/monit.log
+
+  set idfile /var/lib/monit/id
+  set statefile /var/lib/monit/state
+
+  set eventqueue
+    basedir /var/lib/monit/events
+    slots 100
+
+  set httpd port 2812 and
+    use address 0.0.0.0
+    allow localhost
+    allow 0.0.0.0/0
+    allow admin:monit
+    allow guest:guest readonly
+
+  include /etc/monit/conf.d/*
+  include /etc/monit/conf-enabled/*
+EOF
+
+  "${CHMOD}" 0600 /etc/monit/monitrc
+
 fi
 
 "${SYSCTL}" enable monit
-#"${CAT}" <<EOF|"${TEE}" /etc/monitrc
-#set daemon 120
-#set log /var/log/monit.log
-#
-#set idfile /var/lib/monit/id
-#set statefile /var/lib/monit/state
-#
-#set eventqueue
-#  basedir /var/lib/monit/events
-#  slots 100
-#
-#set httpd port 2812 and
-#  use address 0.0.0.0
-#  allow localhost
-#  allow 0.0.0.0/0
-#  allow admin:monit
-#  allow guest:guest readonly
-#
-#include /etc/monit/conf.d/*
-#include /etc/monit/conf-enabled/*
-#EOF
-#"${CHMOD}" 0600 /etc/monitrc
 "${SYSCTL}" start monit
 monit reload

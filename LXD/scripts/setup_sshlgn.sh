@@ -2,14 +2,22 @@
 #set -u
 set -o pipefail
 
-# FIXME: surprisingly the centos/7/amd64 Linux Container image doesn't have
+# FIXME: surprisingly the centos/[67]/amd64 Linux Container images don't have
 #        a very basic which command.
 OSVRSNFL='/etc/os-release'
 CMNPCKGS="monit"
-if grep -i '^ *PRETTY_NAME="centos' "${OSVRSNFL}" > /dev/null 2>&1
+if [[ ! -f "${OSVRSNFL}" ]]
+then
+  OSVER=6
+  OSVRSNFL='/etc/centos-release'
+else
+  OSVER=7
+fi
+
+if grep -i 'centos' "${OSVRSNFL}" > /dev/null 2>&1
 then
   yum update
-  rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OSVER}.noarch.rpm
   yum install -y which ${CMNPCKGS}
 fi
 
@@ -23,7 +31,6 @@ DATE=$(which date)
 CHMOD=$(which chmod)
 CHPSWD=$(which chpasswd)
 ADDUSR=$(which adduser)
-SYSCTL=$(which systemctl)
 USRMOD='/usr/sbin/usermod'
 CTOSPKGS="openssh-server
           sudo"
@@ -38,9 +45,17 @@ exitOnErr() {
 
 }
 
-if "${GREP}" -i '^ *PRETTY_NAME="centos' "${OSVRSNFL}" > /dev/null 2>&1
+if "${GREP}" -i 'centos' "${OSVRSNFL}" > /dev/null 2>&1
 then
   YUM=$(which yum)
+  CHKCNFG=$(which chkconfig)
+
+  if [[ ${OSVER} -eq 6 ]]
+  then
+    MNTCNFG='monit.conf'
+  else
+    MNTCNFG='monitrc'
+  fi
 
   if ! "${YUM}" install -y ${CTOSPKGS}
   then
@@ -75,7 +90,7 @@ then
     exitOnErr "${SED} -i '/NOPASSWD: ALL/s/^#//' ${SUDORSFL}"
   fi
 
-  "${CAT}" <<EOF|"${TEE}" /etc/monitrc
+  "${CAT}" <<EOF|"${TEE}" "/etc/${MNTCNFG}"
 set daemon  30
 set log syslog
 
@@ -89,7 +104,7 @@ set httpd port 2812 and
 include /etc/monit.d/*
 EOF
 
-  "${CHMOD}" 0600 /etc/monitrc
+  "${CHMOD}" 0600 "/etc/${MNTCNFG}"
 
 elif "${GREP}" -i '^ *PRETTY_NAME="ubuntu' "${OSVRSNFL}" > /dev/null 2>&1 
 then
@@ -143,6 +158,12 @@ EOF
 
 fi
 
-"${SYSCTL}" enable monit
-"${SYSCTL}" start monit
+if [[ ${OSVER} -eq 6 ]]
+then
+  "${CHKCNFG}" monit on
+else
+  SYSCTL=$(which systemctl)
+  "${SYSCTL}" enable monit
+fi
+"${SRVC}" monit start
 monit reload

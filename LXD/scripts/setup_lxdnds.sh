@@ -21,8 +21,8 @@ SLPDRTN=10
 NUMOPTNE=1
 ANSBLRPO='ansible.repo'
 LXDIMAGS="ubuntu:18.04/amd64
-          ubuntu:16.04/amd64
-          images:centos/7/amd64"
+          images:centos/7/amd64
+          images:centos/6/amd64"
 PCKGSTOI="monit"
 PRGNME=$("${BSNME}" "${0}")
 LOGNME=$("${ECHO}" "${PRGNME}" | "${SED}" 's/\.sh/\.log/')
@@ -81,7 +81,7 @@ pushSSHKey() {
          "${GREP}" -iv name| \
          "${AWK}" '{print $2}')
 
-  > "${ANSBLRPO}"
+  > "ansible/${ANSBLRPO}"
 
   for c in ${cnms}
   do
@@ -107,10 +107,10 @@ pushSSHKey() {
 
       if [[ "${PSWD}" = "centos" ]]
       then
-        "${ECHO}" "${PSWD}@${cip}" >> "${ANSBLRPO}"
+        "${ECHO}" "${PSWD}@${cip}" >> "ansible/${ANSBLRPO}"
       elif [[ "${PSWD}" = "ubuntu" ]]
       then
-        "${ECHO}" "${PSWD}@${cip} ansible_python_interpreter=/usr/bin/python3" >> "${ANSBLRPO}"
+        "${ECHO}" "${PSWD}@${cip} ansible_python_interpreter=/usr/bin/python3" >> "ansible/${ANSBLRPO}"
       fi
 
     fi
@@ -140,7 +140,18 @@ dumpLXDInfo() {
 
   "${LXC}" list
   "${ECHO}"
+
+  pushd ansible
   "${ANSBL}" all -m ping -i "${ANSBLRPO}"
+  popd
+  "${ECHO}"
+
+  "${LXC}" list| \
+    "${GREP}" -Ev '^\+'| \
+    "${GREP}" -iv name| \
+    "${AWK}" '{print $2}'| \
+    "${XARG}" -I % "${LXC}" exec % -- monit summary
+  "${ECHO}"
   #"${LXC}" image list
 
 }
@@ -152,6 +163,8 @@ teardownLXDCntnrs() {
     "${GREP}" -iv name| \
     "${AWK}" '{print $2}'| \
     "${XARG}" -I % "${LXC}" delete -f %
+
+  > "ansible/${ANSBLRPO}"
 
 }
 

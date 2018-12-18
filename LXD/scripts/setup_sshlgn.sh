@@ -28,10 +28,12 @@ GREP=$(which grep)
 SRVC=$(which service)
 ECHO=$(which echo)
 DATE=$(which date)
+CHOWN=$(which chown)
 CHMOD=$(which chmod)
 CHPSWD=$(which chpasswd)
 ADDUSR=$(which adduser)
 USRMOD='/usr/sbin/usermod'
+PEMFLE='/etc/ssl/certs/monit.pem'
 CTOSPKGS="openssh-server
           sudo"
 SSHDCNFL='/etc/ssh/sshd_config'
@@ -44,6 +46,9 @@ exitOnErr() {
     exit 1
 
 }
+
+"${CHOWN}" root:root "${PEMFLE}"
+"${CHMOD}" 0600 "${PEMFLE}"
 
 if "${GREP}" -i 'centos' "${OSVRSNFL}" > /dev/null 2>&1
 then
@@ -95,6 +100,9 @@ set daemon  30
 set log syslog
 
 set httpd port 2812 and
+  with ssl {
+    pemfile: /etc/ssl/certs/monit.pem
+  }
   use address 0.0.0.0
   allow localhost
   allow 0.0.0.0/0
@@ -144,6 +152,9 @@ then
     slots 100
 
   set httpd port 2812 and
+    with ssl {
+      pemfile: /etc/ssl/certs/monit.pem
+    }
     use address 0.0.0.0
     allow localhost
     allow 0.0.0.0/0
@@ -157,6 +168,7 @@ EOF
   "${CHMOD}" 0600 /etc/monit/monitrc
 
 fi
+
 
 if [[ ${OSVER} -eq 6 ]]
 then

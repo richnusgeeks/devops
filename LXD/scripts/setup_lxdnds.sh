@@ -67,6 +67,7 @@ setupSSHLogin() {
   for c in ${cnms}
   do
 
+    "${LXC}" file push ./certs/out/monit.pem "${c}"/etc/ssl/certs/monit.pem
     "${LXC}" file push ./setup_sshlgn.sh "${c}"/tmp/setup_sshlgn.sh
     "${LXC}" exec "${c}" -- /tmp/setup_sshlgn.sh
 

@@ -1,0 +1,61 @@
+version: '3.2'
+
+services:
+
+  mmonit:
+    image: mmonit:v3.7.2
+    build:
+      context: .
+      dockerfile: Dockerfile_MMonit
+    ports:
+      - "8080:8080"
+    environment:
+      - MMONIT_ENABLED=true
+      - MMONIT_ADDR=localhost:8080
+    networks:
+      - monit-demo
+
+  monit-centos6:
+    depends_on:
+      - mmonit
+    image: monit-centos6:v5.25.2
+    build:
+      context: .
+      dockerfile: Dockerfile_MonitCO6
+    ports:
+      - "2812:2812"
+    environment:
+      - MMONIT_ADDR=mmonit:8080
+    networks:
+      - monit-demo
+
+  monit-centos7:
+    depends_on:
+      - mmonit
+    image: monit-centos7:v5.25.2
+    build:
+      context: .
+      dockerfile: Dockerfile_MonitCO7
+    ports:
+      - "2813:2812"
+    environment:
+      - MMONIT_ADDR=mmonit:8080
+    networks:
+      - monit-demo
+
+#  monit-ubuntu1804:
+#    depends_on:
+#      - mmonit
+#    image: monit-ubuntu1804:v5.25.2
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_MonitCO1804
+#    ports:
+#      - "2814:2812"
+#    environment:
+#      - MMONIT_ADDR=mmonit:8080
+#    networks:
+#      - monit-demo
+
+networks:
+  monit-demo:

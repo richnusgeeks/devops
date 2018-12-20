@@ -1,0 +1,7 @@
+from ubuntu:18.04
+
+ADD setup.sh /usr/local/bin/
+RUN ["setup.sh"]
+
+ADD run.sh /usr/local/bin/
+CMD ["run.sh"]

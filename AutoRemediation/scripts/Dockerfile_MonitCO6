@@ -1,5 +1,7 @@
 from centos:6
 
+ADD certs/out/monit.pem /etc/ssl/certs/
+
 ADD setup.sh /usr/local/bin/
 RUN ["setup.sh"]
 

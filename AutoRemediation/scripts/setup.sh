@@ -11,6 +11,8 @@ MMNTVER='3.7.2'
 MMNTDIR='/opt/mmonit'
 MNTECDIR="${MNTDIR}/monit.d"
 OSVRSNFL='/etc/os-release'
+MNTCRTFL='monit.pem'
+MNTCRTDIR='/etc/ssl/certs/'
 
 exitOnErr() {
   local date=$($DATE)
@@ -43,15 +45,18 @@ set log /var/log/monit.log
 #set mmonit http://monit:monit@MMONITIP:MMONITPORT/collector with timeout 10 seconds
 
 set httpd port 2812 and
-    use address 0.0.0.0
-    allow localhost
-    allow 0.0.0.0/0
-    allow admin:monit
-    allow guest:guest readonly    
+  with ssl {
+    pemfile: /etc/ssl/certs/monit.pem
+  }
+  use address 0.0.0.0
+  allow localhost
+  allow 0.0.0.0/0
+  allow admin:monit
+  allow guest:guest readonly
 
 include "${MNTECDIR}/*"
 EOF
-chmod 0600 "${MNTCDIR}/${MNTCNFG}"
+chmod 0600 "${MNTCDIR}/${MNTCNFG}" "${MNTCRTDIR}/${MNTCRTFL}"
 
 if ! curl -sSLk "https://mmonit.com/dist/mmonit-${MMNTVER}-linux-x64.tar.gz" \
           -o mmonit.tar.gz

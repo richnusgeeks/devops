@@ -26,6 +26,18 @@ if [[ "${OPTN}" != "up" ]] && \
 then
   printUsage
 else
+  if [[ "${OPTN}" = "up" ]] || \
+     [[ "${OPTN}" = "buildup" ]]
+  then
+    terraform init
+    terraform apply -auto-approve
+  elif [[ "${OPTN}" = "down" ]] || \
+       [[ "${OPTN}" = "cleandown" ]]
+  then
+    terraform init
+    terraform destroy -auto-approve
+  fi
+
   if [[ "${OPTN}" = "up" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d

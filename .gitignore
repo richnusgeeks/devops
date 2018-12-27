@@ -1,3 +1,7 @@
 *~
+.*
 *.log
 *.py[co]
+*.backup
+*.tfstate
+*/scripts/certs/out

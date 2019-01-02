@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile_MMonit
     ports:
       - "8080:8080"
+      - "8500:8500"
     environment:
       - MMONIT_ENABLED=true
       - MMONIT_ADDR=localhost:8080
@@ -24,6 +25,7 @@ services:
       dockerfile: Dockerfile_MonitCO6
     ports:
       - "2812:2812"
+      - "8600:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
     networks:
@@ -38,6 +40,7 @@ services:
       dockerfile: Dockerfile_MonitCO7
     ports:
       - "2813:2812"
+      - "8700:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
     networks:
@@ -52,6 +55,7 @@ services:
       dockerfile: Dockerfile_MonitCO1804
     ports:
       - "2814:2812"
+      - "8800:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
     networks:

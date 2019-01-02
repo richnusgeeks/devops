@@ -18,6 +18,12 @@ KFKDIR='/opt/kafka'
 KFKSVER='2.1.0'
 JREVERU='openjdk-8-jre-headless'
 JREVERR='java-1.8.0-openjdk-headless'
+CNSLVER='1.4.0'
+CSLCDIR='/etc/consul.d'
+CSLDDIR='/var/lib/consul'
+CMNPCKGS="unzip
+          curl
+          daemonize"
 
 exitOnErr() {
   local date=$($DATE)
@@ -30,9 +36,18 @@ setupPreReq() {
   if ! command -v curl > /dev/null 2>&1
   then
     apt-get update -y
-    apt-get install -y curl "${JREVERU}"
+    apt-get install -y --no-install-recommends ${CMNPCKGS} "${JREVERU}"
   else
-    yum install -y "${JREVERR}"
+    local OSVRSNFL='/etc/os-release'
+    if [[ ! -f "${OSVRSNFL}" ]]
+    then
+      OSVER=6
+    else
+      OSVER=7
+    fi
+
+    rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OSVER}.noarch.rpm
+    yum install -y unzip ${CMNPCKGS} "${JREVERR}"
   fi
 
 }
@@ -52,7 +67,7 @@ setupMonit() {
   rm -f monit.tar.gz
 
   cat <<EOF | tee "${MNTCDIR}/${MNTCNFG}"
-  set daemon  10
+  set daemon 10
   set log /var/log/monit.log
 
   #set mmonit http://monit:monit@MMONITIP:MMONITPORT/collector with timeout 10 seconds
@@ -70,6 +85,12 @@ setupMonit() {
   include "${MNTECDIR}/*"
 EOF
   chmod 0600 "${MNTCDIR}/${MNTCNFG}" "${MNTCRTDIR}/${MNTCRTFL}"
+
+  cat << EOF | tee "${MNTECDIR}/spaceinode"
+  check filesystem rootfs with path /
+    if space usage > 80% then alert
+    if inode usage > 80% then alert
+EOF
 
 }
 
@@ -111,12 +132,44 @@ EOF
 
 }
 
+setupConsul() {
+
+  if ! curl -sSLk "https://releases.hashicorp.com/consul/${CNSLVER}/consul_${CNSLVER}_linux_amd64.zip" -o consul.zip
+  then
+    exitOnErr "consul ${CNSLVER} archive download failed"
+  fi
+
+  unzip consul.zip -d /usr/local/bin
+  rm -f consul.zip
+
+  mkdir -p "${CSLCDIR}" "${CSLDDIR}"
+  cat << EOF | tee "${CSLCDIR}/server.json"
+{
+  "server": true,
+  "bootstrap": true,
+  "data_dir": "${CSLDDIR}",
+  "log_level": "DEBUG",
+  "client_addr": "0.0.0.0",
+  "ui": true,
+  "enable_local_script_checks": true
+}
+EOF
+
+  cat << EOF | tee "${MNTECDIR}/consul"
+  check process consulserver with pidfile /var/run/consulserver.pid
+    start program = "/usr/sbin/daemonize -a -e /var/log/consulserver -o /var/log/consulserver -p /var/run/consulserver.pid /usr/local/bin/consul agent -config-dir=/etc/consul.d" with timeout 60 seconds
+    if failed port 8500 for 6 cycles then restart
+EOF
+
+}
+
 main() {
 
   setupPreReq
   setupMonit
   setupMMonit
   setupKafka
+  setupConsul
 
 }
 

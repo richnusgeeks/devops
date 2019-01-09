@@ -8,11 +8,11 @@ resource "tls_self_signed_cert" "test" {
   private_key_pem = "${tls_private_key.test.private_key_pem}"
 
   subject {
-    common_name  = "richnusgeeks.com"
-    organization = "richnusgeeks, Inc"
+    common_name  = "${var.cmnme}"
+    organization = "${var.orgnme}"
   }
 
-  validity_period_hours = 8760
+  validity_period_hours = "${var.vldthrs}"
 
   allowed_uses = [
     "key_encipherment",

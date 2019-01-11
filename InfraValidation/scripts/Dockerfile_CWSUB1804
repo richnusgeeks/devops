@@ -1,0 +1,13 @@
+FROM ubuntu:18.04
+
+ENV CHEFWS_VERSION 0.2.43
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y curl vim
+
+RUN curl -sSLk https://packages.chef.io/files/stable/chef-workstation/${CHEFWS_VERSION}/ubuntu/18.04/chef-workstation_${CHEFWS_VERSION}-1_amd64.deb -o /tmp/chefws.deb \
+    && dpkg -i /tmp/chefws.deb
+
+ADD ./keys/out/test /etc/ssl/certs/test_servers_pkey
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

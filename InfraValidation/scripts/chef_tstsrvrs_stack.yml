@@ -1,0 +1,48 @@
+version: '3.2'
+
+services:
+
+  chefwrkstn-ubuntu1804:
+    image: chefwrkstn:v0.2.43
+    container_name: chefwrkstn
+    build:
+      context: .
+      dockerfile: Dockerfile_CWSUB1804
+    networks:
+      - chef-demo
+
+  tstsrvr1-ubuntu1804:
+    image: phusionbsimgssh:v0.11
+    container_name: tstsrvr1
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    ports:
+      - "2222:22"
+    networks:
+      - chef-demo
+
+  tstsrvr2-ubuntu1804:
+    image: phusionbsimgssh:v0.11
+    container_name: tstsrvr2
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    ports:
+      - "2223:22"
+    networks:
+      - chef-demo
+
+  tstsrvr3-ubuntu1804:
+    image: phusionbsimgssh:v0.11
+    container_name: tstsrvr3
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    ports:
+      - "2224:22"
+    networks:
+      - chef-demo
+
+networks:
+  chef-demo:

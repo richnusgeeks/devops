@@ -5,6 +5,7 @@ NUMOPTNMX=2
 CMPSFLDIR='.'
 CMPSEFILE='chef_tstsrvrs_stack.yml'
 RQRDCMNDS="terraform
+           docker
            docker-compose"
 SSHPRVKEY='/etc/ssl/certs/test_servers_pkey'
 

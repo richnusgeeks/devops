@@ -4,12 +4,14 @@ OPTN=${1}
 NUMOPTNMX=2
 CMPSFLDIR='.'
 CMPSEFILE='chef_tstsrvrs_stack.yml'
-rqrdcmnds="terraform
+RQRDCMNDS="terraform
            docker-compose"
+SSHPRVKEY='/etc/ssl/certs/test_servers_pkey'
+
 
 preReq() {
 
-  for c in ${rqrdcmnds}
+  for c in ${RQRDCMNDS}
   do
     if ! command -v "${c}" > /dev/null 2>&1
     then
@@ -31,7 +33,16 @@ chefRun() {
 
   local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
 
-  docker exec -it chefwrkstn chef-run --user root -i /etc/ssl/certs/test_servers_pkey ${TSTSRVRS} package curl action=install
+  docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
+    "${TSTSRVRS}" package curl action=install
+
+  sleep 5
+
+  for s in $(echo ${TSTSRVRS}|sed 's/,/ /g')
+  do
+    docker exec -it chefwrkstn inspec exec /opt/inspec -t "ssh://root@${s}" \
+      -i "${SSHPRVKEY}"
+  done
 
 }
 

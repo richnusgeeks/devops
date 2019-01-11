@@ -93,6 +93,8 @@ main() {
   elif [[ "${OPTN}" = "buildup" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
+    sleep 10
+    chefRun
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v

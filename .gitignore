@@ -5,3 +5,4 @@
 *.backup
 *.tfstate
 */scripts/certs/out
+*/scripts/keys/out

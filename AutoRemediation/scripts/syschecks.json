@@ -1,0 +1,20 @@
+{
+  "checks": [
+  {
+    "id": "cpuCheck",
+    "notes": "CPU: Warning >80% , Critical >90%",
+    "name": "CPU Check",
+    "args": ["/usr/local/bin/syschecks.sh", "-p", "-w", "80", "-c", "90"],
+    "interval": "10s",
+    "timeout": "10s"
+  },
+  {
+    "id": "diskCheck",
+    "notes": "Disk: Warning >80% , Critical >90%",
+    "name": "Disk Check",
+    "args": ["/usr/local/bin/syschecks.sh", "-d", "-w", "80", "-c", "90"],
+    "interval": "10s",
+    "timeout": "10s"
+  }
+  ]
+}

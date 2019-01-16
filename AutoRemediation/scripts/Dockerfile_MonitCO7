@@ -5,5 +5,8 @@ ADD certs/out/monit.pem /etc/ssl/certs/
 ADD setup.sh /usr/local/bin/
 RUN ["setup.sh"]
 
+ADD syschecks.json /etc/consul.d/
+ADD syschecks.sh /usr/local/bin/
+
 ADD run.sh /usr/local/bin/
 CMD ["run.sh"]

@@ -13,6 +13,8 @@ services:
     environment:
       - MMONIT_ENABLED=true
       - MMONIT_ADDR=localhost:8080
+#      - MAIL_SERVERS=<server1>,<server2>,<server3>
+#      - ALERTS_RECEPIENT=you@richnusgeeks.com
     networks:
       - monit-demo
 
@@ -28,6 +30,8 @@ services:
       - "8600:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
+#      - MAIL_SERVERS=<server1>,<server2>,<server3>
+#      - ALERTS_RECEPIENT=you@richnusgeeks.com
     networks:
       - monit-demo
 
@@ -43,6 +47,8 @@ services:
       - "8700:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
+#      - MAIL_SERVERS=<server1>,<server2>,<server3>
+#      - ALERTS_RECEPIENT=you@richnusgeeks.com
     networks:
       - monit-demo
 
@@ -58,6 +64,8 @@ services:
       - "8800:8500"
     environment:
       - MMONIT_ADDR=mmonit:8080
+#      - MAIL_SERVERS=<server1>,<server2>,<server3>
+#      - ALERTS_RECEPIENT=you@richnusgeeks.com
     networks:
       - monit-demo
 

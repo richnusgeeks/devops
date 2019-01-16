@@ -70,6 +70,8 @@ setupMonit() {
   set daemon 10
   set log /var/log/monit.log
 
+  set mail-format { from: monit@richnusgeeks.demo }
+
   #set mmonit http://monit:monit@MMONITIP:MMONITPORT/collector with timeout 10 seconds
 
   set httpd port 2812 and
@@ -154,6 +156,49 @@ setupConsul() {
   "enable_local_script_checks": true
 }
 EOF
+
+  cat << EOF | tee "${CSLCDIR}/watches.json"
+{
+  "watches": [
+    {
+      "type": "checks",
+      "state": "warning",
+      "args": ["/usr/local/bin/watches_handler.sh","warning"]
+    },
+    {
+      "type": "checks",
+      "state": "critical",
+      "args": ["/usr/local/bin/watches_handler.sh","critical"]
+    }
+  ]
+}
+EOF
+
+  cat << 'EOF' | tee /usr/local/bin/watches_handler.sh
+#! /bin/bash
+
+printUsage() {
+
+  echo " Usage: $(basename $0) < warning|critical >"
+  exit 0
+
+}
+
+if [[ $# -ne 1 ]]
+then
+  printUsage
+fi
+
+if [[ "${1}" != "warning" ]] && \
+   [[ "${1}" != "critical" ]]
+then
+  printUsage
+fi
+
+cat -
+echo " $(date) ${1} watch handler triggered ..."
+EOF
+chmod +x /usr/local/bin/watches_handler.sh
 
   cat << EOF | tee "${MNTECDIR}/consul"
   check process consulserver with pidfile /var/run/consulserver.pid

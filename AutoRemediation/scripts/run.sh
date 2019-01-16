@@ -45,6 +45,20 @@ then
   fi
 fi
 
+if [[ ! -z "${MAIL_SERVERS}" ]]
+then
+  cat << EOF | tee "${MNTECDIR}/mailservers"
+  set mailserver ${MAIL_SERVERS}
+EOF
+fi
+
+if [[ ! -z "${ALERTS_RECEPIENT}" ]]
+then
+  cat << EOF | tee "${MNTECDIR}/alerts"
+  set alert ${ALERTS_RECEPIENT}
+EOF
+fi
+
 pushd "${MNTDIR}"
 "${MNTBDIR}/${MNTBNRY}" -c "${MNTCDIR}/${MNTCNFG}"
 sleep 5

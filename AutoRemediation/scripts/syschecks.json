@@ -2,17 +2,17 @@
   "checks": [
   {
     "id": "cpuCheck",
-    "notes": "CPU: Warning >80% , Critical >90%",
+    "notes": "CPU: Warning >CNSLCWARN% , Critical >CNSLCCRIT%",
     "name": "CPU Check",
-    "args": ["/usr/local/bin/syschecks.sh", "-p", "-w", "80", "-c", "90"],
+    "args": ["/usr/local/bin/syschecks.sh", "-p", "-w", "CNSLCWARN", "-c", "CNSLCCRIT"],
     "interval": "10s",
     "timeout": "10s"
   },
   {
     "id": "diskCheck",
-    "notes": "Disk: Warning >80% , Critical >90%",
+    "notes": "Disk: Warning >CNSLDWARN% , Critical >CNSLDCRIT%",
     "name": "Disk Check",
-    "args": ["/usr/local/bin/syschecks.sh", "-d", "-w", "80", "-c", "90"],
+    "args": ["/usr/local/bin/syschecks.sh", "-d", "-w", "CNSLDWARN", "-c", "CNSLDCRIT"],
     "interval": "10s",
     "timeout": "10s"
   }

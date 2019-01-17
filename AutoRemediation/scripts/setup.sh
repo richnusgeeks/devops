@@ -90,8 +90,8 @@ EOF
 
   cat << EOF | tee "${MNTECDIR}/spaceinode"
   check filesystem rootfs with path /
-    if space usage > 80% then alert
-    if inode usage > 80% then alert
+    if space usage > CNSLDCRIT% then alert
+    if inode usage > CNSLDCRIT% then alert
 EOF
 
 }
@@ -130,6 +130,17 @@ setupKafka() {
     depends on zookeeper
     start program = "${KFKDIR}/bin/kafka-server-start.sh -daemon ${KFKDIR}/config/server.properties" with timeout 60 seconds
     if failed port 9092 for 6 cycles then restart
+EOF
+
+}
+
+setupChaos() {
+
+  cat << EOF | tee "${MNTECDIR}/chaos"
+  check program chaos
+    with path /usr/local/bin/random_filler_killer.sh
+    every 6 cycles
+    if status != 0 then alert
 EOF
 
 }
@@ -197,6 +208,10 @@ fi
 
 cat -
 echo " $(date) ${1} watch handler triggered ..."
+if [[ "${1}" = "critical" ]]
+then
+  rm -fv /tmp/hungry4space*
+fi
 EOF
 chmod +x /usr/local/bin/watches_handler.sh
 
@@ -214,6 +229,7 @@ main() {
   setupMonit
   setupMMonit
   setupKafka
+  setupChaos
   setupConsul
 
 }

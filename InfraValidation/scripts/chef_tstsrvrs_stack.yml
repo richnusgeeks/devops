@@ -2,6 +2,16 @@ version: '3.2'
 
 services:
 
+  chefserver-ubuntu1804:
+    image: quay.io/3ofcoins/chef-server:12.18.14
+    container_name: chefserver
+    privileged: true
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - chef-demo
+
   chefwrkstn-ubuntu1804:
     image: chefwrkstn:v0.2.43
     container_name: chefwrkstn

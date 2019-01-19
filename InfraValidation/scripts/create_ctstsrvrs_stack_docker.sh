@@ -32,7 +32,8 @@ printUsage() {
 
 chefRun() {
 
-  local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
+#  local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
+  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|xargs|sed 's/ /,/g')
 
   docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
     "${TSTSRVRS}" package curl action=install

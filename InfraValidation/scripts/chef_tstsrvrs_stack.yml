@@ -5,16 +5,18 @@ services:
   chefserver-ubuntu1804:
     image: quay.io/3ofcoins/chef-server:12.18.14
     container_name: chefserver
+    hostname: chefserver
     privileged: true
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "9080:80"
+      - "9443:443"
     networks:
       - chef-demo
 
   chefwrkstn-ubuntu1804:
     image: chefwrkstn:v0.2.43
     container_name: chefwrkstn
+    hostname: chefwrkstn
     build:
       context: .
       dockerfile: Dockerfile_CWSUB1804
@@ -24,6 +26,7 @@ services:
   tstsrvr1-ubuntu1804:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr1
+    hostname: tstsrvr1
     build:
       context: .
       dockerfile: Dockerfile_TSUB1804
@@ -35,6 +38,7 @@ services:
   tstsrvr2-ubuntu1804:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr2
+    hostname: tstsrvr2
     build:
       context: .
       dockerfile: Dockerfile_TSUB1804
@@ -46,6 +50,7 @@ services:
   tstsrvr3-ubuntu1804:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr3
+    hostname: tstsrvr3
     build:
       context: .
       dockerfile: Dockerfile_TSUB1804

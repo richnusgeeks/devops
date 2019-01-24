@@ -9,7 +9,7 @@ RUN curl -sSLk https://packages.chef.io/files/stable/chef-workstation/${CHEFWS_V
     && dpkg -i /tmp/chefws.deb
 
 ADD ./keys/out/test /etc/ssl/certs/test_servers_pkey
-ADD ./test-check.rb /opt/inspec/test-check.rb
+ADD ./test_check.rb /opt/inspec/test_check.rb
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

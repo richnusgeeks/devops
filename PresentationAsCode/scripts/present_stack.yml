@@ -1,0 +1,22 @@
+version: '3.2'
+
+services:
+
+  golang-alpine:
+    image: present:latest
+    container_name: present
+    hostname: present
+    build:
+      context: .
+      dockerfile: Dockerfile_Present
+    volumes:
+      - type: bind
+        source: ../files
+        target: /src/files
+    ports:
+      - "8888:8888"
+    networks:
+      - present-demo
+
+networks:
+  present-demo:

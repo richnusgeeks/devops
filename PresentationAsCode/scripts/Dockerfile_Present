@@ -1,0 +1,8 @@
+FROM golang:alpine
+
+RUN apk add --no-cache git \
+  && go get golang.org/x/tools/cmd/present
+
+ADD run.sh /usr/local/bin/
+
+CMD ["run.sh"]

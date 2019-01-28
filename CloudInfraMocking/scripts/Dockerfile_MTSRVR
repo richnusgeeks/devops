@@ -1,0 +1,14 @@
+FROM python:alpine
+
+RUN apk add --no-cache \
+  alpine-sdk \
+  libffi-dev \
+  openssl-dev
+
+RUN pip install "moto[server]" \
+                awscli
+
+EXPOSE 5000
+
+ENTRYPOINT ["moto_server", "-H", "0.0.0.0"]
+CMD ["ec2"]

@@ -1,0 +1,18 @@
+version: '3.2'
+
+services:
+
+  motoserver:
+    image: motoserver
+    build:
+      context: .
+      dockerfile: Dockerfile_MTSRVR
+    container_name: motoserver
+    hostname: motoserver
+    ports:
+      - "9500:5000"
+    networks:
+      - motoserver-demo
+
+networks:
+  motoserver-demo:

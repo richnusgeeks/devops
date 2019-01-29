@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
 
-  chefserver-ubuntu1804:
+  chefserver:
     image: quay.io/3ofcoins/chef-server:12.18.14
     container_name: chefserver
     hostname: chefserver
@@ -13,7 +13,7 @@ services:
     networks:
       - chef-demo
 
-  chefwrkstn-ubuntu1804:
+  chefwrkstn:
     image: chefwrkstn:v0.2.43
     container_name: chefwrkstn
     hostname: chefwrkstn
@@ -23,7 +23,7 @@ services:
     networks:
       - chef-demo
 
-  tstsrvr1-ubuntu1804:
+  tstsrvr1:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr1
     hostname: tstsrvr1
@@ -35,7 +35,7 @@ services:
     networks:
       - chef-demo
 
-  tstsrvr2-ubuntu1804:
+  tstsrvr2:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr2
     hostname: tstsrvr2
@@ -47,7 +47,7 @@ services:
     networks:
       - chef-demo
 
-  tstsrvr3-ubuntu1804:
+  tstsrvr3:
     image: phusionbsimgssh:v0.11
     container_name: tstsrvr3
     hostname: tstsrvr3

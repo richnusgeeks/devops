@@ -3,10 +3,12 @@ FROM ubuntu:18.04
 ENV CHEFWS_VERSION 0.2.43
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y curl vim
+    && apt-get install --no-install-recommends -y curl vim \
+    && curl -sSLk https://packages.chef.io/files/stable/chef-workstation/${CHEFWS_VERSION}/ubuntu/18.04/chef-workstation_${CHEFWS_VERSION}-1_amd64.deb -o /tmp/chefws.deb \
+    && dpkg -i /tmp/chefws.deb \
+    && /opt/chef-workstation/embedded/bin/gem install serverspec
 
-RUN curl -sSLk https://packages.chef.io/files/stable/chef-workstation/${CHEFWS_VERSION}/ubuntu/18.04/chef-workstation_${CHEFWS_VERSION}-1_amd64.deb -o /tmp/chefws.deb \
-    && dpkg -i /tmp/chefws.deb
+ENV PATH="/root/.chefdk/gem/ruby/2.5.0/bin:/opt/chef-workstation/embedded/bin/:${PATH}"
 
 ADD ./keys/out/test /etc/ssl/certs/test_servers_pkey
 ADD ./test_check.rb /opt/inspec/test_check.rb

@@ -1,7 +1,9 @@
 #! /bin/bash
 
 OPTN=${1}
-NUMOPTNMX=2
+SRVC=${2}
+SHELL=${3}
+NUMOPTNMX=4
 CMPSFLDIR='.'
 CMPSEFILE='chef_tstsrvrs_stack.yml'
 RQRDCMNDS="terraform
@@ -25,7 +27,7 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|logs|down|cleandown|chefrun >"
+  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|chefrun >"
   exit 0
 
 }
@@ -61,7 +63,8 @@ parseArgs() {
      [[ "${OPTN}" != "down" ]] && \
      [[ "${OPTN}" != "cleandown" ]] && \
      [[ "${OPTN}" != "buildup" ]] &&
-     [[ "${OPTN}" != "chefrun" ]]
+     [[ "${OPTN}" != "chefrun" ]] &&
+     [[ "${OPTN}" != "exec" ]]
   then
     printUsage
   fi
@@ -102,6 +105,9 @@ main() {
   elif [[ "${OPTN}" = "chefrun" ]]
   then
     chefRun
+  elif [[ "${OPTN}" = "exec" ]]
+  then
+    exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${SHELL}"
   else
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"
   fi

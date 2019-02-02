@@ -1,0 +1,21 @@
+version: '3.2'
+
+services:
+
+  gcpemulators:
+    image: gcpemulators
+    build:
+      context: .
+      dockerfile: Dockerfile_GCPEMU
+    container_name: gcpemulators
+    hostname: gcpemulators
+    ports:
+      - "28000:8000"
+      - "28081:8081"
+      - "28085:8085"
+      - "28086:8086"
+    networks:
+      - gcpemulators-demo
+
+networks:
+  gcpemulators-demo:

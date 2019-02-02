@@ -1,0 +1,17 @@
+FROM google/cloud-sdk:alpine
+
+ENV CLOUDSDK_CORE_PROJECT=demo
+ENV FIRESTORE_EMULATOR_HOST=0.0.0.0:8000
+ENV DATASTORE_EMULATOR_HOST=0.0.0.0:8081
+ENV PUBSUB_EMULATOR_HOST=0.0.0.0:8085
+ENV BIGTABLE_EMULATOR_HOST=0.0.0.0:8086
+
+EXPOSE 8000 8081 8085 8086
+
+RUN apk add --no-cache openjdk8-jre \
+  && gcloud components install beta $(gcloud components list 2>&1|grep -i emulat|awk -F"|" '{print $(NF-2)}'|xargs) --quiet
+
+ADD gcpemu_run.sh /usr/local/bin/run.sh
+
+ENTRYPOINT ["run.sh"]
+CMD ["all"]

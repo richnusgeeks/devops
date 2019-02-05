@@ -1,0 +1,65 @@
+version: '3.2'
+
+services:
+
+  hzcast1:
+    image: hazelcast/hazelcast
+    container_name: hzcast1
+    hostname: hzcast1
+    volumes:
+      - hzcast1-data:/data
+    ports:
+      - "15701:5701"
+    environment:
+      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
+      - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+    networks:
+      - hzcast-demo
+
+  hzcast2:
+    image: hazelcast/hazelcast
+    container_name: hzcast2
+    hostname: hzcast2
+    volumes:
+      - hzcast2-data:/data
+    ports:
+      - "15702:5701"
+    environment:
+      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
+      - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+    networks:
+      - hzcast-demo
+  
+  hzcast3:
+    image: hazelcast/hazelcast
+    container_name: hzcast3
+    hostname: hzcast3
+    volumes:
+      - hzcast3-data:/data
+    ports:
+      - "15703:5701"
+    environment:
+      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
+      - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+    networks:
+      - hzcast-demo
+
+  hzcastmc:
+    image: hazelcast/management-center
+    container_name: hzcastmc
+    hostname: hzcastmc
+    volumes:
+      - hzcastmc-data:/data
+    ports:
+      - "18080:8080"
+    networks:
+      - hzcast-demo
+
+volumes:
+  hzcastmc-data:
+  hzcast1-data:
+  hzcast2-data:
+  hzcast3-data:
+
+networks:
+  hzcast-demo:

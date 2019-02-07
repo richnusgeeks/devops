@@ -55,13 +55,14 @@ parseArgs() {
 testHZcast() {
 
   local HZMC=$(docker ps -f name=hzcastmc -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs)
-  local HZSRVRS=$(docker ps -f name=hzcast[0-9] -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs)
+  #local HZSRVRS=$(docker ps -f name=hzcast[0-9] -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs)
+  local HZSRVRS=$(docker ps -f name=hzcast[0-9]|grep -iv name|awk '{print $NF}'|xargs)
 
   echo
   for s in ${HZSRVRS}
   do
     echo "HZcast server: ${s} healthcheck =>"
-    curl "http://${s}:5701/hazelcast/health"
+    docker exec -it hzcastmc sh -c "curl http://${s}:5701/hazelcast/health"
     echo
   done
 

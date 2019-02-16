@@ -158,7 +158,7 @@ instlDvopsTls() {
     # TODO: Hashicorp folks run https://checkpoint.hashicorp.com/ for the latest version info.
     # XXX:  But they have exposed only selected services through
     #       v1/check/<product> https://github.com/hashicorp/ruby-checkpoint.
-    local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta|alpha)'|${HEAD} -1)
+    local v=$("${CURL}" -s ${HCTLSURL}/${t}/|${GREP} '^ *<a'|${GREP} ${t}|${AWK} -F "/" '{print $3}'|${GREP} -Ev '\-(rc|beta|alpha)'|grep -v '+ent'|${HEAD} -1)
 
     if [[ "${t}" = 'packer' ]]
     then

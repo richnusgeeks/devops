@@ -3,7 +3,7 @@ version: '3.2'
 services:
 
   consul-agent-1: &consul-agent
-    image: consul:1.4.0
+    image: consul:1.4.2
     networks:
       - consul-demo
     command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0"
@@ -32,7 +32,7 @@ services:
   consul-esm:
     depends_on:
       - consul-server-bootstrap
-    image: consul-esm:v0.3.1
+    image: consul-esm:v0.3.2
     build:
       context: ../scripts
       dockerfile: Dockerfile_ConsulESM

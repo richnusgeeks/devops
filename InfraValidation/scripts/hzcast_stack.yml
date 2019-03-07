@@ -7,12 +7,16 @@ services:
     container_name: hzcast1
     hostname: hzcast1
     volumes:
+      - ./hazelcast.xml:/opt/hazelcast/hazelcast.xml
       - hzcast1-data:/data
     ports:
       - "15701:5701"
+      - "19999:9999"
     environment:
-      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
-      - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+      - JAVA_OPTS=-XX:MaxDirectMemorySize=1G -Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
+      - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
+      - MIN_HEAP_SIZE=1g
+      - MAX_HEAP_SIZE=1g
     networks:
       - hzcast-demo
 
@@ -21,12 +25,16 @@ services:
     container_name: hzcast2
     hostname: hzcast2
     volumes:
+      - ./hazelcast.xml:/opt/hazelcast/hazelcast.xml
       - hzcast2-data:/data
     ports:
       - "15702:5701"
+      - "20000:9999"
     environment:
-      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
+      - JAVA_OPTS=-Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+      - MIN_HEAP_SIZE=1g
+      - MAX_HEAP_SIZE=1g
     networks:
       - hzcast-demo
   
@@ -35,12 +43,16 @@ services:
     container_name: hzcast3
     hostname: hzcast3
     volumes:
+      - ./hazelcast.xml:/opt/hazelcast/hazelcast.xml
       - hzcast3-data:/data
     ports:
       - "15703:5701"
+      - "20001:9999"
     environment:
-      - JAVA_OPTS=-Dhazelcast.http.healthcheck.enabled=true
+      - JAVA_OPTS=-Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
+      - MIN_HEAP_SIZE=1g
+      - MAX_HEAP_SIZE=1g
     networks:
       - hzcast-demo
 
@@ -52,6 +64,21 @@ services:
       - hzcastmc-data:/data
     ports:
       - "18080:8080"
+    networks:
+      - hzcast-demo
+
+  cadvisor:
+    image: google/cadvisor
+    container_name: cadvisor
+    hostname: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "28080:8080"
     networks:
       - hzcast-demo
 

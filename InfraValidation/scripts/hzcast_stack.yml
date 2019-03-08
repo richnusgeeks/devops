@@ -12,11 +12,13 @@ services:
     ports:
       - "15701:5701"
       - "19999:9999"
+      - "28080:8080"
     environment:
-      - JAVA_OPTS=-XX:MaxDirectMemorySize=1G -Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
+      - JAVA_OPTS=-XX:MaxDirectMemorySize=1G -Dhazelcast.jmx=true -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MIN_HEAP_SIZE=1g
       - MAX_HEAP_SIZE=1g
+      - PROMETHEUS_PORT=8080
     networks:
       - hzcast-demo
 
@@ -30,11 +32,13 @@ services:
     ports:
       - "15702:5701"
       - "20000:9999"
+      - "28081:8080"
     environment:
-      - JAVA_OPTS=-Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
+      - JAVA_OPTS=-XX:MaxDirectMemorySize=1G -Dhazelcast.jmx=true -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
       - MIN_HEAP_SIZE=1g
       - MAX_HEAP_SIZE=1g
+      - PROMETHEUS_PORT=8080
     networks:
       - hzcast-demo
   
@@ -48,11 +52,13 @@ services:
     ports:
       - "15703:5701"
       - "20001:9999"
+      - "28082:8080"
     environment:
-      - JAVA_OPTS=-Dhazelcast.jmx=true -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9999 -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
+      - JAVA_OPTS=-XX:MaxDirectMemorySize=1G -Dhazelcast.jmx=true -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data -Dhazelcast.config=hazelcast.xml -Dhazelcast.http.healthcheck.enabled=true
       - MANCENTER_URL=http://hzcastmc:8080/hazelcast-mancenter
       - MIN_HEAP_SIZE=1g
       - MAX_HEAP_SIZE=1g
+      - PROMETHEUS_PORT=8080
     networks:
       - hzcast-demo
 
@@ -78,7 +84,31 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
     ports:
-      - "28080:8080"
+      - "38080:8080"
+    networks:
+      - hzcast-demo
+
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    hostname: portainer
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "19000:9000"
+    networks:
+      - hzcast-demo
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    hostname: prometheus
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "19090:9090"
     networks:
       - hzcast-demo
 
@@ -87,6 +117,8 @@ volumes:
   hzcast1-data:
   hzcast2-data:
   hzcast3-data:
+  portainer-data:
+  prometheus-data:
 
 networks:
   hzcast-demo:

@@ -55,9 +55,7 @@
             </multicast>
             <tcp-ip enabled="true">
                 <interface>0.0.0.0</interface>
-                <member-list>
-                    <member>hzcast1,hzcast2,hzcast3</member>
-                </member-list>
+                    <members>hzcast1,hzcast2,hzcast3</members>
             </tcp-ip>
         </join>
         <interfaces enabled="false">
@@ -341,4 +339,8 @@
         <replica-count>2147483647</replica-count>
         <statistics-enabled>true</statistics-enabled>
     </pn-counter>
+
+    <native-memory enabled="true">
+      <size unit="GIGABYTES" value="1"/>
+    </native-memory>
 </hazelcast>

@@ -1,0 +1,11 @@
+FROM python:2-alpine
+
+RUN adduser -D -S hzcastmw && \
+    pip install -U pip && \
+    apk add --no-cache alpine-sdk libffi-dev openssl-dev && \
+    pip install ansible hazelcast-python-client docker-compose && \
+    apk del alpine-sdk
+
+USER hzcastmw
+ENTRYPOINT ["/tmp/load_map_hzcastmw.py"]
+CMD ["-h"]

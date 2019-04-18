@@ -3,7 +3,7 @@ version: '2.1'
 services:
 
   hzcast1:
-    image: hazelcast/hazelcast
+    image: hazelcast/hazelcast${HZMWTAG}
     container_name: hzcast1
     hostname: hzcast1
     volumes:
@@ -24,7 +24,7 @@ services:
         - hzcast-demo
 
   hzcast2:
-    image: hazelcast/hazelcast
+    image: hazelcast/hazelcast${HZMWTAG}
     container_name: hzcast2
     hostname: hzcast2
     volumes:
@@ -45,7 +45,7 @@ services:
       - hzcast-demo
   
   hzcast3:
-    image: hazelcast/hazelcast
+    image: hazelcast/hazelcast${HZMWTAG}
     container_name: hzcast3
     hostname: hzcast3
     volumes:
@@ -66,7 +66,7 @@ services:
       - hzcast-demo
 
   hzcastmc:
-    image: hazelcast/management-center
+    image: hazelcast/management-center${HZMCTAG}
     container_name: hzcastmc
     hostname: hzcastmc
     volumes:
@@ -82,7 +82,7 @@ services:
       - hzcast-demo
 
   cadvisor:
-    image: google/cadvisor
+    image: google/cadvisor${CADVTAG}
     container_name: cadvisor
     hostname: cadvisor
     volumes:
@@ -99,7 +99,7 @@ services:
       - hzcast-demo
 
   portainer:
-    image: portainer/portainer
+    image: portainer/portainer${PTNRTAG}
     container_name: portainer
     hostname: portainer
     volumes:
@@ -113,7 +113,7 @@ services:
       - hzcast-demo
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus${PROMTAG}
     container_name: prometheus
     hostname: prometheus
     volumes:
@@ -127,7 +127,7 @@ services:
       - hzcast-demo
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana${GRFNTAG}
     container_name: grafana
     hostname: grafana
     ports:
@@ -137,21 +137,21 @@ services:
     networks:
       - hzcast-demo
 
-  hzmaptest:
+  hzacptest:
     depends_on:
       - hzcast1
       - hzcast2
       - hzcast3
-    image: hzmaptest
+    image: hzacptest${HZATTAG}
     build:
       context: .
-      dockerfile: Dockerfile_HZMapTst
-    container_name: hzmaptest
-    hostname: hzmaptest
+      dockerfile: Dockerfile_HZAcpTst
+    container_name: hzacptest
+    hostname: hzacptest
     volumes:
-      - ./load_map_hzcastmw.py:/tmp/load_map_hzcastmw.py
+      - ./acceptance_test_hzcastmw.py:/tmp/acceptance_test_hzcastmw.py
     entrypoint:
-      - /tmp/load_map_hzcastmw.py
+      - /tmp/acceptance_test_hzcastmw.py
       - hzcast1:15701,hzcast2:15701,hzcast3:15701
       - "100000"
     mem_limit: 500m

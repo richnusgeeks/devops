@@ -76,11 +76,13 @@ main() {
 
   if [[ "${OPTN}" = "up" ]]
   then
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
     sleep 10
     testHZcast
   elif [[ "${OPTN}" = "buildup" ]]
   then
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
     sleep 10
     testHZcast

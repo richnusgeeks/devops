@@ -74,15 +74,26 @@ main() {
 
   preReq
 
+  if [[ "${OPTN}" = "up" ]] || \
+     [[ "${OPTN}" = "buildup" ]]
+  then
+    terraform init
+    terraform apply -auto-approve
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
+  elif [[ "${OPTN}" = "down" ]] || \
+       [[ "${OPTN}" = "cleandown" ]]
+  then
+    terraform init
+    terraform destroy -auto-approve
+  fi
+
   if [[ "${OPTN}" = "up" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
     sleep 10
     testHZcast
   elif [[ "${OPTN}" = "buildup" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
     sleep 10
     testHZcast

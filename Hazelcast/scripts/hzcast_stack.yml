@@ -65,7 +65,26 @@ services:
     networks:
       - hzcast-demo
 
+  tlsproxy:
+    image: tlsproxy${TPXYTAG}
+    build:
+      context: .
+      dockerfile: Dockerfile_TLSPrxy
+    container_name: tlsproxy
+    hostname: tlsproxy
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - hzcast-demo
+
   hzcastmc:
+    depends_on:
+      - tlsproxy
     image: hazelcast/management-center${HZMCTAG}
     container_name: hzcastmc
     hostname: hzcastmc

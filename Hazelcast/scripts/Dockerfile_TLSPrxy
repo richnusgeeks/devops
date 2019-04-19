@@ -1,0 +1,3 @@
+FROM haproxy:alpine
+
+COPY ./certs/out/hzcastmc.pem /etc/ssl/certs/

@@ -1,0 +1,224 @@
+version: '2.1'
+
+services:
+
+  consulserver:
+    image: consul${CNSLTAG}
+    container_name: consulserver
+    hostname: consulserver
+    command: "agent -server -bootstrap-expect 1 -ui -client 0.0.0.0"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  hashiui:
+    depends_on:
+      - consulserver
+    image: jippi/hashi-ui${HSUITAG}
+    volumes:
+      - ./certs/out/:/etc/ssl/certs/
+      - ./:/tmp/
+    ports:
+      - "23000:3000"
+    environment:
+      - CONSUL_ENABLE=1
+      - CONSUL_READ_ONLY=1
+      - CONSUL_ADDR=consulserver:8500
+      - HTTPS_ENABLE=true
+      - SERVER_CERT=/etc/ssl/certs/test.crt
+      - SERVER_KEY=/etc/ssl/certs/test.key
+    command: sh -c "/tmp/wait-for-command.sh -c 'nc -vz consulserver 8500' -s 0 && /hashi-ui"
+    networks:
+      - rbtmq-demo
+
+  rbtmqcnsl:
+    image: consul${CNSLTAG}
+    container_name: rbtmqcnsl
+    hostname: rbtmqcnsl
+    command: "agent -retry-join consulserver -client 0.0.0.0"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmq1:
+    image: rabbitmq${RMQTAG}
+    container_name: rbtmq1
+    hostname: rbtmq1
+    volumes:
+      - ./conf/:/etc/rabbitmq/
+      - rbtmq1-data:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=c238d70
+    mem_limit: 1g
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmqprome1:
+    depends_on:
+      - rbtmq1
+    image: kbudde/rabbitmq-exporter${RBPETAG}
+    container_name: rbtmqprome1
+    hostname: rbtmqprome1
+    environment:
+      - RABBIT_URL=http://rbtmq1:15672
+      - RABBIT_CAPABILITIES=bert,no_sort
+      - PUBLISH_PORT=9419 
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmq2:
+    image: rabbitmq${RMQTAG}
+    container_name: rbtmq2
+    hostname: rbtmq2
+    volumes:
+      - ./conf/:/etc/rabbitmq/
+      - rbtmq2-data:/var/lib/rabbitmq
+    ports:
+      - "15673:15672"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=c238d70
+    mem_limit: 1g
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmqprome2:
+    depends_on:
+      - rbtmq2
+    image: kbudde/rabbitmq-exporter${RBPETAG}
+    container_name: rbtmqprome2
+    hostname: rbtmqprome2
+    environment:
+      - RABBIT_URL=http://rbtmq2:15672
+      - RABBIT_CAPABILITIES=bert,no_sort
+      - PUBLISH_PORT=9419 
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmq3:
+    image: rabbitmq${RMQTAG}
+    container_name: rbtmq3
+    hostname: rbtmq3
+    volumes:
+      - ./conf/:/etc/rabbitmq/
+      - rbtmq3-data:/var/lib/rabbitmq
+    ports:
+      - "15674:15672"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=c238d70
+    mem_limit: 1g
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmqprome3:
+    depends_on:
+      - rbtmq3
+    image: kbudde/rabbitmq-exporter${RBPETAG}
+    container_name: rbtmqprome3
+    hostname: rbtmqprome3
+    environment:
+      - RABBIT_URL=http://rbtmq3:15672
+      - RABBIT_CAPABILITIES=bert,no_sort
+      - PUBLISH_PORT=9419
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  rbtmqprftst:
+    depends_on:
+      - rbtmq1
+      - rbtmq2
+      - rbtmq3
+    image: pivotalrabbitmq/perf-test${PRFTTAG}
+    container_name: rbtmqprftst
+    hostname: rbtmqprftst
+    command: "--uri amqp://rbtmq1"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  cadvisor:
+    image: google/cadvisor${CAVRTAG}
+    container_name: cadvisor
+    hostname: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "38080:8080"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  portainer:
+    image: portainer/portainer${PTNRTAG}
+    container_name: portainer
+    hostname: portainer
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "19000:9000"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  prometheus:
+    image: prom/prometheus${PROMTAG}
+    container_name: prometheus
+    hostname: prometheus
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "19090:9090"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  grafana:
+    image: grafana/grafana${GRFNTAG}
+    container_name: grafana
+    hostname: grafana
+    volumes:
+      - ./certs/out/:/etc/ssl/certs/
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "13000:3000"
+    environment:
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/ssl/certs/test.crt
+      - GF_SERVER_CERT_KEY=/etc/ssl/certs/test.key
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+volumes:
+  rbtmq1-data:
+  rbtmq2-data:
+  rbtmq3-data:
+  portainer-data:
+  grafana-data:
+  prometheus-data:
+
+networks:
+  rbtmq-demo:

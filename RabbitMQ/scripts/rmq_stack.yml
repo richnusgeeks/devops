@@ -52,7 +52,7 @@ services:
     ports:
       - "15672:15672"
     environment:
-      - RABBITMQ_ERLANG_COOKIE=c238d70
+      - RABBITMQ_ERLANG_COOKIE=${RMQERC:-1234567890}
     mem_limit: 1g
     restart: always
     networks:
@@ -83,7 +83,7 @@ services:
     ports:
       - "15673:15672"
     environment:
-      - RABBITMQ_ERLANG_COOKIE=c238d70
+      - RABBITMQ_ERLANG_COOKIE=${RMQERC:-1234567890}
     mem_limit: 1g
     restart: always
     networks:
@@ -114,7 +114,7 @@ services:
     ports:
       - "15674:15672"
     environment:
-      - RABBITMQ_ERLANG_COOKIE=c238d70
+      - RABBITMQ_ERLANG_COOKIE=${RMQERC:-1234567890}
     mem_limit: 1g
     restart: always
     networks:

@@ -67,12 +67,15 @@ main() {
   if [[ "${OPTN}" = "up" ]] || \
      [[ "${OPTN}" = "buildup" ]]
   then
+    local RMQERC=$(docker run -it --rm consul sh -c 'date +%s|sha1sum|sed "s/ -//"')
     terraform init
     terraform apply -auto-approve
+    export RMQERC=${RMQERC}
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" pull
   elif [[ "${OPTN}" = "down" ]] || \
        [[ "${OPTN}" = "cleandown" ]]
   then
+    unset RMQERC
     terraform init
     terraform destroy -auto-approve
   fi

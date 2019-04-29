@@ -32,6 +32,18 @@ services:
     networks:
       - rbtmq-demo
 
+  cnslprome:
+    depends_on:
+      - consulserver
+    image: prom/consul-exporter${CSPETAG}
+    container_name: cnslprome
+    hostname: cnslprome
+    command: "--consul.server=consulserver:8500"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
   rbtmqcnsl:
     image: consul${CNSLTAG}
     container_name: rbtmqcnsl
@@ -200,6 +212,9 @@ services:
     hostname: grafana
     volumes:
       - ./certs/out/:/etc/ssl/certs/
+      - ./prometheus_datasource.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./rabbitmq_metrics_rev3.json:/usr/share/grafana/conf/provisioning/dashboards/rabbitmq_metrics_rev3.json
       - grafana-data:/var/lib/grafana
     ports:
       - "13000:3000"

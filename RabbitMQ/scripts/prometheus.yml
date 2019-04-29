@@ -26,4 +26,4 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-    - targets: ["localhost:9090","rbtmqprome1:9419","rbtmqprome2:9419","rbtmqprome3:9419"]
+    - targets: ["localhost:9090","rbtmqprome1:9419","rbtmqprome2:9419","rbtmqprome3:9419","cnslprome:9107"]

@@ -212,9 +212,9 @@ services:
     hostname: grafana
     volumes:
       - ./certs/out/:/etc/ssl/certs/
-      - ./prometheus_datasource.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
-      - ./dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
-      - ./rabbitmq_metrics_rev3.json:/usr/share/grafana/conf/provisioning/dashboards/rabbitmq_metrics_rev3.json
+      - ./datasources/:/etc/grafana/provisioning/datasources/
+      - ./dashboards/conf/:/etc/grafana/provisioning/dashboards/
+      - ./dashboards/:/usr/share/grafana/conf/provisioning/dashboards/
       - grafana-data:/var/lib/grafana
     ports:
       - "13000:3000"

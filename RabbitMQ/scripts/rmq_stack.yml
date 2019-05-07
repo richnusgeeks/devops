@@ -2,7 +2,62 @@ version: '2.1'
 
 services:
 
+  logstash:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/logstash/logstash-oss${LGSTTAG}
+    container_name: logstash
+    hostname: logstash
+    ports:
+      - "127.0.0.1:12201:12201/udp"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss${ELSTTAG}
+    container_name: elasticsearch
+    hostname: elasticsearch
+    ports:
+      - "19200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    cap_add:
+      - IPC_LOCK
+    ulimits:
+      memlock: -1
+    mem_limit: 800m
+    restart: always
+    networks:
+      - rbtmq-demo
+
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana-oss${KBNATAG}
+    container_name: kibana
+    hostname: kibana
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - 15601:5601
+    mem_limit: 500m
+    restart: always
+    networks:
+      - rbtmq-demo
+
   consulserver:
+    depends_on:
+      - logstash
     image: consul${CNSLTAG}
     container_name: consulserver
     hostname: consulserver
@@ -11,6 +66,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "consulserver"
 
   hashiui:
     depends_on:
@@ -31,6 +91,11 @@ services:
     command: sh -c "/tmp/wait-for-command.sh -c 'nc -vz consulserver 8500' -s 0 && /hashi-ui"
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "hashiui"
 
   cnslprome:
     depends_on:
@@ -43,8 +108,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "cnslprome"
 
   rbtmqcnsl:
+    depends_on:
+      - consulserver
     image: consul${CNSLTAG}
     container_name: rbtmqcnsl
     hostname: rbtmqcnsl
@@ -53,8 +125,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmqcnsl"
 
   rbtmq1:
+    depends_on:
+      - rbtmqcnsl
     image: rabbitmq${RMQTAG}
     container_name: rbtmq1
     hostname: rbtmq1
@@ -69,6 +148,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmq1"
 
   rbtmqprome1:
     depends_on:
@@ -84,8 +168,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmqprome1"
 
   rbtmq2:
+    depends_on:
+      - rbtmqcnsl
     image: rabbitmq${RMQTAG}
     container_name: rbtmq2
     hostname: rbtmq2
@@ -100,6 +191,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmq2"
 
   rbtmqprome2:
     depends_on:
@@ -115,8 +211,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmqprome2"
 
   rbtmq3:
+    depends_on:
+      - rbtmqcnsl
     image: rabbitmq${RMQTAG}
     container_name: rbtmq3
     hostname: rbtmq3
@@ -131,6 +234,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmq3"
 
   rbtmqprome3:
     depends_on:
@@ -146,6 +254,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmqprome3"
 
   rbtmqprftst:
     depends_on:
@@ -160,8 +273,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "rbtmqprftst"
 
   cadvisor:
+    depends_on:
+      - logstash
     image: google/cadvisor${CAVRTAG}
     container_name: cadvisor
     hostname: cadvisor
@@ -177,8 +297,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "cadvisor"
 
   portainer:
+    depends_on:
+      - logstash
     image: portainer/portainer${PTNRTAG}
     container_name: portainer
     hostname: portainer
@@ -191,8 +318,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "portainer"
 
   prometheus:
+    depends_on:
+      - logstash
     image: prom/prometheus${PROMTAG}
     container_name: prometheus
     hostname: prometheus
@@ -205,8 +339,15 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "prometheus"
 
   grafana:
+    depends_on:
+      - logstash
     image: grafana/grafana${GRFNTAG}
     container_name: grafana
     hostname: grafana
@@ -226,6 +367,11 @@ services:
     restart: always
     networks:
       - rbtmq-demo
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201
+        tag: "grafana"
 
 volumes:
   rbtmq1-data:
@@ -233,6 +379,7 @@ volumes:
   rbtmq3-data:
   portainer-data:
   grafana-data:
+  elasticsearch-data:
   prometheus-data:
 
 networks:

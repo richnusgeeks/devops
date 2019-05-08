@@ -2,7 +2,7 @@
 
 OPTN=${1}
 NUMOPTNMX=2
-CMPSFLDIR='../tests'
+CMPSFLDIR='.'
 CMPSEFILE='consul_cluster.yml'
 
 printUsage() {

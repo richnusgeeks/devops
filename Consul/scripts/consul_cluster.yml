@@ -1,12 +1,14 @@
-version: '3.2'
+version: '2.1'
 
 services:
 
   consul-agent-1: &consul-agent
-    image: consul:1.4.2
+    image: consul${CNSLTAG}
+    command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0"
+    mem_limit: 500m
+    restart: always
     networks:
       - consul-demo
-    command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0"
 
   consul-agent-2:
     <<: *consul-agent
@@ -32,48 +34,44 @@ services:
   consul-esm:
     depends_on:
       - consul-server-bootstrap
-    image: consul-esm:v0.3.2
+    image: consul-esm${CESMTAG}
     build:
-      context: ../scripts
+      context: .
       dockerfile: Dockerfile_ConsulESM
     volumes:
-      - type: bind
-        source: ../scripts
-        target: /mnt
+      - .:/mnt
     environment:
       - CONSUL_HTTP_ADDR=consul-server-bootstrap:8500
     command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm -config-dir=/etc/consul-esm.d"
+    mem_limit: 500m
+    restart: always
     networks:
       - consul-demo
 
   consul-alerts:
     depends_on:
       - consul-server-bootstrap
-    image: consul-alerts
+    image: consul-alerts${CALRTAG}
     build:
-      context: ../scripts
+      context: .
       dockerfile: Dockerfile_ConsulAlerts
     volumes:
-      - type: bind
-        source: ../scripts
-        target: /mnt
+      - .:/mnt
     ports:
       - "19000:9000"
     command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-alerts start --alert-addr=0.0.0.0:9000 --consul-addr=consul-server-bootstrap:8500 --watch-events --watch-checks --log-level=debug"
+    mem_limit: 500m
+    restart: always
     networks:
       - consul-demo
 
   hashi-ui:
     depends_on:
       - consul-server-bootstrap
-    image: jippi/hashi-ui:v1.0.0
+    image: jippi/hashi-ui${HSUITAG}
     volumes:
-      - type: bind
-        source: ../scripts/certs/out
-        target: /etc/ssl/certs
-      - type: bind
-        source: ../scripts
-        target: /usr/local/bin
+      - ./certs/out:/etc/ssl/certs
+      - .:/mnt
     ports:
       - "3000:3000"
     environment:
@@ -83,7 +81,9 @@ services:
       - HTTPS_ENABLE=true
       - SERVER_CERT=/etc/ssl/certs/test.crt
       - SERVER_KEY=/etc/ssl/certs/test.key
-    command: sh -c "wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && /hashi-ui"
+    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && /hashi-ui"
+    mem_limit: 500m
+    restart: always
     networks:
       - consul-demo
 

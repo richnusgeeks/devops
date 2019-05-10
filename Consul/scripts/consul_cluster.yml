@@ -65,7 +65,7 @@ services:
     networks:
       - consul-demo
 
-  hashi-ui:
+  hashiui:
     depends_on:
       - consul-server-bootstrap
     image: jippi/hashi-ui${HSUITAG}
@@ -84,6 +84,19 @@ services:
     command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && /hashi-ui"
     mem_limit: 500m
     restart: always
+    networks:
+      - consul-demo
+
+  consulbench:
+    depends_on:
+      - hashiui
+    image: consulbench${CNSBTAG}
+    build:
+      context: .
+      dockerfile: Dockerfile_ConsulBench
+    command: -service benchmarking -register 200 -flap-interval 10s -watchers 500 -consul consul-server-bootstrap:8500
+#    restart: always
+    mem_limit: 500m
     networks:
       - consul-demo
 

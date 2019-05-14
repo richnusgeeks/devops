@@ -1,7 +1,7 @@
 FROM alpine
 
 # we need ca-certificates for any external https communication
-ENV ESM_VERSION 0.3.2
+ENV ESM_VERSION 0.3.3
 RUN apk --update upgrade && \
     apk add curl ca-certificates && \
     update-ca-certificates && \
@@ -11,6 +11,6 @@ RUN apk --update upgrade && \
     rm /tmp/consul-esm.zip && \
     mkdir /etc/consul-esm.d
 
-ADD ./consul-esm.hcl /etc/consul-esm.d/
+COPY ./consul-esm.hcl /etc/consul-esm.d/
 
 CMD ["consul-esm","-config-dir=/etc/consul-esm.d"]

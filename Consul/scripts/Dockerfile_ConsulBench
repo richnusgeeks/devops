@@ -1,0 +1,17 @@
+FROM golang:1.12 AS builder
+#WORKDIR /go/src/github.com/criteo/consul-bench
+RUN go get -d -v github.com/criteo/consul-bench && \
+  cd /go/src/github.com/criteo/consul-bench && \
+  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o consul-bench .
+
+#FROM bitnami/minideb:latest AS fetcher
+#ENV CNSLBNCH_VERSION v0.0.1
+#RUN install_packages wget && \
+#  wget --no-check-certificate "https://github.com/criteo/consul-bench/releases/download/${CNSLBNCH_VERSION}/consul-bench.tar.gz" -P /tmp && \
+#  tar zxf /tmp/consul-bench.tar.gz -C /usr/local/bin/ && \
+#  rm /tmp/consul-bench.tar.gz
+
+FROM scratch
+COPY --from=builder /go/src/github.com/criteo/consul-bench/consul-bench /usr/local/bin/consul-bench
+ENTRYPOINT ["consul-bench"]
+CMD ["-h"]

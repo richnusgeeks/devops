@@ -1,7 +1,9 @@
 #! /bin/bash
 
 OPTN=${1}
-NUMOPTNMX=2
+SRVC=${2}
+CMND=${3}
+NUMOPTNMX=4
 CMPSFLDIR='.'
 CMPSEFILE='moto_server_stack.yml'
 RQRDCMNDS="docker
@@ -22,7 +24,7 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|logs|down|test|cleandown >"
+  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|test|cleandown >"
   exit 0
 
 }
@@ -40,7 +42,8 @@ parseArgs() {
      [[ "${OPTN}" != "down" ]] && \
      [[ "${OPTN}" != "test" ]] && \
      [[ "${OPTN}" != "cleandown" ]] && \
-     [[ "${OPTN}" != "buildup" ]]
+     [[ "${OPTN}" != "buildup" ]] && \
+     [[ "${OPTN}" != "exec" ]]
   then
     printUsage
   fi
@@ -74,6 +77,9 @@ main() {
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+  elif [[ "${OPTN}" = "exec" ]]
+  then
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${CMND}"
   else
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"
   fi

@@ -118,7 +118,7 @@ diskUsage() {
     do
       if [[ -d ${p} ]]
       then
-        curp=$(df -kh|grep -Ew ${p}|awk '{print $(NF-1)}'|sed 's/%//')
+        curp=$(df -kh|grep -v none|grep -Ew ${p}|awk '{print $(NF-1)}'|sed 's/%//')
   
         if [[ ${curp} -gt ${WARN} ]] && [[ ${curp} -lt ${ERR} ]]
         then

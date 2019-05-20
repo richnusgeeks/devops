@@ -19,8 +19,8 @@ RUN apt-get update \
 ENV PATH="/root/.chefdk/gem/ruby/2.5.0/bin:/opt/chef-workstation/embedded/bin/:${PATH}"
 ENV GOSS_FILES_STRATEGY='cp'
 
-ADD ./keys/out/test /etc/ssl/certs/test_servers_pkey
-ADD ./test_check.rb /opt/inspec/test_check.rb
+COPY ./keys/out/test /etc/ssl/certs/test_servers_pkey
+COPY ./test_check.rb /opt/inspec/test_check.rb
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

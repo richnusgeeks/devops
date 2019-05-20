@@ -1,13 +1,13 @@
 from centos:7
 
-ADD certs/out/monit.pem /etc/ssl/certs/
+COPY certs/out/monit.pem /etc/ssl/certs/
 
-ADD setup.sh /usr/local/bin/
+COPY setup.sh /usr/local/bin/
 RUN ["setup.sh"]
 
-ADD syschecks.json /etc/consul.d/
-ADD syschecks.sh /usr/local/bin/
-ADD random_filler_killer.sh /usr/local/bin/
+COPY syschecks.json /etc/consul.d/
+COPY syschecks.sh /usr/local/bin/
+COPY random_filler_killer.sh /usr/local/bin/
 
-ADD run.sh /usr/local/bin/
+COPY run.sh /usr/local/bin/
 CMD ["run.sh"]

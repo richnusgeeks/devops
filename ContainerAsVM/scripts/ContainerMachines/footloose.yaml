@@ -1,0 +1,23 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    image: quay.io/footloose/ubuntu18.04
+    name: ubuntu-node%d
+    portMappings:
+    - containerPort: 22
+    privileged: true
+- count: 1
+  spec:
+    image: quay.io/footloose/centos7
+    name: centos-node%d
+    portMappings:
+    - containerPort: 22
+- count: 1
+  spec:
+    image: quay.io/footloose/amazonlinux2
+    name: azlnx-node%d
+    portMappings:
+    - containerPort: 22

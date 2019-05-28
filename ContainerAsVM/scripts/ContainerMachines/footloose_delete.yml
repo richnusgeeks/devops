@@ -1,0 +1,19 @@
+version: '2.4'
+
+services:
+
+  footlose:
+    image: footloose${FTLSTAG}
+    build:
+      context: .
+      dockerfile: Dockerfile_Footloose
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./footloose.yaml:/tmp/footloose.yaml
+    command: delete -c /tmp/footloose.yaml
+    mem_limit: 500m
+    networks:
+      - footloose-demo
+
+networks:
+  footloose-demo:

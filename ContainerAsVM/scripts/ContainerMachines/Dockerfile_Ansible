@@ -1,0 +1,13 @@
+FROM python:3-alpine
+
+RUN adduser -D -S ansible && \
+    pip install -U pip && \
+    apk add --no-cache --virtual .build-deps \
+      alpine-sdk libffi-dev openssl-dev && \
+    apk add --no-cache openssh-client && \
+    pip install ansible && \
+    apk del .build-deps
+
+USER ansible
+ENTRYPOINT ["ansible-playbook"]
+CMD ["-h"]

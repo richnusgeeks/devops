@@ -1,0 +1,17 @@
+FROM alpine:3.9
+
+RUN apk add --no-cache ca-certificates curl openssh-keygen \
+  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && cd /tmp \
+  && tar zxf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rf docker docker.tgz \
+  && mkdir -p /var/lib/footloose \
+  && curl -sSLk https://github.com/$(curl -sSLk https://github.com/weaveworks/footloose/releases|grep download|grep linux-x86_64|awk -F '"' '{print $2}'|head -1) -o /var/lib/footloose/footloose \
+  && chmod +x /var/lib/footloose/footloose
+
+WORKDIR /var/lib/footloose
+VOLUME /var/lib/footloose
+
+ENTRYPOINT ["./footloose"]
+CMD ["-h"]

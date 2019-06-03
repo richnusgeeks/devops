@@ -1,0 +1,19 @@
+version: '2.4'
+
+services:
+
+  atourofgo:
+    image: atourofgo:latest
+    container_name: atourofgo
+    hostname: atourofgo
+    build:
+      context: .
+      dockerfile: Dockerfile_ATourOfGo
+    ports:
+      - "13999:3999"
+    mem_limit: 500m
+    networks:
+      - atourofgo-demo
+
+networks:
+  atourofgo-demo:

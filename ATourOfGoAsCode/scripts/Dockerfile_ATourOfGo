@@ -1,0 +1,9 @@
+FROM golang:1.12.5-alpine3.9 AS builder
+RUN apk add --no-cache git && \
+  go get golang.org/x/tour && \
+  apk del --purge git
+
+EXPOSE 3999
+
+ENTRYPOINT ["/go/bin/tour", "-http", "0.0.0.0:3999", "-openbrowser", "false"]
+CMD ["-h"]

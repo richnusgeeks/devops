@@ -5,19 +5,26 @@ machines:
 - count: 1
   spec:
     image: quay.io/footloose/ubuntu18.04
-    name: ubuntu-node%d
+    name: ubuntu1804-node%d
+    portMappings:
+    - containerPort: 22
+    privileged: true
+- count: 1
+  spec:
+    image: quay.io/footloose/ubuntu16.04
+    name: ubuntu1604-node%d
     portMappings:
     - containerPort: 22
     privileged: true
 - count: 1
   spec:
     image: quay.io/footloose/centos7
-    name: centos-node%d
+    name: centos7-node%d
     portMappings:
     - containerPort: 22
 - count: 1
   spec:
     image: quay.io/footloose/amazonlinux2
-    name: azlnx-node%d
+    name: azlnx2-node%d
     portMappings:
     - containerPort: 22

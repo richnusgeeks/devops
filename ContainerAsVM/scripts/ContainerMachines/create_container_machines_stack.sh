@@ -105,7 +105,7 @@ testASBLRun() {
   createASBLInv
   copyPrivKey
 
-  if ! docker run -it --rm --entrypoint=ansible -v "$(pwd)/${ANSBLEDIR}":/etc/ansible ansible all -m ping
+  if ! docker run -it --rm --entrypoint=ansible -v "$(pwd)/${ANSBLEDIR}":/etc/ansible ansible all -m shell -a 'PYTHON=python;if ! command -v "${PYTHON}" > /dev/null 2>&1;then PYTHON=python3;fi;"${PYTHON}" -V 2>&1;uname -a'
   then
     exitOnErr 'docker run ansible ping failed'
   fi
@@ -138,10 +138,12 @@ main() {
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down
+    showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down -v
+    showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then
     showAndTest

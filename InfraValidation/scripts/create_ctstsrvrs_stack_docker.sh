@@ -38,7 +38,7 @@ chefRun() {
   local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|xargs|sed 's/ /,/g')
 
   docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
-    "${TSTSRVRS}" package curl action=install
+    "${TSTSRVRS}" package monit action=install
 
   sleep 5
 

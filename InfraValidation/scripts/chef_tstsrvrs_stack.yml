@@ -2,19 +2,19 @@ version: '3.2'
 
 services:
 
-  chefserver:
-    image: quay.io/3ofcoins/chef-server:12.18.14
-    container_name: chefserver
-    hostname: chefserver
-    privileged: true
-    ports:
-      - "9080:80"
-      - "9443:443"
-    networks:
-      - chef-demo
+#  chefserver:
+#    image: quay.io/3ofcoins/chef-server:12.18.14
+#    container_name: chefserver
+#    hostname: chefserver
+#    privileged: true
+#    ports:
+#      - "9080:80"
+#      - "9443:443"
+#    networks:
+#      - chef-demo
 
   chefwrkstn:
-    image: chefwrkstn:v0.2.43
+    image: chefwrkstn${CFWSTAG}
     container_name: chefwrkstn
     hostname: chefwrkstn
     build:
@@ -26,7 +26,7 @@ services:
       - chef-demo
 
   tstsrvr1:
-    image: phusionbsimgssh:v0.11
+    image: phusionbsimgssh${PBISTAG}
     container_name: tstsrvr1
     hostname: tstsrvr1
     build:
@@ -38,7 +38,7 @@ services:
       - chef-demo
 
   tstsrvr2:
-    image: phusionbsimgssh:v0.11
+    image: phusionbsimgssh${PBISTAG}
     container_name: tstsrvr2
     hostname: tstsrvr2
     build:
@@ -50,7 +50,7 @@ services:
       - chef-demo
 
   tstsrvr3:
-    image: phusionbsimgssh:v0.11
+    image: phusionbsimgssh${PBISTAG}
     container_name: tstsrvr3
     hostname: tstsrvr3
     build:

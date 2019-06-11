@@ -9,6 +9,9 @@ machines:
     portMappings:
     - containerPort: 22
     privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
 - count: 1
   spec:
     image: quay.io/footloose/ubuntu16.04
@@ -16,15 +19,26 @@ machines:
     portMappings:
     - containerPort: 22
     privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
 - count: 1
   spec:
     image: quay.io/footloose/centos7
     name: centos7-node%d
     portMappings:
     - containerPort: 22
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
 - count: 1
   spec:
     image: quay.io/footloose/amazonlinux2
     name: azlnx2-node%d
     portMappings:
     - containerPort: 22
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker

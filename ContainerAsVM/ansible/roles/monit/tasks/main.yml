@@ -1,0 +1,14 @@
+---
+- name: install monit
+  yum: name="{{package_monit}}"
+       state=present
+       update_cache={{update_cache}}
+
+- name: render monit control file
+  template: src="{{monit_ctlfl}}.j2"
+            dest="/etc/{{monit_ctlfl}}"
+            owner=root
+            group=root
+            mode=0600
+  notify:
+    - reload monit configs

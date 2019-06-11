@@ -1,11 +1,13 @@
 #! /bin/bash
 
 OPTN=${1}
-NUMOPTNMX=2
+OPTNTST=${2}
+NUMOPTNMX=3
 DLYTOMSTL=5
 CMPSFLDIR='.'
 ANSBLEDIR='../../ansible'
-ASBLCMPSRN='ansible_run.yml'
+ASBLCMTEST='ansible_test.yml'
+ASBLCMDCKR='ansible_docker.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSDL='footloose_delete.yml'
 RQRDCMNDS="awk
@@ -38,7 +40,10 @@ exitOnErr() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < create|buildcreate|show|test|delete|cleandelete >"
+  cat <<EOF
+ Usage: $(basename $0) < create|buildcreate|show|
+                         test [ping|docker]|delete|cleandelete >"
+EOF
   exit 0
 
 }
@@ -79,7 +84,7 @@ createASBLInv() {
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml \
            footloose show -c /tmp/footloose.yaml | \
-       grep -v NAME | awk '{print $4}'> "${ANSBLEDIR}/hosts"
+       grep -v NAME | awk '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/hosts"
   then
     exitOnErr "docker run footloose show > ${ANSBLEDIR}/hosts failed"
   fi
@@ -105,9 +110,20 @@ testASBLRun() {
   createASBLInv
   copyPrivKey
 
-  if ! docker run -it --rm --entrypoint=ansible -v "$(pwd)/${ANSBLEDIR}":/etc/ansible ansible all -m shell -a 'PYTHON=python;if ! command -v "${PYTHON}" > /dev/null 2>&1;then PYTHON=python3;fi;"${PYTHON}" -V 2>&1;uname -a'
+  if [[ -z "${1}" ]] || [[ "${1}" = "ping" ]]
   then
-    exitOnErr 'docker run ansible ping failed'
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build failed"
+    fi
+
+  elif [[ "${1}" = "docker" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDCKR}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDCKR}" up --build failed"
+    fi
+
   fi
 
 }
@@ -116,7 +132,7 @@ showAndTest() {
 
   showFTLStack
   sleep "${DLYTOMSTL}"
-  testASBLRun
+  testASBLRun "${1}"
 
 }
 
@@ -129,11 +145,11 @@ main() {
   if [[ "${OPTN}" = "create" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up
-    showAndTest
+    showAndTest "${OPTNTST}"
   elif [[ "${OPTN}" = "buildcreate" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up --build
-    showAndTest
+    showAndTest "${OPTNTST}"
   elif [[ "${OPTN}" = "delete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
@@ -146,7 +162,7 @@ main() {
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then
-    showAndTest
+    showAndTest "${OPTNTST}"
   elif [[ "${OPTN}" = "show" ]]
   then
     showFTLStack

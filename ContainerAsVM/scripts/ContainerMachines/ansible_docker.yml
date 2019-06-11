@@ -9,11 +9,6 @@ services:
        dockerfile: Dockerfile_Ansible
      volumes:
        - ../../ansible:/etc/ansible
-     command: all -m ping
-     entrypoint: ansible
+     command: main.yml
      mem_limit: 500m
-     networks:
-       - footloose-demo
-
-networks:
-  footloose-demo: 
+     network_mode: host

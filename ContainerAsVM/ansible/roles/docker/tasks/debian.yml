@@ -1,0 +1,27 @@
+---
+# https://docs.docker.com/install/linux/docker-ce/debian/
+
+- name: update apt package index
+  shell: apt-get update
+
+- name: install utility packages
+  apt: name="{{docker_packages[ansible_os_family|lower]['utility']}}"
+       state=present
+       update_cache=yes
+
+- name: add official GPG key
+  apt_key: url=https://download.docker.com/linux/debian/gpg
+           state=present
+
+- name: add stable repo
+  shell: "add-apt-repository \"{{docker_packages[ansible_os_family|lower]['repo']}}\""
+
+- name: install main packages
+  apt: name="{{docker_packages[ansible_os_family|lower]['main']}}"
+       state=present
+       update_cache=yes
+
+- name: start and enable docker service
+  service: name=docker
+           state=started
+           enabled=true

@@ -6,3 +6,5 @@
 *.tfstate
 */scripts/certs/out
 */scripts/keys/out
+*/ansible/hosts
+*/ansible/*key

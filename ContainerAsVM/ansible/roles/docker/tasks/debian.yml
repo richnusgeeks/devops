@@ -3,23 +3,26 @@
 
 - name: update apt package index
   shell: apt-get update
+  ignore_errors: yes
 
 - name: install utility packages
   apt: name="{{docker_packages[ansible_os_family|lower]['utility']}}"
        state=present
-       update_cache=yes
 
 - name: add official GPG key
-  apt_key: url=https://download.docker.com/linux/debian/gpg
-           state=present
+  shell: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
 
 - name: add stable repo
-  shell: "add-apt-repository \"{{docker_packages[ansible_os_family|lower]['repo']}}\""
+  shell: "add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\""
+  ignore_errors: yes
+
+- name: update apt package index
+  shell: apt-get update
+  ignore_errors: yes
 
 - name: install main packages
   apt: name="{{docker_packages[ansible_os_family|lower]['main']}}"
        state=present
-       update_cache=yes
 
 - name: start and enable docker service
   service: name=docker

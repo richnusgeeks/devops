@@ -1,14 +1,55 @@
 ---
-- name: install monit
-  yum: name="{{package_monit}}"
+- name: deduce current monit version
+  shell: if [[ -x {{ monit_properties["monit_execbnfl"] }} ]];then {{ monit_properties["monit_execbnfl"] }} -c {{ monit_properties["monit_configfl"] }} -v|grep 'Monit version'|awk '{print $NF}';fi
+  register: monit_version_current
+
+- name: download monit tarball
+  get_url: url="{{ monit_properties["monit_dwnldurl"] }}"
+           dest="/tmp/{{ monit_properties["monit_archive"] }}"
+  when: monit_properties["monit_version"] != monit_version_current.stdout
+
+- name: install tar on amazonlinux2
+  yum: name=tar
        state=present
-       update_cache={{update_cache}}
+  when: ansible_distribution|lower == "amazon"
+
+- name: untar monit tarball
+  unarchive: src="/tmp/{{ monit_properties["monit_archive"] }}"
+             dest="/tmp"
+             remote_src=yes
+  when: monit_properties["monit_version"] != monit_version_current.stdout
+
+- name: rename monit directory
+  shell: mv -f /tmp/monit-{{ monit_properties["monit_version"] }} /opt/monit
+  when: monit_properties["monit_version"] != monit_version_current.stdout
+
+- name: create monit aditional config dir
+  file: path="{{ monit_properties["monit_configad"] }}"
+        state=directory
 
 - name: render monit control file
-  template: src="{{monit_ctlfl}}.j2"
-            dest="/etc/{{monit_ctlfl}}"
+  template: src=monitrc_{{ monit_properties["monit_version"] }}.j2
+            dest="{{ monit_properties["monit_configfl"] }}"
             owner=root
             group=root
             mode=0600
   notify:
     - reload monit configs
+
+- name: render additional monit system configs
+  template: src=spaceinode_{{ monit_properties["monit_version"] }}.j2
+            dest="{{ monit_properties["monit_configad"] }}/spaceinode"
+  notify:
+    - reload monit configs
+
+- name: render monit systemd service config
+  template: src=monit.service_{{ monit_properties["monit_version"] }}.j2
+            dest={{ monit_properties["monit_srvcnfig"] }}
+  notify:
+    - reload services
+    - restart monit service
+
+- name: start and enable monit service
+  service: name=monit
+           state=started
+           enabled=true

@@ -1,0 +1,14 @@
+set daemon 10
+set log /var/log/monit.log
+
+set httpd port 2812 and
+  use address 0.0.0.0
+  allow localhost
+  allow 0.0.0.0/0
+  allow admin:monit
+  allow guest:guest readonly
+  #with ssl {
+  #  pemfile: /etc/ssl/certs/monit.pem
+  #}
+
+include /opt/monit/conf/monit.d/*

@@ -8,6 +8,7 @@ machines:
     name: ubuntu1804-node%d
     portMappings:
     - containerPort: 22
+    - containerPort: 2812
     privileged: true
     volumes:
     - type: volume
@@ -18,6 +19,7 @@ machines:
     name: ubuntu1604-node%d
     portMappings:
     - containerPort: 22
+    - containerPort: 2812
     privileged: true
     volumes:
     - type: volume
@@ -28,6 +30,7 @@ machines:
     name: centos7-node%d
     portMappings:
     - containerPort: 22
+    - containerPort: 2812
     privileged: true
     volumes:
     - type: volume
@@ -38,6 +41,7 @@ machines:
     name: azlnx2-node%d
     portMappings:
     - containerPort: 22
+    - containerPort: 2812
     privileged: true
     volumes:
     - type: volume

@@ -9,6 +9,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
+    - containerPort: 38080
     privileged: true
     volumes:
     - type: volume
@@ -20,6 +21,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
+    - containerPort: 38080
     privileged: true
     volumes:
     - type: volume
@@ -31,6 +33,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
+    - containerPort: 38080
     privileged: true
     volumes:
     - type: volume
@@ -42,6 +45,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
+    - containerPort: 38080
     privileged: true
     volumes:
     - type: volume

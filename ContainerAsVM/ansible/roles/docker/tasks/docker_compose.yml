@@ -1,0 +1,14 @@
+---
+- name: download docker compose
+  get_url: url="{{ docker_packages['all']['docker_compose_dwnldurl'] }}"
+           dest="{{ docker_packages['all']['docker_compose_location'] }}"
+           mode='0755'
+
+# fix for https://github.com/docker/compose/issues/1339
+- name: fix docker-compose error
+  shell: mount /tmp -o remount,exec
+
+- name: create docker compose dir
+  file: path="{{ docker_packages['all']['docker_compose_dir'] }}"
+        state=directory
+        recurse=yes

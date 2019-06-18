@@ -14,6 +14,12 @@ monit_properties: {
 }
 
 docker_packages: {
+  "all": {
+    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/1.25.0-rc1/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
+    "docker_compose_location": "/usr/local/bin/docker-compose",
+    "docker_compose_dir": "/opt/docker/compose"
+  },
+
   "redhat": {
     "utility": [
       "yum-utils",
@@ -43,4 +49,9 @@ docker_packages: {
     ],
     "repo": "deb [arch=amd64] https://download.docker.com/linux/debian {{ansible_distribution_release}} stable"
   }
+}
+
+cadvisor_properties: {
+  "image_tag": "latest",
+  "host_port": 38080
 }

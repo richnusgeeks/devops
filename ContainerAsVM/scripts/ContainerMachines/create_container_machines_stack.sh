@@ -107,6 +107,14 @@ copyPrivKey() {
 
 testASBLRun() {
 
+  if [[ ! -z "${1}" ]] && \
+     [[ "${1}" != "ping" ]] && \
+     [[ "${1}" != "docker" ]]
+
+  then
+    printUsage
+  fi
+
   createASBLInv
   copyPrivKey
 
@@ -132,6 +140,7 @@ showAndTest() {
 
   showFTLStack
   sleep "${DLYTOMSTL}"
+  echo
   testASBLRun "${1}"
 
 }

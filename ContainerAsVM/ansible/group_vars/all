@@ -55,3 +55,7 @@ cadvisor_properties: {
   "image_tag": "latest",
   "host_port": 38080
 }
+
+dckrbnchscrty_properties: {
+  "image_tag": "latest",
+}

@@ -1,6 +1,6 @@
 ---
 - name: deduce current monit version
-  shell: if [[ -x {{ monit_properties["monit_execbnfl"] }} ]];then {{ monit_properties["monit_execbnfl"] }} -c {{ monit_properties["monit_configfl"] }} -v|grep 'Monit version'|awk '{print $NF}';fi
+  shell: if [ -x {{ monit_properties["monit_execbnfl"] }} ];then {{ monit_properties["monit_execbnfl"] }} -c {{ monit_properties["monit_configfl"] }} -V|grep 'Monit version'|awk '{print $NF}';fi
   register: monit_version_current
 
 - name: download monit tarball

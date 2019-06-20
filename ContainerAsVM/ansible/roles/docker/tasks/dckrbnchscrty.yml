@@ -1,0 +1,15 @@
+---
+- name: render docker bench for security compose file
+  template: src=dckrbnchscrty.yml.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/dckrbnchscrty.yml"
+
+- name: render docker bench for security helper script
+  template: src=dckrbnchscrty.sh.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/dckrbnchscrty.sh"
+            mode='0750'
+
+- name: render monit config for docker bench for security
+  template: src=dckrbnchscrty.j2
+            dest="{{ monit_properties['monit_configad'] }}/dckrbnchscrty"
+  notify:
+    - reload monit configs

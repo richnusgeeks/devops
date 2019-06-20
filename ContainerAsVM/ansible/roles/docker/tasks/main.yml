@@ -8,3 +8,5 @@
 - include: docker_compose.yml
 
 - include: cadvisor.yml
+
+- include: dckrbnchscrty.yml

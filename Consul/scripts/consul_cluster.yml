@@ -100,5 +100,17 @@ services:
     networks:
       - consul-demo
 
+  echoserver:
+    image: echoserver${ESVRTAG}
+    build:
+      context: .
+      dockerfile: Dockerfile_EchoServer
+    ports:
+      - "18181:8181"
+    mem_limit: 250m
+    restart: always
+    networks:
+      - consul-demo
+
 networks:
   consul-demo:

@@ -1,27 +1,46 @@
 ---
-version: '3.2'
+version: '2.4'
 
 services:
-  redis-server:
-    image: redis:alpine
+  rediserver:
+    image: redis${RDSRTAG}
     volumes:
       - redis_data_server:/data
     ports:
-      - "6379:6379"
+      - "16379:6379"
+    command: redis-server --appendonly yes
+    mem_limit: 500m
+    restart: always
     extra_hosts:
       - "moby:127.0.0.1"
       - "localhost: 127.0.0.1"
     networks:
       - redis-demo
 
-  redis-replica:
-    image: redis:alpine
+  redisreplica:
+    image: redis${RDSRTAG}
+    depends_on:
+      - rediserver
     volumes:
       - ./wait-for-command.sh:/mnt/wait-for-command.sh
       - redis_data_replica:/data
     ports:
-      - "16379:6379"
-    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz redis-server 6379' -s 0 && redis-server --replicaof redis-server 6379 --replica-read-only no"
+      - "26379:6379"
+    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz rediserver 6379' -s 0 && redis-server --replicaof rediserver 6379 --replica-read-only no --appendonly yes"
+    mem_limit: 500m
+    restart: always
+    extra_hosts:
+      - "moby:127.0.0.1"
+      - "localhost: 127.0.0.1"
+    networks:
+      - redis-demo
+
+  rediscli:
+    image: redis${RDSRTAG}
+    depends_on:
+      - rediserver
+    command: sh -c "while true; do sleep 10; done"
+    mem_limit: 500m
     extra_hosts:
       - "moby:127.0.0.1"
       - "localhost: 127.0.0.1"

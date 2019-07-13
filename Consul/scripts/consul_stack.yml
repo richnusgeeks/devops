@@ -112,5 +112,14 @@ services:
     networks:
       - consul-demo
 
+  testclient:
+    depends_on:
+      - echoserver
+    image: alpine${TSTCTAG}
+    command: sh -c "echo 'hello to socat from nc' | nc echoserver 8181"
+    mem_limit: 250m
+    networks:
+      - consul-demo
+
 networks:
   consul-demo:

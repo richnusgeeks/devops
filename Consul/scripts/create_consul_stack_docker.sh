@@ -1,31 +1,74 @@
 #! /bin/bash
 
 OPTN=${1}
-NUMOPTNMX=2
+SRVC=${2}
+SHELL=${3}
+NUMOPTNMX=4
 CMPSFLDIR='.'
 CMPSEFILE='consul_stack.yml'
+CMPSOFILE='consul_stack.yml.override'
+RQRDCMNDS="awk
+           cat
+           docker
+           docker-compose
+           echo
+           terraform"
+
+preReq() {
+
+  for c in ${RQRDCMNDS}
+  do
+    if ! command -v "${c}" > /dev/null 2>&1
+    then
+      echo " Error: required command ${c} not found, exiting ..."
+      exit -1
+    fi
+  done
+
+}
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|logs|down|cleandown >"
+  cat <<EOF
+  Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>
+                            |logs|down|cleandown >
+EOF
   exit 0
 
 }
 
-if [[ $# -gt ${NUMOPTNMX} ]]
-then
-  printUsage
-fi
+parseArgs() {
 
-if [[ "${OPTN}" != "up" ]] && \
-   [[ "${OPTN}" != "ps" ]] && \
-   [[ "${OPTN}" != "logs" ]] && \
-   [[ "${OPTN}" != "down" ]] && \
-   [[ "${OPTN}" != "cleandown" ]] && \
-   [[ "${OPTN}" != "buildup" ]]
-then
-  printUsage
-else
+  if [[ $# -gt ${NUMOPTNMX} ]]
+  then
+    printUsage
+  fi
+
+  if [[ "${OPTN}" != "up" ]] && \
+     [[ "${OPTN}" != "ps" ]] && \
+     [[ "${OPTN}" != "logs" ]] && \
+     [[ "${OPTN}" != "down" ]] && \
+     [[ "${OPTN}" != "cleandown" ]] && \
+     [[ "${OPTN}" != "buildup" ]] &&
+     [[ "${OPTN}" != "exec" ]]
+  then
+    printUsage
+  fi
+
+}
+
+genScrtKey() {
+
+  export SCRTKEY=$(docker run -it --rm consul$(awk -F"=" '/CNSLTAG/{print $NF}' .env) keygen)
+
+}
+
+main() {
+
+  parseArgs
+
+  preReq
+
   if [[ "${OPTN}" = "up" ]] || \
      [[ "${OPTN}" = "buildup" ]]
   then
@@ -40,14 +83,27 @@ else
 
   if [[ "${OPTN}" = "up" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
+    genScrtKey
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}"  \
+                   -f "${CMPSFLDIR}/${CMPSOFILE}" "${OPTN}" -d
   elif [[ "${OPTN}" = "buildup" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
+    genScrtKey
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" \
+                   -f "${CMPSFLDIR}/${CMPSOFILE}" up --build -d
   elif [[ "${OPTN}" = "cleandown" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" \
+                   -f "${CMPSFLDIR}/${CMPSOFILE}" down -v
+  elif [[ "${OPTN}" = "exec" ]]
+  then
+    exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" \
+                        -f "${CMPSFLDIR}/${CMPSOFILE}" exec "${SRVC}" "${SHELL}"
   else
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" \
+                   -f "${CMPSFLDIR}/${CMPSOFILE}" "${OPTN}"
   fi
-fi
+
+}
+
+main 2>&1

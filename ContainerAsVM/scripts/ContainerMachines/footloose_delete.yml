@@ -10,7 +10,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./footloose.yaml:/tmp/footloose.yaml
-    command: delete -c /tmp/footloose.yaml
+    command: delete
     mem_limit: 500m
     networks:
       - footloose-demo

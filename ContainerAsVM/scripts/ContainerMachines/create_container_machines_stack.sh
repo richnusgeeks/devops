@@ -6,13 +6,13 @@ NUMOPTNMX=3
 DLYTOMSTL=5
 CMPSFLDIR='.'
 ANSBLEDIR='../../ansible'
+FTLSCTDIR='/var/lib/footloose'
 ASBLCMTEST='ansible_test.yml'
 ASBLCMDCKR='ansible_docker.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSDL='footloose_delete.yml'
 RQRDCMNDS="awk
            chmod
-           cp
            docker
            docker-compose
            grep
@@ -28,6 +28,8 @@ preReq() {
       exit -1
     fi
   done
+
+  export COMPOSE_IGNORE_ORPHANS=1
 
 }
 
@@ -72,7 +74,7 @@ showFTLStack() {
 
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
                            -v $(pwd)/footloose.yaml:/tmp/footloose.yaml \
-            footloose show -c /tmp/footloose.yaml
+            footloose show
   then
     exitOnErr 'docker run footloose show failed'
   fi
@@ -83,7 +85,7 @@ createASBLInv() {
 
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml \
-           footloose show -c /tmp/footloose.yaml | \
+           footloose show | \
        grep -v NAME | awk '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/hosts"
   then
     exitOnErr "docker run footloose show > ${ANSBLEDIR}/hosts failed"
@@ -93,11 +95,11 @@ createASBLInv() {
 
 copyPrivKey() {
 
-  if ! sudo cp $(docker volume inspect $(docker volume ls|grep -v DRIVER|grep footloose-data|awk '{print $NF}')|grep -i mountpoint|awk -F'"' '{print $(NF-1)}')/cluster-key "${ANSBLEDIR}"
+  if ! docker cp "footloosecreate:${FTLSCTDIR}/cluster-key" "${ANSBLEDIR}"
   then
-    exitOnErr "cluster-key copy from docker volume to ${ANSBLEDIR} failed"
+    exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/cluster-key ${ANSBLEDIR} failed"
   else
-    if ! sudo chmod +r "${ANSBLEDIR}/cluster-key"
+    if ! chmod +r "${ANSBLEDIR}/cluster-key"
     then
       exitOnErr "chmod +r ${ANSBLEDIR}/cluster-key failed"
     fi
@@ -153,21 +155,23 @@ main() {
 
   if [[ "${OPTN}" = "create" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up -d
     showAndTest "${OPTNTST}"
   elif [[ "${OPTN}" = "buildcreate" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up --build
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up --build -d
     showAndTest "${OPTNTST}"
   elif [[ "${OPTN}" = "delete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down -v
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then

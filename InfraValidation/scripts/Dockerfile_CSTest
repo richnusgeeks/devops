@@ -1,0 +1,11 @@
+FROM alpine:3.10
+
+RUN apk add --no-cache ca-certificates curl \
+  && curl -sSLk -o /usr/local/bin/container-structure-test $(curl -sSLk https://github.com/GoogleContainerTools/container-structure-test/releases|grep Linux/amd64|awk -F'"' '{print $2}'|head -1) \
+  && chmod +x /usr/local/bin/container-structure-test \
+  && mkdir -p /etc/cstest
+
+WORKDIR /etc/cstest
+
+ENTRYPOINT ["container-structure-test"]
+CMD ["-h"]

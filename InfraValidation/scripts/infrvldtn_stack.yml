@@ -35,11 +35,26 @@ services:
       dockerfile: Dockerfile_DGoss
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/dgoss:/etc/dgoss
+      - ./config/dgoss:/etc/dgoss:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     environment:
       GOSS_FILES_STRATEGY: cp
+    networks:
+      - chef-demo
+
+  cstest:
+    image: cstest${CSTSTAG}
+    container_name: cstest
+    hostname: cstest
+    build:
+      context: .
+      dockerfile: Dockerfile_CSTest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/cstest:/etc/cstest:ro
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
     networks:
       - chef-demo
 
@@ -68,7 +83,7 @@ services:
       dockerfile: Dockerfile_Testinfra
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/testinfra/:/etc/testinfra/:ro
+      - ./config/testinfra:/etc/testinfra:ro
       - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"

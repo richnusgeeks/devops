@@ -27,8 +27,21 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|inspecrun >"
+  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|ctestrun >"
   exit 0
+
+}
+
+dgossRun() {
+
+  true
+
+}
+
+cstestRun() {
+
+  docker exec -it cstest container-structure-test test --image cstest \
+                                --config /etc/cstest/config.yaml
 
 }
 
@@ -52,6 +65,14 @@ inspecRun() {
 
 }
 
+testRun() {
+
+  dgossRun
+  cstestRun
+  inspecRun
+
+}
+
 parseArgs() {
 
   if [[ $# -gt ${NUMOPTNMX} ]]
@@ -65,7 +86,7 @@ parseArgs() {
      [[ "${OPTN}" != "down" ]] && \
      [[ "${OPTN}" != "cleandown" ]] && \
      [[ "${OPTN}" != "buildup" ]] &&
-     [[ "${OPTN}" != "inspecrun" ]] &&
+     [[ "${OPTN}" != "ctestrun" ]] &&
      [[ "${OPTN}" != "exec" ]]
   then
     printUsage
@@ -95,18 +116,18 @@ main() {
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
     sleep 10
-    inspecRun
+    testRun
   elif [[ "${OPTN}" = "buildup" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
     sleep 10
-    inspecRun
+    testRun
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
-  elif [[ "${OPTN}" = "inspecrun" ]]
+  elif [[ "${OPTN}" = "ctestrun" ]]
   then
-    inspecRun
+    testRun
   elif [[ "${OPTN}" = "exec" ]]
   then
     exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${SHELL}"

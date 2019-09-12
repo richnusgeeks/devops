@@ -1,0 +1,10 @@
+FROM python:3-alpine
+
+RUN pip install testinfra \
+ && mkdir -p /etc/testinfra \
+             /etc/ssl/certs/test_servers
+
+WORKDIR /etc/testinfra
+
+ENTRYPOINT ["py.test"]
+CMD ["-h"]

@@ -5,11 +5,11 @@ SRVC=${2}
 SHELL=${3}
 NUMOPTNMX=4
 CMPSFLDIR='.'
-CMPSEFILE='chef_tstsrvrs_stack.yml'
+CMPSEFILE='infrvldtn_stack.yml'
 RQRDCMNDS="terraform
            docker
            docker-compose"
-SSHPRVKEY='/etc/ssl/certs/test_servers_pkey'
+SSHPRVKEY='/etc/ssl/certs/test_servers_pkey/test'
 
 
 preReq() {
@@ -27,25 +27,27 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|chefrun >"
+  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|inspecrun >"
   exit 0
 
 }
 
-chefRun() {
+inspecRun() {
 
 #  local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
   local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|xargs|sed 's/ /,/g')
 
-  docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
-    "${TSTSRVRS}" package monit action=install
+#  docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
+#    "${TSTSRVRS}" package monit action=install
 
-  sleep 5
+#  sleep 5
 
   for s in $(echo ${TSTSRVRS}|sed 's/,/ /g')
   do
-    docker exec -it chefwrkstn inspec exec /opt/inspec -t "ssh://root@${s}" \
-      -i "${SSHPRVKEY}"
+    echo
+    echo " docker container => ${s}"
+    docker exec -it inspecat inspec detect -t "ssh://root@${s}" \
+      -i "${SSHPRVKEY}" --chef-license=accept-silent
   done
 
 }
@@ -63,7 +65,7 @@ parseArgs() {
      [[ "${OPTN}" != "down" ]] && \
      [[ "${OPTN}" != "cleandown" ]] && \
      [[ "${OPTN}" != "buildup" ]] &&
-     [[ "${OPTN}" != "chefrun" ]] &&
+     [[ "${OPTN}" != "inspecrun" ]] &&
      [[ "${OPTN}" != "exec" ]]
   then
     printUsage
@@ -93,18 +95,18 @@ main() {
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
     sleep 10
-    chefRun
+    inspecRun
   elif [[ "${OPTN}" = "buildup" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
     sleep 10
-    chefRun
+    inspecRun
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
-  elif [[ "${OPTN}" = "chefrun" ]]
+  elif [[ "${OPTN}" = "inspecrun" ]]
   then
-    chefRun
+    inspecRun
   elif [[ "${OPTN}" = "exec" ]]
   then
     exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${SHELL}"

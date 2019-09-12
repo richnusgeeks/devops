@@ -1,0 +1,121 @@
+version: '3.2'
+
+services:
+
+#  chefserver:
+#    image: quay.io/3ofcoins/chef-server:12.18.14
+#    container_name: chefserver
+#    hostname: chefserver
+#    privileged: true
+#    ports:
+#      - "9080:80"
+#      - "9443:443"
+#    networks:
+#      - chef-demo
+
+#  chefwrkstn:
+#    image: chefwrkstn${CFWSTAG}
+#    container_name: chefwrkstn
+#    hostname: chefwrkstn
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_CWSUB1804
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    command: "sh -c 'while true; do sleep 5; done'"
+#    networks:
+#      - chef-demo
+
+  dgoss:
+    image: dgoss${DGSSTAG}
+    container_name: dgoss
+    hostname: dgoss
+    build:
+      context: .
+      dockerfile: Dockerfile_DGoss
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/dgoss:/etc/dgoss
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+    environment:
+      GOSS_FILES_STRATEGY: cp
+    networks:
+      - chef-demo
+
+  inspecat:
+    image: inspecat${INSPTAG}
+    container_name: inspecat
+    hostname: inspecat
+    build:
+      context: .
+      dockerfile: Dockerfile_Inspecat
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/inspec:/etc/inspec:ro
+      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+    networks:
+      - chef-demo
+
+  testinfra:
+    image: testinfra${TFRATAG}
+    container_name: testinfra
+    hostname: testinfra
+    build:
+      context: .
+      dockerfile: Dockerfile_Testinfra
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/testinfra/:/etc/testinfra/:ro
+      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+    networks:
+      - chef-demo
+
+  tstsrvr1:
+    image: phusionbsimgssh${PBISTAG}
+    container_name: tstsrvr1
+    hostname: tstsrvr1
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    volumes:
+      - ./keys/out/test.pub:/tmp/test.pub:ro
+    ports:
+      - "2222:22"
+    networks:
+      - chef-demo
+
+  tstsrvr2:
+    image: phusionbsimgssh${PBISTAG}
+    container_name: tstsrvr2
+    hostname: tstsrvr2
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    volumes:
+      - ./keys/out/test.pub:/tmp/test.pub:ro
+    ports:
+      - "2223:22"
+    networks:
+      - chef-demo
+
+  tstsrvr3:
+    image: phusionbsimgssh${PBISTAG}
+    container_name: tstsrvr3
+    hostname: tstsrvr3
+    build:
+      context: .
+      dockerfile: Dockerfile_TSUB1804
+    volumes:
+      - ./keys/out/test.pub:/tmp/test.pub:ro
+    ports:
+      - "2224:22"
+    networks:
+      - chef-demo
+
+networks:
+  chef-demo:

@@ -1,0 +1,9 @@
+FROM chef/inspec:4.16.9
+
+RUN mkdir -p /etc/inspec \
+             /etc/ssl/certs/test_servers_pkey
+
+WORKDIR /etc/inspec
+
+ENTRYPOINT ["inspec"]
+CMD ["-h"]

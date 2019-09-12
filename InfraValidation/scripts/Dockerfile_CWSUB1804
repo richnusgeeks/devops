@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-ENV CHEFWS_VERSION 0.4.1
+ENV CHEFWS_VERSION 0.8.7
 # https://docs.chef.io/chef_license_accept.html
 ENV CHEF_LICENSE='accept'
 ENV PATH="/root/.chefdk/gem/ruby/2.6.0/bin:/opt/chef-workstation/embedded/bin/:${PATH}"
@@ -14,7 +14,7 @@ RUN apt-get update \
   && curl -sSLk https://github.com/$(curl -sSLk https://github.com/aelsabbahy/goss/releases/latest|grep releases/download|grep linux-amd64|awk -F'"' '{print $2}') -o /usr/local/bin/goss \
   && curl -sSLk https://github.com/$(curl -sSLk https://github.com/aelsabbahy/goss/releases/latest|grep releases/download|grep linux-amd64|sed 's/goss-linux-amd64/dgoss/'|awk -F'"' '{print $2}') -o /usr/local/bin/dgoss \
   && chmod +x /usr/local/bin/*goss \
-  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
   && cd /tmp \
   && tar zxvf docker.tgz \
   && mv docker/docker /usr/local/bin \
@@ -25,5 +25,3 @@ RUN apt-get update \
 COPY ./config.toml /root/.chef-workstation/config.toml
 COPY ./keys/out/test /etc/ssl/certs/test_servers_pkey
 COPY ./test_check.rb /opt/inspec/test_check.rb
-
-CMD ["sh", "-c", "while true; do sleep 5; done"]

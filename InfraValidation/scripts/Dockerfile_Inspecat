@@ -1,7 +1,10 @@
 FROM chef/inspec:4.16.9
 
-RUN mkdir -p /etc/inspec \
-             /etc/ssl/certs/test_servers_pkey
+RUN apk add --no-cache alpine-sdk \
+ && gem install kitchen-inspec \
+ && mkdir -p /etc/inspec \
+             /etc/ssl/certs/test_servers_pkey \
+ && apk del alpine-sdk
 
 WORKDIR /etc/inspec
 

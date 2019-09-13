@@ -1,8 +1,12 @@
 FROM python:3-alpine
 
-RUN pip install testinfra \
+RUN apk add --no-cache --virtual .build-deps \
+    alpine-sdk libffi-dev openssl-dev \
+ && pip install paramiko \
+                testinfra \
  && mkdir -p /etc/testinfra \
-             /etc/ssl/certs/test_servers
+             /etc/ssl/certs/test_servers \
+ && apk del .build-deps
 
 WORKDIR /etc/testinfra
 

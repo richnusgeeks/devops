@@ -62,6 +62,19 @@ inspecRun() {
     docker exec -it inspecat inspec detect -t "ssh://root@${s}" \
       -i "${SSHPRVKEY}" --chef-license=accept-silent
   done
+  echo
+
+}
+
+testinfraRun() {
+
+  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print "@"$NF}'|xargs|sed -e 's/ /,/g' -e 's/@/root@/g')
+
+  echo
+  echo " docker container(s) => ${TSTSRVRS}"
+  docker exec -it testinfra py.test -v test_myinfra.py --hosts="${TSTSRVRS}" \
+    --ssh-identity-file="${SSHPRVKEY}"
+  echo
 
 }
 
@@ -70,6 +83,7 @@ testRun() {
   dgossRun
   cstestRun
   inspecRun
+  testinfraRun
 
 }
 

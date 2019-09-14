@@ -10,7 +10,8 @@ SSHKYCTFL='sshkey_create.yml'
 SSHKYSDIR='keys/out'
 CMPSEFILE='infrvldtn_stack.yml'
 RQRDCMNDS="docker
-           docker-compose"
+           docker-compose
+           mkdir"
 SSHPRVKEY='/etc/ssl/certs/test_servers_pkey/test'
 
 exitOnErr() {
@@ -40,6 +41,8 @@ printUsage() {
 }
 
 crtecpSSHKeys() {
+
+  mkdir -p "${SSHKYSDIR}"
 
   docker-compose -f "${CMPSFLDIR}/${SSHKYCTFL}" up -d
   sleep "${DLYTOTINA}"

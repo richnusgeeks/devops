@@ -11,7 +11,7 @@ services:
 #      - "9080:80"
 #      - "9443:443"
 #    networks:
-#      - chef-demo
+#      - infrvldtn-demo
 
 #  chefwrkstn:
 #    image: chefwrkstn${CFWSTAG}
@@ -24,7 +24,7 @@ services:
 #      - /var/run/docker.sock:/var/run/docker.sock
 #    command: "sh -c 'while true; do sleep 5; done'"
 #    networks:
-#      - chef-demo
+#      - infrvldtn-demo
 
   dgoss:
     image: dgoss${DGSSTAG}
@@ -41,7 +41,7 @@ services:
     environment:
       GOSS_FILES_STRATEGY: cp
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   cstest:
     image: cstest${CSTSTAG}
@@ -56,7 +56,7 @@ services:
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   inspecat:
     image: inspecat${INSPTAG}
@@ -72,7 +72,7 @@ services:
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   testinfra:
     image: testinfra${TFRATAG}
@@ -88,7 +88,7 @@ services:
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   tstsrvr1:
     image: phusionbsimgssh${PBISTAG}
@@ -102,7 +102,7 @@ services:
     ports:
       - "2222:22"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   tstsrvr2:
     image: phusionbsimgssh${PBISTAG}
@@ -116,7 +116,7 @@ services:
     ports:
       - "2223:22"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
   tstsrvr3:
     image: phusionbsimgssh${PBISTAG}
@@ -130,7 +130,7 @@ services:
     ports:
       - "2224:22"
     networks:
-      - chef-demo
+      - infrvldtn-demo
 
 networks:
-  chef-demo:
+  infrvldtn-demo:

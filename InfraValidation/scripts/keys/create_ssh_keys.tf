@@ -4,15 +4,15 @@ resource "tls_private_key" "test" {
 }
 
 resource "template_dir" "test" {
-  source_dir      = "./keys/in"
-  destination_dir = "./keys/out"
+  source_dir      = "./in"
+  destination_dir = "./out"
 
-  vars {
+  vars = {
     prvkey = "${tls_private_key.test.private_key_pem}"
     pubkey = "${tls_private_key.test.public_key_openssh}"
   }
 
   provisioner "local-exec" {
-    command = "chmod 0400 keys/out/test"
+    command = "chmod 0400 ./out/test"
   }
 }

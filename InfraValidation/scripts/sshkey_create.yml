@@ -1,0 +1,12 @@
+version: '3.2'
+
+services:
+
+  sshkeygen:
+    image: hashicorp/terraform${TRFMTAG}
+    container_name: sshkeygen
+    hostname: sshkeygen
+    volumes:
+      - ./keys:/keys:ro
+    entrypoint: sh
+    command: "-c 'cp -r /keys /tmp/ && cd /tmp/keys && terraform init && (terraform apply -auto-approve) && sleep 60'"

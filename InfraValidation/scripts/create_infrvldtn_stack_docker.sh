@@ -4,13 +4,21 @@ OPTN=${1}
 SRVC=${2}
 SHELL=${3}
 NUMOPTNMX=4
+DLYTOTINA=20
 CMPSFLDIR='.'
+SSHKYCTFL='sshkey_create.yml'
+SSHKYSDIR='keys/out'
 CMPSEFILE='infrvldtn_stack.yml'
-RQRDCMNDS="terraform
-           docker
+RQRDCMNDS="docker
            docker-compose"
 SSHPRVKEY='/etc/ssl/certs/test_servers_pkey/test'
 
+exitOnErr() {
+
+  echo " Error: <$(date)> $1, exiting ..."
+  exit 1
+
+}
 
 preReq() {
 
@@ -18,8 +26,7 @@ preReq() {
   do
     if ! command -v "${c}" > /dev/null 2>&1
     then
-      echo " Error: required command ${c} not found, exiting ..."
-      exit -1
+      exitOnErr " Error: required command ${c} not found, exiting ..."
     fi
   done
 
@@ -29,6 +36,24 @@ printUsage() {
 
   echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|ctestrun >"
   exit 0
+
+}
+
+crtecpSSHKeys() {
+
+  docker-compose -f "${CMPSFLDIR}/${SSHKYCTFL}" up -d
+  sleep "${DLYTOTINA}"
+  if ! docker cp "sshkeygen:/tmp/${SSHKYSDIR}/test" "${SSHKYSDIR}"
+  then
+    exitOnErr "docker cp sshkeygen:/tmp/${SSHKYSDIR}/test ${SSHKYSDIR} failed"
+  else
+    if ! docker cp "sshkeygen:/tmp/${SSHKYSDIR}/test.pub" "${SSHKYSDIR}"
+    then
+      exitOnErr "docker cp sshkeygen:/tmp/${SSHKYSDIR}/test.pub ${SSHKYSDIR} failed"
+    else
+      docker-compose -f "${CMPSFLDIR}/${SSHKYCTFL}" down
+    fi
+  fi
 
 }
 
@@ -114,31 +139,26 @@ main() {
 
   preReq
 
-  if [[ "${OPTN}" = "up" ]] || \
-     [[ "${OPTN}" = "buildup" ]]
+  if [[ "${OPTN}" = "up" ]] || [[ "${OPTN}" = "buildup" ]]
   then
-    terraform init
-    terraform apply -auto-approve
-  elif [[ "${OPTN}" = "down" ]] || \
-       [[ "${OPTN}" = "cleandown" ]]
-  then
-    terraform init
-    terraform destroy -auto-approve
-  fi
-
-  if [[ "${OPTN}" = "up" ]]
-  then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
+    crtecpSSHKeys
+    if [[ "${OPTN}" = "up" ]]
+    then
+      docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
+    else
+      docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
+    fi
     sleep 10
     testRun
-  elif [[ "${OPTN}" = "buildup" ]]
+  elif [[ "${OPTN}" = "cleandown" ]] || [[ "${OPTN}" = "down" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
-    sleep 10
-    testRun
-  elif [[ "${OPTN}" = "cleandown" ]]
-  then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+    rm -f ${SSHKYSDIR}/*
+    if [[ "${OPTN}" = "down" ]]
+    then
+      docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"
+    else
+      docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+    fi
   elif [[ "${OPTN}" = "ctestrun" ]]
   then
     testRun

@@ -87,8 +87,8 @@ inspecRun() {
   do
     echo
     echo " docker container => ${s}"
-    docker exec -it inspecat inspec detect -t "ssh://root@${s}" \
-      -i "${SSHPRVKEY}" --chef-license=accept-silent
+    docker exec -it cwinspeck inspec detect -t "ssh://root@${s}" \
+      -i "${SSHPRVKEY}"
   done
   echo
 
@@ -155,7 +155,7 @@ main() {
     testRun
   elif [[ "${OPTN}" = "cleandown" ]] || [[ "${OPTN}" = "down" ]]
   then
-    rm -f ${SSHKYSDIR}/*
+    rm -rf ${SSHKYSDIR}/*
     if [[ "${OPTN}" = "down" ]]
     then
       docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"

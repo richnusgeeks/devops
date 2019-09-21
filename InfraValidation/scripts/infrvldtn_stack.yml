@@ -13,18 +13,21 @@ services:
 #    networks:
 #      - infrvldtn-demo
 
-#  chefwrkstn:
-#    image: chefwrkstn${CFWSTAG}
-#    container_name: chefwrkstn
-#    hostname: chefwrkstn
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_CWSUB1804
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
-#    command: "sh -c 'while true; do sleep 5; done'"
-#    networks:
-#      - infrvldtn-demo
+  cwinspeck:
+    image: chefwrkstn${CFWSTAG}
+    container_name: cwinspeck
+    hostname: cwinspeck
+    build:
+      context: .
+      dockerfile: Dockerfile_CWSUB1804
+    volumes:
+      - ./config/inspec:/etc/inspec
+      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+    networks:
+      - infrvldtn-demo
 
   dgoss:
     image: dgoss${DGSSTAG}
@@ -58,21 +61,21 @@ services:
     networks:
       - infrvldtn-demo
 
-  inspecat:
-    image: inspecat${INSPTAG}
-    container_name: inspecat
-    hostname: inspecat
-    build:
-      context: .
-      dockerfile: Dockerfile_Inspecat
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/inspec:/etc/inspec:ro
-      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
-    entrypoint: sh
-    command: "-c 'while true; do sleep 5; done'"
-    networks:
-      - infrvldtn-demo
+#  inspecat:
+#    image: inspecat${INSPTAG}
+#    container_name: inspecat
+#    hostname: inspecat
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_Inspecat
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ./config/inspec:/etc/inspec:ro
+#      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
+#    entrypoint: sh
+#    command: "-c 'while true; do sleep 5; done'"
+#    networks:
+#      - infrvldtn-demo
 
   testinfra:
     image: testinfra${TFRATAG}

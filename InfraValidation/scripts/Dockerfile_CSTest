@@ -1,11 +1,21 @@
 FROM alpine:3.10
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL version="latest"
+LABEL description="container structure test docker based testing driver"
 
-RUN apk add --no-cache ca-certificates curl \
+RUN apk add --no-cache --virtual=cst-deps ca-certificates curl \
+  && curl -sSLk -o /sbin/tini https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}') \
   && curl -sSLk -o /usr/local/bin/container-structure-test $(curl -sSLk https://github.com/GoogleContainerTools/container-structure-test/releases|grep Linux/amd64|awk -F'"' '{print $2}'|head -1) \
-  && chmod +x /usr/local/bin/container-structure-test \
-  && mkdir -p /etc/cstest
+  && chmod +x /usr/local/bin/container-structure-test /sbin/tini \
+  && mkdir -p /etc/cstest \
+  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && cd /tmp \
+  && tar zxvf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rfv docker docker.tgz \
+  && apk del cst-deps
 
 WORKDIR /etc/cstest
 
-ENTRYPOINT ["container-structure-test"]
-CMD ["-h"]
+ENTRYPOINT ["tini","--"]
+CMD ["container-structure-test", "-h"]

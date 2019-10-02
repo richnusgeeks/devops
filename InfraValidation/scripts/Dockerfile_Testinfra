@@ -1,14 +1,19 @@
 FROM python:3-alpine
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL version="latest"
+LABEL description="testinfra test driver docker image"
 
-RUN apk add --no-cache --virtual .build-deps \
-    alpine-sdk libffi-dev openssl-dev \
- && pip install paramiko \
+RUN apk add --no-cache --virtual=build-deps \
+    alpine-sdk libffi-dev openssl-dev curl \
+  && curl -sSLk -o /sbin/tini https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}') \
+  && chmod +x /sbin/tini \
+  && pip install paramiko \
                 testinfra \
- && mkdir -p /etc/testinfra \
+  && mkdir -p /etc/testinfra \
              /etc/ssl/certs/test_servers \
- && apk del .build-deps
+  && apk del build-deps
 
 WORKDIR /etc/testinfra
 
-ENTRYPOINT ["py.test"]
-CMD ["-h"]
+ENTRYPOINT ["tini", "--"]
+CMD ["py.test", "-h"]

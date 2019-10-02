@@ -8,3 +8,22 @@ commandTests:
       - |
          echo hello &&
          echo world
+
+  - name: "dump tini version"
+    command: "/sbin/tini"
+    args: ["--version"]
+
+fileExistenceTests:
+  - name: "tini existence"
+    path: "/sbin/tini"
+    shouldExist: true
+
+metadataTest:
+  labels:
+    - key: 'com.richnusgeeks.vendor'
+      value: 'richnusgeeks'
+#  exposedPorts: []
+#  volumes: []
+  entrypoint: ["tini", "--"]
+#  cmd: []
+#  workdir: ""

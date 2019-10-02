@@ -68,15 +68,16 @@ dgossRun() {
 
 cstestRun() {
 
-  docker exec -it cstest container-structure-test test --image cstest \
-                                --config /etc/cstest/config.yaml
+  docker exec -it cstest sh -c 'docker images --format "{{.Repository}}:{{.Tag}}"|sort -u|grep -v "<none>"| \
+    xargs -I % sh -c "echo -n Container Structure Test run for: %;container-structure-test test \
+      --image % --config /etc/cstest/config.yaml;echo"'
 
 }
 
 inspecRun() {
 
 #  local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
-  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|xargs|sed 's/ /,/g')
+  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|sort -u|xargs|sed 's/ /,/g')
 
 #  docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
 #    "${TSTSRVRS}" package monit action=install

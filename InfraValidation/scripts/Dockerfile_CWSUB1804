@@ -1,4 +1,7 @@
 FROM ubuntu:18.04
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL version="0.8.7"
+LABEL description="inspec and kitchen test driver docker image"
 
 ENV CHEFWS_VERSION 0.8.7
 # https://docs.chef.io/chef_license_accept.html
@@ -6,7 +9,9 @@ ENV CHEF_LICENSE='accept-silent'
 ENV PATH="/opt/chef-workstation/embedded/bin/:${PATH}"
 
 RUN apt-get update \
-  && apt-get install --no-install-recommends -y curl vim \
+  && apt-get install --no-install-recommends -y curl \
+  && curl -sSLk -o /sbin/tini https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}') \
+  && chmod +x /sbin/tini \
   && curl -sSLk https://packages.chef.io/files/stable/chef-workstation/${CHEFWS_VERSION}/ubuntu/18.04/chef-workstation_${CHEFWS_VERSION}-1_amd64.deb -o /tmp/chefws.deb \
   && dpkg -i /tmp/chefws.deb \
   && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
@@ -17,6 +22,8 @@ RUN apt-get update \
   && mkdir -p /root/.chef-workstation \
               /etc/inspec \
               /etc/ssl/certs/test_servers_pkey \
+  && apt-get remove -y curl \
+  && apt-get autoremove -y \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
@@ -24,5 +31,5 @@ COPY ./config.toml /root/.chef-workstation/config.toml
 
 WORKDIR /etc/inspec
 
-ENTRYPOINT ["inspec"]
-CMD ["-h"]
+ENTRYPOINT ["tini", "--"]
+CMD ["inspec", "-h"]

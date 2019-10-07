@@ -1,6 +1,7 @@
 #! /bin/bash
 set -uo pipefail
 
+DEBUG="${DEBUG_FLAG:-0}"
 DCKRFL="${DOCKER_FILE:-Dockerfile}"
 DCKRIMG="${DOCKER_IMAGE:-none}"
 CSTCNFG='config.yaml'
@@ -33,31 +34,54 @@ preReq() {
     fi
   done
 
-}
-
-crteCstCnfg() {
+  if [[ ${DEBUG} -ne 0 ]] && [[ ${DEBUG} -ne 1 ]]
+  then
+    exitOnErr 'DEBUG_FLAG should be either 0 or 1'
+  fi
 
   if [[ ! -f "${DCKRFL}" ]]
   then
     exitOnErr "required ${DCKRFL} not found"
   fi
 
-  local cmd=$(grep CMD "${DCKRFL}"|sed 's/^ *CMD *//')
+}
 
-  local wrkdir=$(grep WORKDIR "${DCKRFL}"|sed 's/^ *WORKDIR *//')
+crteCstCnfg() {
+
+
+  local cmd=$(grep CMD "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *CMD *//')
+  if ! echo ${cmd} | grep '[][]' > /dev/null 2>&1
+  then
+    if [[ ! -z "${cmd}" ]]
+    then
+      cmd=\[\'${cmd}\'\]
+    else
+      cmd=\[\'/dev/null\'\]
+    fi
+  else
+    cmd=${cmd}
+  fi
+
+  local wrkdir=$(grep WORKDIR "${DCKRFL}"|grep -v '^ *#'|tail -1|sed 's/^ *WORKDIR *//')
   if [[ -z "${wrkdir}" ]]
   then
     wrkdir='/dev/null'
   fi
 
-  local expsdprts=$(grep EXPOSE "${DCKRFL}"|xargs|sed 's/^ *EXPOSE *//g'|sed -e 's/ \{1,\}/,/2g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
+  local expsdprts=$(grep EXPOSE "${DCKRFL}"|grep -v '^ *#'|xargs|sed 's/^ *EXPOSE *//g'|sed -e 's/ \{1,\}/,/2g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
   if [[ "${expsdprts}" = '[""]' ]]
   then
     expsdprts='["-1"]'
   fi
   
-  local entrypoint=$(grep ENTRYPOINT "${DCKRFL}"|sed 's/^ *ENTRYPOINT *//')
+  local entrypoint=$(grep ENTRYPOINT "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *ENTRYPOINT *//')
+  if [[ -z "${entrypoint}" ]]
+  then
+    entrypoint='["/sbin/tini","--"]'
+  fi
 
+  if [[ ${DEBUG} -eq 0 ]]
+  then
   cat <<EOF > "/tmp/${CSTCNFG}"
 schemaVersion: ${SCHMVER}
 
@@ -81,6 +105,34 @@ metadataTest:
   entrypoint: ${entrypoint}
   workdir: ${wrkdir}
 EOF
+
+  elif [[ ${DEBUG} -eq 1 ]]
+  then
+  cat <<EOF | tee "/tmp/${CSTCNFG}"
+schemaVersion: ${SCHMVER}
+
+commandTests:
+  - name: "dump tini version"
+    command: "/sbin/tini"
+    args: ["--version"]
+
+fileExistenceTests:
+  - name: "tini existence"
+    path: "/sbin/tini"
+    shouldExist: true
+
+metadataTest:
+  labels:
+    - key: '${LBLVNDRK}'
+      value: '${LBLVNDRV}'
+
+  cmd: ${cmd}
+  exposedPorts: ${expsdprts}
+  entrypoint: ${entrypoint}
+  workdir: '${wrkdir}'
+EOF
+
+  fi
 
 }
 

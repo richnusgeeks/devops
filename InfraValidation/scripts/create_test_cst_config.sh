@@ -3,8 +3,9 @@ set -uo pipefail
 
 DCKRFL="${DOCKER_FILE:-Dockerfile}"
 DCKRIMG="${DOCKER_IMAGE:-none}"
-CSTCNFG="${CST_CONFIG:-config.yaml}"
-LBLVNDR="${LABEL_VENDOR:-richnusgeeks}"
+CSTCNFG='config.yaml'
+LBLVNDRK="${LABEL_VENDORK:-com.richnusgeeks.vendor}"
+LBLVNDRV="${LABEL_VENDORV:-richnusgeeks}"
 SCHMVER='2.0.0'
 RQRDCMNDS="awk
            cat
@@ -44,6 +45,10 @@ crteCstCnfg() {
   local cmd=$(grep CMD "${DCKRFL}"|sed 's/^ *CMD *//')
 
   local wrkdir=$(grep WORKDIR "${DCKRFL}"|sed 's/^ *WORKDIR *//')
+  if [[ -z "${wrkdir}" ]]
+  then
+    wrkdir='/dev/null'
+  fi
 
   local expsdprts=$(grep EXPOSE "${DCKRFL}"|xargs|sed 's/^ *EXPOSE *//g'|sed -e 's/ \{1,\}/,/2g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
   if [[ "${expsdprts}" = '[""]' ]]
@@ -53,7 +58,7 @@ crteCstCnfg() {
   
   local entrypoint=$(grep ENTRYPOINT "${DCKRFL}"|sed 's/^ *ENTRYPOINT *//')
 
-  cat <<EOF | tee "${CSTCNFG}"
+  cat <<EOF > "/tmp/${CSTCNFG}"
 schemaVersion: ${SCHMVER}
 
 commandTests:
@@ -68,8 +73,8 @@ fileExistenceTests:
 
 metadataTest:
   labels:
-    - key: 'com.richnusgeeks.vendor'
-      value: '${LBLVNDR}'
+    - key: '${LBLVNDRK}'
+      value: '${LBLVNDRV}'
 
   cmd: ${cmd}
   exposedPorts: ${expsdprts}
@@ -82,8 +87,7 @@ EOF
 runCntnrStst() {
 
   container-structure-test test --image "${DCKRIMG}" \
-                                     --config "${CSTCNFG}"
-  rm -f "${CSTCNFG}"
+                                --config "/tmp/${CSTCNFG}"
 
 }
 

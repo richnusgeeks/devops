@@ -1,3 +1,5 @@
+# This image is published for public usage to
+# https://cloud.docker.com/repository/docker/richnusgeeks/dgoss
 FROM alpine:3.10
 LABEL "com.richnusgeeks.vendor"="richnusgeeks"
 LABEL version="latest"

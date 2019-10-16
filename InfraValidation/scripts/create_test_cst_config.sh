@@ -68,7 +68,7 @@ crteCstCnfg() {
     wrkdir='/dev/null'
   fi
 
-  local expsdprts=$(grep EXPOSE "${DCKRFL}"|grep -v '^ *#'|xargs|sed 's/^ *EXPOSE *//g'|sed -e 's/ \{1,\}/,/2g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
+  local expsdprts=$(grep EXPOSE "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *EXPOSE *//g'|xargs|sed -e 's/ \{1,\}/,/g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
   if [[ "${expsdprts}" = '[""]' ]]
   then
     expsdprts='["-1"]'

@@ -52,7 +52,7 @@ preReq() {
 
 crteCstCnfg() {
 
-  local cmd=$(grep CMD "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *CMD *//')
+  local cmd=$(grep '^ *CMD' "${DCKRFL}"|sed 's/^ *CMD *//')
   if ! echo ${cmd} | grep '[][]' > /dev/null 2>&1
   then
     if [[ ! -z "${cmd}" ]]
@@ -65,25 +65,25 @@ crteCstCnfg() {
     cmd=${cmd}
   fi
 
-  local wrkdir=$(grep WORKDIR "${DCKRFL}"|grep -v '^ *#'|tail -1|sed 's/^ *WORKDIR *//')
+  local wrkdir=$(grep '^ *WORKDIR' "${DCKRFL}"|tail -1|sed 's/^ *WORKDIR *//')
   if [[ -z "${wrkdir}" ]]
   then
     wrkdir='/dev/null'
   fi
 
-  local expsdprts=$(grep EXPOSE "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *EXPOSE *//g'|xargs|sed -e 's/ \{1,\}/,/g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
+  local expsdprts=$(grep '^ *EXPOSE' "${DCKRFL}"|sed 's/^ *EXPOSE *//g'|xargs|sed -e 's/ \{1,\}/,/g' -e 's/,/","/g' -e 's/^ */["/' -e 's/$/"]/')
   if [[ "${expsdprts}" = '[""]' ]]
   then
     expsdprts='["-1"]'
   fi
   
-  local entrypoint=$(grep ENTRYPOINT "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *ENTRYPOINT *//')
+  local entrypoint=$(grep '^ *ENTRYPOINT' "${DCKRFL}"|sed 's/^ *ENTRYPOINT *//')
   if [[ -z "${entrypoint}" ]]
   then
     entrypoint='["/sbin/tini","--"]'
   fi
 
-  local category=$(grep "${LBLCTGRK}" "${DCKRFL}"|awk -F"=" '{print $NF}'|sed -e 's/"//g' -e "s/'//")
+  local category=$(grep "${LBLCTGRK}" "${DCKRFL}"|grep -v '^ *#'|awk -F"=" '{print $NF}'|sed -e 's/"//g' -e "s/'//")
   if [[ ! -z "${category}" ]]
   then
     if [[ "${category}" = 'base' ]] || [[ "${category}" = 'utility' ]] || [[ "${category}" = 'service' ]]

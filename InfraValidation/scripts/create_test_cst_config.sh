@@ -7,10 +7,14 @@ DCKRIMG="${DOCKER_IMAGE:-none}"
 CSTCNFG='config.yaml'
 LBLVNDRK="${LABEL_VENDORK:-com.richnusgeeks.vendor}"
 LBLVNDRV="${LABEL_VENDORV:-richnusgeeks}"
+LBLCTGRK="${LABEL_CATEGORYK:-com.richnusgeeks.category}"
+LBLCTGRV="${LABEL_CATEGORYV:-none}"
 SCHMVER='2.0.0'
 RQRDCMNDS="awk
            cat
            container-structure-test
+           date
+           docker
            echo
            grep
            sed
@@ -48,7 +52,6 @@ preReq() {
 
 crteCstCnfg() {
 
-
   local cmd=$(grep CMD "${DCKRFL}"|grep -v '^ *#'|sed 's/^ *CMD *//')
   if ! echo ${cmd} | grep '[][]' > /dev/null 2>&1
   then
@@ -80,6 +83,15 @@ crteCstCnfg() {
     entrypoint='["/sbin/tini","--"]'
   fi
 
+  local category=$(grep "${LBLCTGRK}" "${DCKRFL}"|awk -F"=" '{print $NF}'|sed -e 's/"//g' -e "s/'//")
+  if [[ ! -z "${category}" ]]
+  then
+    if [[ "${category}" = 'base' ]] || [[ "${category}" = 'utility' ]] || [[ "${category}" = 'service' ]]
+    then
+      LBLCTGRV="${category}"
+    fi
+  fi
+
   if [[ ${DEBUG} -eq 0 ]]
   then
   cat <<EOF > "/tmp/${CSTCNFG}"
@@ -99,6 +111,8 @@ metadataTest:
   labels:
     - key: '${LBLVNDRK}'
       value: '${LBLVNDRV}'
+    - key: '${LBLCTGRK}'
+      value: '${LBLCTGRV}'
 
   cmd: ${cmd}
   exposedPorts: ${expsdprts}
@@ -132,6 +146,14 @@ metadataTest:
   workdir: '${wrkdir}'
 EOF
 
+  fi
+
+  if [[ "${category}" = 'base' ]] || [[ "${category}" = 'utility' ]]
+  then
+    if ! sed -i '/^ *exposedPorts/d' "/tmp/${CSTCNFG}"
+    then
+      exitOnErr "sed -i '/^ *exposedPorts/d' /tmp/${CSTCNFG}"
+    fi
   fi
 
 }

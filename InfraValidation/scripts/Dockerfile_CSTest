@@ -2,6 +2,7 @@
 # https://cloud.docker.com/repository/docker/richnusgeeks/cstest
 FROM alpine:3.10
 LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
 LABEL version="latest"
 LABEL description="docker based testing driver for container structure test"
 
@@ -21,5 +22,5 @@ RUN apk add --no-cache --virtual=cst-deps ca-certificates curl \
 COPY ./create_test_cst_config.sh /usr/local/bin/run.sh
 WORKDIR /etc/cstest
 
-ENTRYPOINT ["tini","--"]
+ENTRYPOINT ["/sbin/tini","--"]
 CMD ["run.sh"]

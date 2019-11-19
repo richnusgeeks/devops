@@ -1,0 +1,37 @@
+version: '2.4'
+
+services:
+
+  tcserver:
+    image: jetbrains/teamcity-server${TCSRTAG}
+    container_name: tcserver
+    hostname: tcserver
+    volumes:
+      - ../server/data:/data/teamcity_server/datadir
+      - ../server/log:/data/teamcity/logs
+    environment:
+      - TEAMCITY_SERVER_MEM_OPTS="-Xmx1g"
+    mem_limit: 1g
+    ports:
+      - "18111:8111"
+    restart: on-failure
+    networks:
+      - tcstack-demo
+
+  tcagent1:
+    depends_on:
+      - tcserver
+    image: jetbrains/teamcity-agent${TCAGTAG}
+    container_name: tcagent1
+    hostname: tcagent1
+    volumes:
+      - ../config/agent:/data/teamcity_agent/conf
+    environment:
+      - SERVER_URL=tcserver:8111
+    mem_limit: 512m
+    restart: on-failure
+    networks:
+      - tcstack-demo
+
+networks:
+  tcstack-demo:

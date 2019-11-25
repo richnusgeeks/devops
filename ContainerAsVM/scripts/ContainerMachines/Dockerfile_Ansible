@@ -1,4 +1,8 @@
 FROM python:3-alpine
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="latest"
+LABEL description="docker based ansible test driver"
 
 RUN adduser -D -S ansible && \
     pip install -U pip && \

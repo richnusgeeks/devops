@@ -12,11 +12,12 @@ ASBLCMDCKR='ansible_docker.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSDL='footloose_delete.yml'
 RQRDCMNDS="awk
+           cat
            chmod
+           date
            docker
            docker-compose
-           grep
-           sudo"
+           grep"
 
 preReq() {
 
@@ -72,8 +73,8 @@ parseArgs() {
 
 showFTLStack() {
 
-  if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml \
+  if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
+                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro \
             footloose show
   then
     exitOnErr 'docker run footloose show failed'
@@ -83,10 +84,10 @@ showFTLStack() {
 
 createASBLInv() {
 
-  if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                          -v $(pwd)/footloose.yaml:/tmp/footloose.yaml \
+  if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
+                          -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro \
            footloose show | \
-       grep -v NAME | awk '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/hosts"
+       grep -v NAME | awk -F '  +' '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/hosts"
   then
     exitOnErr "docker run footloose show > ${ANSBLEDIR}/hosts failed"
   fi

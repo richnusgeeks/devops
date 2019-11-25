@@ -8,8 +8,9 @@ services:
       context: .
       dockerfile: Dockerfile_Footloose
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./footloose.yaml:/tmp/footloose.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./footloose.yaml:/tmp/footloose.yaml:ro
+
     command: delete
     mem_limit: 500m
     networks:

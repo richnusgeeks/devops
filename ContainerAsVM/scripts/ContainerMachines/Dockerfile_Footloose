@@ -1,4 +1,8 @@
 FROM alpine:3.10
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="latest"
+LABEL description="docker based footloose test driver"
 
 RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
   && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \

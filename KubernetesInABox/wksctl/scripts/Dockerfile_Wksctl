@@ -1,0 +1,30 @@
+FROM alpine:3.10
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="latest"
+LABEL description="docker based wksctl test driver"
+
+RUN apk add --no-cache --virtual=deps ca-certificates curl \
+  && apk add  --no-cache openssh-keygen bash \
+  && curl -sSLk -o /sbin/tini https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}') \
+  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && cd /tmp \
+  && tar zxf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rf docker docker.tgz \
+  && mkdir -p /var/lib/footloose \
+  && curl -sSLk https://github.com/$(curl -sSLk https://github.com/weaveworks/footloose/releases|grep download|grep linux-x86_64|awk -F '"' '{print $2}'|head -1) -o /usr/local/bin/footloose \
+  && chmod +x /usr/local/bin/footloose \
+  && curl -sSLk https://github.com/$(curl -sSLk https://github.com/weaveworks/wksctl/releases|grep linux|grep href|head -1|awk -F '"' '{print $2}') -o wksctl.tar.gz \
+  && tar zxf wksctl.tar.gz \
+  && mv wksctl /usr/local/bin \
+  && mv examples/footloose /etc/ \
+  && rm -rf wksctl.tar.gz examples \
+     /etc/footloose/centos7/ignite /etc/footloose/ubuntu1804/ignite \
+  && apk del deps
+
+COPY footloose_run.sh /usr/local/bin/run.sh
+WORKDIR /etc/footloose
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["run.sh"]

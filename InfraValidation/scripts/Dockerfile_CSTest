@@ -16,8 +16,7 @@ RUN apk add --no-cache --virtual=cst-deps ca-certificates curl \
   && cd /tmp \
   && tar zxvf docker.tgz \
   && mv docker/docker /usr/local/bin \
-  && rm -rfv docker docker.tgz \
-  && apk del cst-deps
+  && rm -rfv docker docker.tgz
 
 COPY ./create_test_cst_config.sh /usr/local/bin/run.sh
 WORKDIR /etc/cstest

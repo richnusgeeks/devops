@@ -1,9 +1,15 @@
-FROM golang:1.12.5-alpine3.9 AS builder
-RUN apk add --no-cache git && \
+FROM golang:1.13.8-alpine3.11 AS builder
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="service"
+LABEL version="latest"
+LABEL description="docker based A Tour of Go."
+
+RUN apk add --no-cache git tini && \
   go get golang.org/x/tour && \
   apk del --purge git
 
 EXPOSE 3999
+WORKDIR /go
 
-ENTRYPOINT ["/go/bin/tour", "-http", "0.0.0.0:3999", "-openbrowser", "false"]
-CMD ["-h"]
+ENTRYPOINT ["/sbin/tini","--"]
+CMD ["/go/bin/tour","-http","0.0.0.0:3999","-openbrowser","false","-h"]

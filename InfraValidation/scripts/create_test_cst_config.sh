@@ -288,10 +288,11 @@ runCntnrStst() {
       icon_emoji=':x:'
     fi
 
+    local cstrprt="${CSTRPRT}\n$(echo "${cstrun}"|sed "s/\"/'/g"|grep -E 'RUN|FAIL|PASS')"
     cstrprt="$(echo "${cstrprt}\n\n"|sed 's/\[[0-9;]\{1,\}m//g')"
 
     if ! curl -sS -X POST -H 'Content-type: application/json' \
-	      --data "{\"text\":\"$cstrprt\",\"icon_emoji\":\"$icon_emoji\"}" \
+	      --data "{\"text\":\"$CSTRPRT $icon_emoji\"}" \
 	   "${CSTSLKURL}"
     then
       RETSTATUS=1

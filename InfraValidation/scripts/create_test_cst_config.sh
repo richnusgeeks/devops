@@ -1,12 +1,15 @@
 #! /bin/bash
 set -uo pipefail
 
+# FIXME: https://github.com/GoogleContainerTools/container-structure-test/issues/240
+
 TRACE="${TRACE_FLAG:-0}"
 DEBUG="${DEBUG_FLAG:-0}"
 DCKRFL="${DOCKER_FILE:-Dockerfile}"
 DCKRIMG="${DOCKER_IMAGE:-none}"
 CSTRPRT="\n=== CSTestRun: Dockerfile:${DCKRFL} , Image:${DCKRIMG} ==="
 CSTCNFG='config.yaml'
+CSTPRTFIX="${CST_PORT_FIX:-0}"
 CSTSLKURL="${SLACK_URL:-none}"
 LBLVNDRK="${LABEL_VENDORK:-com.richnusgeeks.vendor}"
 LBLVNDRV="${LABEL_VENDORV:-richnusgeeks}"
@@ -184,6 +187,14 @@ crteCstCnfg() {
   if [[ "${expsdprts}" = '[""]' ]]
   then
     expsdprts='["-1"]'
+  else
+    if ! ${ONBLDEXPF} && [[ ${CSTPRTFIX} -eq 1 ]]
+    then
+      if echo "${expsdprts}"|grep -E '/(tc|ud)p' > /dev/null 2>&1
+      then
+        expsdprts=$(echo "${expsdprts}"|sed -e '/\/tcp//g' -e '/\/udp//g')
+      fi
+    fi
   fi
   
 #  local entrypoint=$(grep '^ *ENTRYPOINT' "${DCKRFL}"|sed 's/^ *ENTRYPOINT *//')
@@ -291,7 +302,8 @@ runCntnrStst() {
     local cstrprt="${CSTRPRT}\n$(echo "${cstrun}"|sed "s/\"/'/g"|grep -E 'RUN|FAIL|PASS')"
     cstrprt="$(echo "${cstrprt}\n\n"|sed 's/\[[0-9;]\{1,\}m//g')"
 
-    if ! curl -sS -X POST -H 'Content-type: application/json' \
+    if ! curl -sS --connect-timeout 5 -m 10 --retry 3 \
+	      -X POST -H 'Content-type: application/json' \
 	      --data "{\"text\":\"$CSTRPRT $icon_emoji\"}" \
 	   "${CSTSLKURL}"
     then

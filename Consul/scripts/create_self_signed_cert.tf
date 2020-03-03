@@ -5,7 +5,7 @@ resource "tls_private_key" "test" {
 
 resource "tls_self_signed_cert" "test" {
   key_algorithm   = "ECDSA"
-  private_key_pem = "${tls_private_key.test.private_key_pem}"
+  private_key_pem = tls_private_key.test.private_key_pem
 
   subject {
     common_name  = "richnusgeeks.com"
@@ -25,9 +25,9 @@ resource "template_dir" "test" {
   source_dir      = "./certs/in"
   destination_dir = "./certs/out"
 
-  vars {
-    prvkey = "${tls_private_key.test.private_key_pem}"
-    cert   = "${tls_self_signed_cert.test.cert_pem}"
+  vars = {
+    prvkey = tls_private_key.test.private_key_pem
+    cert   = tls_self_signed_cert.test.cert_pem
   }
 }
 

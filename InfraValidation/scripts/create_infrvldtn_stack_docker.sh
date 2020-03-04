@@ -35,7 +35,7 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|ctestrun >"
+  echo " Usage: $(basename "${0}") < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|ctestrun >"
   exit 0
 
 }
@@ -77,14 +77,15 @@ cstestRun() {
 inspecRun() {
 
 #  local TSTSRVRS=$(docker ps -f name=tstsrvr* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g')
-  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|sort -u|xargs|sed 's/ /,/g')
+  local TSTSRVRS
+  TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print $NF}'|sort -u|xargs|sed 's/ /,/g')
 
 #  docker exec -it chefwrkstn chef-run --user root -i "${SSHPRVKEY}" \
 #    "${TSTSRVRS}" package monit action=install
 
 #  sleep 5
 
-  for s in $(echo ${TSTSRVRS}|sed 's/,/ /g')
+  for s in ${TSTSRVRS//,/ }
   do
     echo
     echo " docker container => ${s}"
@@ -97,7 +98,8 @@ inspecRun() {
 
 testinfraRun() {
 
-  local TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print "@"$NF}'|xargs|sed -e 's/ /,/g' -e 's/@/root@/g')
+  local TSTSRVRS
+  TSTSRVRS=$(docker ps -f name=tstsrvr*|grep -iv name|awk '{print "@"$NF}'|xargs|sed -e 's/ /,/g' -e 's/@/root@/g')
 
   echo
   echo " docker container(s) => ${TSTSRVRS}"
@@ -156,7 +158,7 @@ main() {
     testRun
   elif [[ "${OPTN}" = "cleandown" ]] || [[ "${OPTN}" = "down" ]]
   then
-    rm -rf ${SSHKYSDIR}/*
+    rm -rf "${SSHKYSDIR:?}/*"
     if [[ "${OPTN}" = "down" ]]
     then
       docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}"

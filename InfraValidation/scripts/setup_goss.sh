@@ -1,20 +1,20 @@
 #! /bin/bash
 
 RM='rm'
-AWK=$(which awk)
-CAT=$(which cat)
-SED=$(which sed)
-CURL=$(which curl)
-GREP=$(which grep)
-ECHO=$(which echo)
-DATE=$(which date)
-CHMOD=$(which chmod)
+AWK=$(command -v awk)
+CAT=$(command -v cat)
+SED=$(command -v sed)
+CURL=$(command -v curl)
+GREP=$(command -v grep)
+ECHO=$(command -v echo)
+DATE=$(command -v date)
+CHMOD=$(command -v chmod)
 SWTCH="${1}"
 NUMARG=${#}
 INSTL=false
 RMVE=false
 DUMP=false
-UNAME=$(which uname)
+UNAME=$(command -v uname)
 PRGNME=$("${ECHO}" "${0##*/}" | "${SED}" -n 's/\.sh//p')
 TLSLOC='/usr/local/bin'
 BSEURL='https://github.com'
@@ -23,7 +23,8 @@ TLSLST="goss
 
 exitOnErr() {
 
-  local date=$("${DATE}")
+  local date
+  date=$("${DATE}")
   "${ECHO}" " Error: <${date}> $1, exiting ..."
   exit 1
 
@@ -70,7 +71,7 @@ parseArgs() {
     prntUsage
   fi
 
-  if "${UNAME}" -v | "${GREP}" -i darwin 2>&1 > /dev/null
+  if "${UNAME}" -v | "${GREP}" -i darwin > /dev/null 2>&1
   then
     OS='darwin'
   else
@@ -81,11 +82,13 @@ parseArgs() {
 
 instlSSTls() {
 
-  local LTSTVERG=$("${CURL}" -sSLk https://github.com/aelsabbahy/goss/releases/latest|"${GREP}" releases/download|"${GREP}" "${OS}-amd64"|"${AWK}" -F'"' '{print $2}')
+  local LTSTVERG
+  LTSTVERG=$("${CURL}" -sSLk https://github.com/aelsabbahy/goss/releases/latest|"${GREP}" releases/download|"${GREP}" "${OS}-amd64"|"${AWK}" -F'"' '{print $2}')
 
-  if [[ ! -z "${LTSTVERG}" ]]
+  if [[ -n "${LTSTVERG}" ]]
   then
-    local LTSTVERDG="$("${ECHO}" "${LTSTVERG}"|"${SED}" "s/goss-${OS}-amd64/dgoss/")"
+    local LTSTVERDG
+    LTSTVERDG="$("${ECHO}" "${LTSTVERG}"|"${SED}" "s/goss-${OS}-amd64/dgoss/")"
     
     if ! "${CURL}" -sSLk "${BSEURL}/${LTSTVERG}" -o "${TLSLOC}/goss"
     then

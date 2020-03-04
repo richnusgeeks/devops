@@ -2,18 +2,13 @@
 set -uo pipefail
 
 LOGF="$(basename "${0}"|sed 's/\.sh//').log"
-
 TRACE="${TRACE_FLAG:-0}"
 DEBUG="${DEBUG_FLAG:-0}"
 DCKRFL="${DOCKER_FILE:-Dockerfile}"
-CSTCNFG='config.yaml'
-CSTPRTFIX="${CST_PORT_FIX:-0}"
-CSTSLKURL="${SLACK_URL:-none}"
 LBLVNDRK="${LABEL_VENDORK:-com.richnusgeeks.vendor}"
 LBLVNDRV="${LABEL_VENDORV:-richnusgeeks}"
 LBLCTGRK="${LABEL_CATEGORYK:-com.richnusgeeks.category}"
 LBLCTGRV="${LABEL_CATEGORYV:-none}"
-TINIVER="${TINI_VERSION:-0.18.0}"
 SCHMVER='2.0.0'
 RQRDCMNDS="curl
            date
@@ -21,7 +16,6 @@ RQRDCMNDS="curl
            grep
            sed
            tee"
-RETSTATUS=0
 
 exitOnErr() {
 
@@ -119,8 +113,9 @@ WORKDIR /
 
 fixCMD() {
 
-  local cmd=$(grep '^ *CMD' "${DCKRFL}"|tail -1|sed 's/^ *CMD *//')
-  if ! echo ${cmd} | grep '[][]' > /dev/null 2>&1
+  local cmd
+  cmd=$(grep '^ *CMD' "${DCKRFL}"|tail -1|sed 's/^ *CMD *//')
+  if ! echo "${cmd}" | grep '[][]' > /dev/null 2>&1
   then
     if [[ ! -z "${cmd}" ]]
     then

@@ -1,4 +1,5 @@
 #! /bin/bash
+set -uo pipefail
 
 LPUBKEY='/tmp/test.pub'
 LAUTHKEY='/root/.ssh/authorized_keys'

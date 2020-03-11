@@ -1,4 +1,5 @@
 #! /bin/bash
+set -uo pipefail
 
 OPTN=${1}
 SRVC=${2}

@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.138.2-alpine
+FROM jenkins/jenkins:2.225-alpine
  
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
  
@@ -10,8 +10,13 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.list
 
 USER root
 
-RUN apk add --no-cache python3 \
-  && pip3 install -U pip \
+RUN apk add --no-cache alpine-sdk \
+                       py-pip \
+                       python-dev \
+                       libffi-dev \
+                       openssl-dev \
+                       python3 \
+  && pip install -U pip \
                      awscli \
                      boto3 \
                      docker-compose
@@ -24,7 +29,7 @@ RUN curl -sSLk -o /tmp/consul.zip https://releases.hashicorp.com/consul/$(curl -
   && unzip -o /tmp/consul.zip -d /usr/local/bin \
   && rm -fv /tmp/consul.zip
 
-RUN curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|awk -F '"' '{print $2}'|sort -nr|head -1) \
+RUN curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
   && cd /tmp \
   && tar zxvf docker.tgz \
   && mv docker/docker /usr/local/bin \

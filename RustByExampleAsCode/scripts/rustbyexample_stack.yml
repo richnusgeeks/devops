@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
 
-  atourofgo:
+  rustbyexample:
     image: rustbyexample:latest
     container_name: rustbyexample
     hostname: rustbyexample

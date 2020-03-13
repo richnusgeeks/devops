@@ -1,0 +1,28 @@
+FROM rust:1-slim-stretch
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="service"
+LABEL version="latest"
+LABEL description="docker based Rust by Example."
+
+ARG RBER=https://github.com/rust-lang/rust-by-example
+ARG MDBV=^0.2
+ENV TINIV=0.18.0
+ARG TINIDL=https://github.com/krallin/tini/releases/download/v${TINIV}/tini_${TINIV}.deb
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends git wget && \
+  wget "${TINIDL}" -O /tmp/tini.deb && \
+  dpkg -i /tmp/tini.deb && \
+  ln -s /usr/bin/tini /sbin/tini && \
+  rm -f /tmp/tini.deb && \
+  git clone "${RBER}" && \
+  cd rust-by-example && \
+  cargo install mdbook --version ${MDBV} --force && \
+  mdbook build
+
+COPY run.sh /rust-by-example
+EXPOSE 3000
+WORKDIR /rust-by-example
+
+ENTRYPOINT ["/sbin/tini","--"]
+CMD ["/rust-by-example/run.sh"]

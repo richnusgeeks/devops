@@ -1,0 +1,19 @@
+version: '2.4'
+
+services:
+
+  atourofgo:
+    image: rustbyexample:latest
+    container_name: rustbyexample
+    hostname: rustbyexample
+    build:
+      context: .
+      dockerfile: Dockerfile_RustByExample
+    ports:
+      - "23000:3000"
+    mem_limit: 500m
+    networks:
+      - rustbyexample-demo
+
+networks:
+  rustbyexample-demo:

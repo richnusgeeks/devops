@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.11
 
 # we need ca-certificates for any external https communication
 ENV ESM_VERSION 0.3.3

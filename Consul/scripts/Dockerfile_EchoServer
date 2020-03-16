@@ -1,4 +1,4 @@
-FROM alpine:3.10
+FROM alpine:3.11
 ENV PORT_ECHO 8181
 
 RUN apk add --no-cache socat

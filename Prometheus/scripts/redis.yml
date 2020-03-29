@@ -1,0 +1,25 @@
+version: '2.4'
+
+services:
+
+  redis:
+    image: redis${REDSTAG}
+    container_name: redis
+    hostname: redis
+    mem_limit: 500m
+    restart: always
+    networks:
+      - prometheus-demo
+
+  redispe:
+    depends_on:
+      - redis
+    image: oliver006/redis_exporter${RDPETAG}
+    container_name: redispe
+    hostname: redispe
+    mem_limit: 500m
+    restart: always
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    networks:
+      - prometheus-demo

@@ -1,0 +1,27 @@
+version: '2.4'
+
+services:
+
+  postgres:
+    image: postgres${PGSQTAG}
+    container_name: postgres
+    hostname: postgres
+    mem_limit: 500m
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=example
+    networks:
+      - prometheus-demo
+
+  postgrespe:
+    depends_on:
+      - postgres
+    image: wrouesnel/postgres_exporter${PGPETAG}
+    container_name: postgrespe
+    hostname: postgrespe
+    mem_limit: 500m
+    restart: always
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:example@postgres:5432/postgres?sslmode=disable
+    networks:
+      - prometheus-demo

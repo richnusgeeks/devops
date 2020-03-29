@@ -1,0 +1,26 @@
+version: '2.4'
+
+services:
+  
+  grafana:
+    depends_on:
+      - prometheus
+    image: grafana/grafana${GRFNTAG}
+    container_name: grafana
+    hostname: grafana
+    volumes:
+      - ./certs/out/:/etc/ssl/certs/
+      - ./datasources/:/etc/grafana/provisioning/datasources/
+      - ./dashboards/conf/:/etc/grafana/provisioning/dashboards/
+      - ./dashboards/:/usr/share/grafana/conf/provisioning/dashboards/
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "13000:3000"
+    environment:
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/ssl/certs/test.crt
+      - GF_SERVER_CERT_KEY=/etc/ssl/certs/test.key
+    mem_limit: 500m
+    restart: always
+    networks:
+      - prometheus-demo

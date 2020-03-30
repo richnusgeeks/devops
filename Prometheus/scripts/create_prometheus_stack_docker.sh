@@ -36,7 +36,7 @@ preReq() {
 printUsage() {
 
   cat <<EOF
-  Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>
+  Usage: $(basename $0) < up|buildup|ps|exec <srvc name> <cmnd>
                             |logs|down|cleandown >
 EOF
   exit 0
@@ -93,7 +93,7 @@ main() {
     fi
   elif [[ "${OPTN}" = "exec" ]]
   then
-    exec docker-compose -f "${CMPSEFILE}" exec "${SRVC}" "${SHELL}"
+    eval exec docker-compose -f "${CMPSEFILE}" exec "${SRVC}" "${SHELL}"
   else
     eval docker-compose -f "${CMPSEFILE}" "${OPTN}"
   fi

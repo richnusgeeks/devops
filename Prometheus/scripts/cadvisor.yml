@@ -1,0 +1,17 @@
+version: '2.4'
+
+services:
+
+  cadvisor:
+    image: gcr.io/google-containers/cadvisor${CADVTAG}
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /cgroup:/cgroup:ro
+    mem_limit: 500m
+    restart: unless-stopped
+    networks:
+      - prometheus-demo

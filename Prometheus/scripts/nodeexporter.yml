@@ -1,0 +1,21 @@
+version: '2.4'
+
+services:
+
+  nodeexporter:
+    image: prom/node-exporter${NDEXTAG}
+    container_name: nodeexporter
+    hostname: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    mem_limit: 500m
+    restart: unless-stopped
+    networks:
+      - prometheus-demo

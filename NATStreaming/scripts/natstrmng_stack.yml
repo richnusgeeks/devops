@@ -1,0 +1,32 @@
+version: '2.4'
+
+services:
+
+  natstrmng-server-seed: &natstrmng-server
+    image: nats-streaming${NATSTAG}
+    ports:
+      - "18222:8222"
+    command: "--clustered=true --cluster_bootstrap=true --store=FILE --dir=/ -m 8222"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - natstrmng-demo
+
+  natstrmng-server-2:
+    <<: *natstrmng-server
+    depends_on:
+      - natstrmng-server-seed
+    ports:
+      - "18333:8222"
+    command: "--clustered=true --cluster_peers=natstrmng-server-seed --store=FILE --dir=/ -m 8222"
+
+  natstrmng-server-3:
+    <<: *natstrmng-server
+    depends_on:
+      - natstrmng-server-seed
+    ports:
+      - "18444:8222"
+    command: "--clustered=true --cluster_peers=natstrmng-server-seed --store=FILE --dir=/ -m 8222"
+
+networks:
+  natstrmng-demo:

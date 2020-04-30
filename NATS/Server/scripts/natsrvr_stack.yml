@@ -1,0 +1,39 @@
+version: '2.4'
+
+services:
+
+  nats-server-seed: &nats-server
+    image: nats${NATSTAG}
+    ports:
+      - "28222:8222"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - nats-demo
+
+  nats-server-2:
+    <<: *nats-server
+    depends_on:
+      - nats-server-seed
+    ports:
+      - "28333:8222"
+    command: "--cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats-server-seed:6222"
+
+  nats-server-3:
+    <<: *nats-server
+    depends_on:
+      - nats-server-seed
+    ports:
+      - "28444:8222"
+    command: "--cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats-server-seed:6222"
+
+  nats-box:
+    image: synadia/nats-box${NATBTAG}
+    command: -c "while true; do sleep 10; done"
+    mem_limit: 500m
+    restart: always
+    networks:
+      - nats-demo
+    
+networks:
+  nats-demo:

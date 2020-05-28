@@ -20,6 +20,8 @@ preReq() {
     fi
   done
 
+  export COMPOSE_IGNORE_ORPHANS=1
+
 }
 
 printUsage() {

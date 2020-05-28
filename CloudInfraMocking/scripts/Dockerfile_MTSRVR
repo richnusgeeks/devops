@@ -5,8 +5,9 @@ RUN apk add --no-cache \
   libffi-dev \
   openssl-dev
 
-RUN pip install "moto[server]" \
-                awscli
+RUN pip install -U pip \
+                  "moto[server]" \
+                   awscli
 
 EXPOSE 5000
 

@@ -73,7 +73,7 @@ resource "aws_security_group_rule" "ingress_rules" {
   from_port   = var.ingress_rules[count.index]["from_port"]
   to_port     = var.ingress_rules[count.index]["to_port"]
   protocol    = var.ingress_rules[count.index]["protocol"]
-  self        = var.ingress_rules[count.index]["protocol"]
+  self        = var.ingress_rules[count.index]["self"]
   description = var.ingress_rules[count.index]["description"]
 }
 

@@ -8,8 +8,10 @@ name = "AWSMockingSGTest"
 
 description  = "AWSMocking SG Test"
 
-variable "tags" {
-  default = {}
+tags = {
+  team = "automation"
+  component = "security group"
+  automation = "terraform"
 }
 
 ingress_cidr_blocks = ["10.0.0.0/24"]

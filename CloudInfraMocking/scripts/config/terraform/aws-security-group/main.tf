@@ -1,12 +1,3 @@
-resource "aws_security_group_rule" "egress_rules" {
-  count = var.create ? length(var.egress_rules) : 0
-
-  security_group_id = local.this_sg_id
-  type              = "egress"
-
-  cidr_blocks      = [var.cidr_block]
-
-}
 ##################################
 # Get ID of created Security Group
 ##################################

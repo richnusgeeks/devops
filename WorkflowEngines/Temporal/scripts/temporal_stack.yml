@@ -1,0 +1,46 @@
+version: '3.5'
+
+services:
+  cassandra:
+    image: cassandra${CSATAG}
+    ports:
+      - "9042:9042"
+    networks:
+      - temporal-demo
+
+  temporal:
+    image: temporalio/auto-setup${TMLTAG}
+    ports:
+     - "7233:7233"
+    environment:
+      - "CASSANDRA_SEEDS=cassandra"
+      - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
+    depends_on:
+      - cassandra
+    networks:
+      - temporal-demo
+
+  temporal-cli:
+    image: temporalio/tctl${TCLTAG}
+    environment:
+      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
+    depends_on:
+      - temporal
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+    networks:
+      - temporal-demo
+
+  temporal-web:
+    image: temporalio/web${TWBTAG}
+    environment:
+      - "TEMPORAL_GRPC_ENDPOINT=temporal:7233"
+    ports:
+      - "8088:8088"
+    depends_on:
+      - temporal
+    networks:
+      - temporal-demo
+
+networks:
+  temporal-demo:

@@ -54,7 +54,13 @@ parseArgs() {
 
 testTmprlStck() {
 
-  true
+  echo
+  docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec temporal-cli \
+   tctl --ad temporal:7233 n l
+  echo
+  docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec temporal-cli \
+   tctl --ad temporal:7233 adm cl d
+  echo
 
 }
 

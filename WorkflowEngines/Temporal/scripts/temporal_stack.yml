@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   cassandra:
-    image: cassandra${CSATAG}
+    image: cassandra:${CSATAG:-3.11}
     volumes:
       - data-volume:/var/lib/cassandra
     ports:
@@ -12,7 +12,7 @@ services:
       - temporal-demo
 
   temporal:
-    image: temporalio/server${TMLTAG}
+    image: temporalio/server:${TMLTAG:-0.27.0}
     ports:
      - "7233:7233"
     environment:
@@ -25,26 +25,26 @@ services:
     networks:
       - temporal-demo
 
-  temporal-cli:
-    image: temporalio/tctl${TCLTAG}
-    environment:
-      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
-    depends_on:
-      - temporal
-    entrypoint: sh
-    command: "-c 'while true; do sleep 5; done'"
-    restart: unless-stopped
-    networks:
-      - temporal-demo
-
   temporal-web:
-    image: temporalio/web${TWBTAG}
+    image: temporalio/web:${TWBTAG:-0.27.0}
     environment:
       - "TEMPORAL_GRPC_ENDPOINT=temporal:7233"
     ports:
       - "8088:8088"
     depends_on:
       - temporal
+    restart: unless-stopped
+    networks:
+      - temporal-demo
+
+  temporal-cli:
+    image: temporalio/tctl:${TCLTAG:-0.27.0}
+    environment:
+      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
+    depends_on:
+      - temporal
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
     restart: unless-stopped
     networks:
       - temporal-demo

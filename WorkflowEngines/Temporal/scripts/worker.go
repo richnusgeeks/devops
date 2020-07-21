@@ -28,7 +28,7 @@ func main() {
 
 	// The client and worker are heavyweight objects that should be created once per process.
 	c, err := client.NewClient(client.Options{
-                HostPort: fmt.Sprintf("%v:%v", getenv("TFEADDR","127.0.0.1"), getenv("TFEPORT",7233)),
+                HostPort: fmt.Sprintf("%v:%v", getenv("TFEADDR","127.0.0.1"), getenv("TFEPORT","7233")),
 		Logger: logger,
 	})
 	if err != nil {

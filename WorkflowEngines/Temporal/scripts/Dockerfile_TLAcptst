@@ -1,0 +1,30 @@
+FROM golang:1.14-alpine3.12 AS builder
+
+ENV TLGOSPLS_VERSION 0.27.0
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN wget --no-check-certificate https://github.com/temporalio/go-samples/archive/v${TLGOSPLS_VERSION}.zip \
+  && unzip v${TLGOSPLS_VERSION}.zip \
+  && rm -f v${TLGOSPLS_VERSION}.zip
+
+WORKDIR /tmp/go-samples-${TLGOSPLS_VERSION}/helloworld/worker
+COPY ./worker.go .
+RUN rm main.go \
+  && go build \
+  && cp worker /usr/local/bin
+
+WORKDIR /tmp/go-samples-${TLGOSPLS_VERSION}/helloworld/starter
+COPY ./starter.go .
+RUN rm main.go \
+  && go build \
+  && cp starter /usr/local/bin
+
+RUN ls -lhrt /tmp/go-samples-${TLGOSPLS_VERSION}/helloworld/worker \
+             /tmp/go-samples-${TLGOSPLS_VERSION}/helloworld/starter \
+             /usr/local/bin
+
+FROM alpine:3.12 AS tlacptst
+
+COPY --from=builder /usr/local/bin/worker /usr/local/bin/worker
+COPY --from=builder /usr/local/bin/starter /usr/local/bin/starter

@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// The client is a heavyweight object that should be created once per process.
-	c, err := client.NewClient(client.Options{HostPort: fmt.Sprintf("%v:%v", getenv("TFEADDR","127.0.0.1"), getenv("TFEPORT",7233))})
+	c, err := client.NewClient(client.Options{HostPort: fmt.Sprintf("%v:%v", getenv("TFEADDR","127.0.0.1"), getenv("TFEPORT","7233"))})
 	if err != nil {
 		logger.Fatal("Unable to create client", zap.Error(err))
 	}

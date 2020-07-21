@@ -49,6 +49,28 @@ services:
     networks:
       - temporal-demo
 
+  temporal-acptstw:
+    image: tlacptst
+    environment:
+      - "TFEADDR=temporal"
+    depends_on:
+      - temporal
+    entrypoint: worker
+    restart: on-failure
+    networks:
+      - temporal-demo
+
+  temporal-acptsts:
+    image: tlacptst
+    environment:
+      - "TFEADDR=temporal"
+    depends_on:
+      - temporal
+    entrypoint: starter
+    restart: on-failure
+    networks:
+      - temporal-demo
+
 volumes:
   data-volume:
 

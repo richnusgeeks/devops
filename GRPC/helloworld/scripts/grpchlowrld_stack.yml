@@ -1,0 +1,39 @@
+version: '3.5'
+
+services:
+  grpchwsrvr:
+    image: grpchlowrld:${GHWTAG:-1.30.0}
+    build:
+      context: .
+      dockerfile: Dockerfile_GRPCHlowrld
+    ports:
+      - "50051:50051"
+    entrypoint:  grpchlo_server
+    restart: unless-stopped
+    networks:
+      - grpchlowrld-demo
+
+  grpchwclnt:
+    image: grpchlowrld:${GHWTAG:-1.30.0}
+    build:
+      context: .
+      dockerfile: Dockerfile_GRPCHlowrld
+    environment:
+      - GRPCHWS_ADDR=grpchwsrvr
+      - GRPCHWS_PORT=50051
+    entrypoint:  grpchlo_client
+    command: grpchwsrvr
+    networks:
+      - grpchlowrld-demo
+
+  grpcurl:
+    image: grpcurl:${GCLTAG:-1.6.1}
+    build:
+      context: .
+      dockerfile: Dockerfile_GRPCurl
+    command: "-plaintext grpchwsrvr:50051 list helloworld.Greeter"
+    networks:
+      - grpchlowrld-demo
+
+networks:
+  grpchlowrld-demo:

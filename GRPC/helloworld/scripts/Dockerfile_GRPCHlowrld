@@ -1,0 +1,22 @@
+FROM golang:1.14-alpine3.12 AS builder
+
+ENV GRPCGO_VERSION 1.30.0
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN wget --no-check-certificate https://github.com/grpc/grpc-go/archive/v${GRPCGO_VERSION}.zip \
+  && unzip v${GRPCGO_VERSION}.zip \
+  && rm -f v${GRPCGO_VERSION}.zip
+
+WORKDIR /tmp/grpc-go-${GRPCGO_VERSION}/examples/helloworld
+COPY ./client_main.go greeter_client/main.go
+RUN go build -o grpchlo_server greeter_server/main.go \
+  && cp grpchlo_server /usr/local/bin \
+  && go build -o grpchlo_client greeter_client/main.go \
+  && cp grpchlo_client /usr/local/bin
+
+
+FROM alpine:3.12 AS grpchlowrld
+
+COPY --from=builder /usr/local/bin/grpchlo_server /usr/local/bin/
+COPY --from=builder /usr/local/bin/grpchlo_client /usr/local/bin/

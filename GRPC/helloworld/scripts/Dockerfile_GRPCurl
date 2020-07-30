@@ -1,0 +1,13 @@
+FROM alpine:3.12
+
+ENV GRPCURL_VERSION 1.6.1
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN wget --no-check-certificate https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz \
+  && tar zxvf grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz \
+  && mv grpcurl /usr/local/bin/ \
+  && rm -f /tmp/*
+
+ENTRYPOINT ["/usr/local/bin/grpcurl"]
+CMD ["-help"]

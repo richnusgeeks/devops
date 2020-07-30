@@ -31,7 +31,6 @@ import (
 )
 
 const (
-	address = fmt.Sprintf("%v:%v", getenv("GRPCHWS_ADDR","127.0.0.1"), getenv("GRPCHWS_PORT","50051"))
 	defaultName = "world"
 )
 
@@ -46,7 +45,7 @@ func getenv(key, fallback string) string {
 
 func main() {
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(fmt.Sprintf("%v:%v", getenv("GRPCHWS_ADDR","127.0.0.1"), getenv("GRPCHWS_PORT","50051")), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

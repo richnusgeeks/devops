@@ -1,0 +1,59 @@
+version: '3.5'
+
+services:
+  cassandra:
+    image: cassandra:{CSTAG:-3.11}
+    volumes:
+      - data-volume:/var/lib/cassandra
+    ports:
+      - "9042:9042"
+    restart: unless-stopped
+    networks:
+      - cadence-demo
+
+  statsd:
+    image: graphiteapp/graphite-statsd
+    ports:
+      - "8080:80"
+      - "2003:2003"
+      - "8125:8125"
+      - "8126:8126"
+    restart: unless-stopped
+    networks:
+      - cadence-demo
+
+  cadence:
+    image: ubercadence/server:master-auto-setup
+    ports:
+     - "7933:7933"
+     - "7934:7934"
+     - "7935:7935"
+     - "7939:7939"
+    environment:
+      - "CASSANDRA_SEEDS=cassandra"
+      - "STATSD_ENDPOINT=statsd:8125"
+      - "DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml"
+    depends_on:
+      - cassandra
+      - statsd
+    restart: unless-stopped
+    networks:
+      - cadence-demo
+
+  cadence-web:
+    image: ubercadence/web:latest
+    environment:
+      - "CADENCE_TCHANNEL_PEERS=cadence:7933"
+    ports:
+      - "8088:8088"
+    depends_on:
+      - cadence
+    restart: unless-stopped
+    networks:
+      - cadence-demo
+
+volumes:
+  data-volume:
+
+networks:
+  cadence-demo:

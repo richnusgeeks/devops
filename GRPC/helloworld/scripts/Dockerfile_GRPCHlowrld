@@ -15,8 +15,23 @@ RUN go build -o grpchlo_server greeter_server/main.go \
   && go build -o grpchlo_client greeter_client/main.go \
   && cp grpchlo_client /usr/local/bin
 
+FROM alpine:3.12 AS dockerize
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget --no-check-certificate https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && echo "**** fix for host id mapping error ****" \
+    && chown root:root /usr/local/bin/dockerize
 
 FROM alpine:3.12 AS grpchlowrld
 
+RUN apk add --update --no-cache ca-certificates tzdata
+
+# set up nsswitch.conf for Go's "netgo" implementation
+# https://github.com/gliderlabs/docker-alpine/issues/367#issuecomment-424546457
+RUN test ! -e /etc/nsswitch.conf && echo 'hosts: files dns' > /etc/nsswitch.conf
+
+COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin/
 COPY --from=builder /usr/local/bin/grpchlo_server /usr/local/bin/
 COPY --from=builder /usr/local/bin/grpchlo_client /usr/local/bin/

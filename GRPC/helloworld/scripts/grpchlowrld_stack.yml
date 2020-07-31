@@ -21,7 +21,7 @@ services:
     environment:
       - GRPCHWS_ADDR=grpchwsrvr
       - GRPCHWS_PORT=50051
-    entrypoint:  grpchlo_client
+    entrypoint:  dockerize -wait tcp://grpchwsrvr:50051 grpchlo_client
     command: grpchwsrvr
     networks:
       - grpchlowrld-demo
@@ -31,6 +31,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_GRPCurl
+    entrypoint:  dockerize -wait tcp://grpchwsrvr:50051 grpcurl
     command: "-plaintext grpchwsrvr:50051 list helloworld.Greeter"
     networks:
       - grpchlowrld-demo

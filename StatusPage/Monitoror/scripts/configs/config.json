@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "columns": 2,
+  "tiles": [
+    {
+      "type": "PING",
+      "label": "Localhost",
+      "params": { "hostname": "127.0.0.1" }
+    },
+    {
+      "type": "PORT",
+      "label": "Monitoror server",
+      "params": { "hostname": "127.0.0.1", "port": 8080 }
+    }
+  ]
+}

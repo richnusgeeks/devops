@@ -8,6 +8,9 @@ CMPSFLDIR='.'
 CMPSEFILE='temporal_stack.yml'
 RQRDCMNDS="docker
            docker-compose"
+TMPRLFPRT=7233
+TMPRLNWNM='temporal-demo'
+TMPRLACPI='tlacptst:0.27.0'
 
 preReq() {
 
@@ -54,12 +57,17 @@ parseArgs() {
 
 testTmprlStck() {
 
+  docker run --rm --network \
+    "$(docker network ls|grep ${TMPRLNWNM}|awk '{print $1}')" \
+    "${TMPRLACPI}" dockerize -wait-retry-interval 2s -timeout 30s -wait \
+    "tcp://$(docker ps -f name=temporalfe* -q|xargs -I % docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' %|xargs|sed 's/ /,/g'):${TMPRLFPRT}"
+
   echo
   docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec temporal-cli \
-   tctl --ad temporal:7233 n l
+   tctl --ad temporalfe:${TMPRLFPRT} n l
   echo
   docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec temporal-cli \
-   tctl --ad temporal:7233 adm cl d
+   tctl --ad temporalfe:${TMPRLFPRT} adm cl d
   echo
 
 }

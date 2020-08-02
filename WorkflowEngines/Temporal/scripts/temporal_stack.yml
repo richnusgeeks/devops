@@ -11,7 +11,7 @@ services:
     networks:
       - temporal-demo
 
-  temporal:
+  temporalfe:
     image: temporalio/server:${TMLTAG:-0.27.0}
     ports:
      - "7233:7233"
@@ -28,11 +28,11 @@ services:
   temporal-web:
     image: temporalio/web:${TWBTAG:-0.27.0}
     environment:
-      - "TEMPORAL_GRPC_ENDPOINT=temporal:7233"
+      - "TEMPORAL_GRPC_ENDPOINT=temporalfe:7233"
     ports:
       - "8088:8088"
     depends_on:
-      - temporal
+      - temporalfe
     restart: unless-stopped
     networks:
       - temporal-demo
@@ -40,9 +40,9 @@ services:
   temporal-cli:
     image: temporalio/tctl:${TCLTAG:-0.27.0}
     environment:
-      - "TEMPORAL_CLI_ADDRESS=temporal:7233"
+      - "TEMPORAL_CLI_ADDRESS=temporalfe:7233"
     depends_on:
-      - temporal
+      - temporalfe
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     restart: unless-stopped
@@ -50,22 +50,29 @@ services:
       - temporal-demo
 
   temporal-acptstw:
-    image: tlacptst
+    image: tlacptst:${TACTAG:-0.27.0}
+    build:
+      context: .
+      dockerfile: Dockerfile_TLAcptst
     environment:
-      - "TFEADDR=temporal"
+      - "TFEADDR=temporalfe"
     depends_on:
-      - temporal
-    entrypoint: worker
+      - temporalfe
+    entrypoint: dockerize -wait tcp://temporalfe:7233 worker
     restart: on-failure
     networks:
       - temporal-demo
 
   temporal-acptsts:
-    image: tlacptst
+    image: tlacptst:${TACTAG:-0.27.0}
+    build:
+      context: .
+      dockerfile: Dockerfile_TLAcptst
     environment:
-      - "TFEADDR=temporal"
+      - "TFEADDR=temporalfe"
     depends_on:
-      - temporal
+      - temporalfe
+      - temporal-acptstw
     entrypoint: starter
     restart: on-failure
     networks:

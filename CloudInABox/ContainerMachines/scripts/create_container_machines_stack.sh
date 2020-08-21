@@ -17,7 +17,8 @@ RQRDCMNDS="awk
            date
            docker
            docker-compose
-           grep"
+           grep
+           uname"
 
 preReq() {
 
@@ -100,9 +101,16 @@ copyPrivKey() {
   then
     exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/cluster-key ${ANSBLEDIR} failed"
   else
-    if ! chmod +r "${ANSBLEDIR}/cluster-key"
+    if uname | grep -i darwin 2>&1 > /dev/null
     then
-      exitOnErr "chmod +r ${ANSBLEDIR}/cluster-key failed"
+      PRMSN='0400'
+    else
+      PRMSN='+r'
+    fi
+
+    if ! chmod "${PRMSN}" "${ANSBLEDIR}/cluster-key"
+    then
+      exitOnErr "chmod ${PRMSN} ${ANSBLEDIR}/cluster-key failed"
     fi
   fi
 

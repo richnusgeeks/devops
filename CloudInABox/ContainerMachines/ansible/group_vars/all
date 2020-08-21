@@ -4,9 +4,9 @@ epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distributio
 epel_repofile_path: "/etc/yum.repos.d/epel.repo"
 
 monit_properties: {
-  "monit_version": "5.25.3",
-  "monit_archive": "monit-5.25.3-linux-x64.tar.gz",
-  "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/5.25.3/monit-5.25.3-linux-x64.tar.gz",
+  "monit_version": "5.27.0",
+  "monit_archive": "monit-5.27.0-linux-x64.tar.gz",
+  "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/5.27.0/monit-5.27.0-linux-x64.tar.gz",
   "monit_execbnfl": "/opt/monit/bin/monit",
   "monit_configfl": "/opt/monit/conf/monitrc",
   "monit_configad": "/opt/monit/conf/monit.d",
@@ -15,7 +15,7 @@ monit_properties: {
 
 docker_packages: {
   "all": {
-    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/1.25.0-rc1/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
+    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
     "docker_compose_location": "/usr/local/bin/docker-compose",
     "docker_compose_dir": "/opt/docker/compose"
   },

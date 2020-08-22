@@ -1,0 +1,39 @@
+---
+- name: install daemonize on redhat|amazon
+  yum: name="daemonize"
+       state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install daemonize
+  apt: name="daemonize"
+       state=present  
+  when: ansible_os_family|lower == 'debian'
+
+- name: download goss binary
+  get_url: url="{{ goss_binary['download_url'] }}"
+           dest="{{ goss_binary['binary_location'] }}"
+           mode='0755'
+           validate_certs=no
+
+- name: create goss config dir
+  file: path="{{ goss_binary['config_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: render goss example test        
+  template: src="goss_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['config_location'] }}/goss.yaml"
+  notify:
+    - restart goss server
+
+- name: render goss monit config
+  template: src="goss_{{ goss_version }}.j2"
+            dest="{{ monit_properties["monit_configad"] }}/goss"
+  notify:
+    - reload monit configs

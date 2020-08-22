@@ -3,19 +3,30 @@ epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ans
 epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 epel_repofile_path: "/etc/yum.repos.d/epel.repo"
 
+monit_version: "5.27.0"
 monit_properties: {
   "monit_version": "5.27.0",
-  "monit_archive": "monit-5.27.0-linux-x64.tar.gz",
-  "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/5.27.0/monit-5.27.0-linux-x64.tar.gz",
+  "monit_archive": "monit-{{ monit_version }}-linux-x64.tar.gz",
+  "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/{{ monit_version }}/monit-{{ monit_version }}-linux-x64.tar.gz",
   "monit_execbnfl": "/opt/monit/bin/monit",
   "monit_configfl": "/opt/monit/conf/monitrc",
   "monit_configad": "/opt/monit/conf/monit.d",
   "monit_srvcnfig": "/lib/systemd/system/monit.service"
 }
 
+goss_version: "0.3.13"
+goss_binary: {
+  "download_url": "https://github.com/aelsabbahy/goss/releases/download/v{{ goss_version }}/goss-linux-amd64",
+  "binary_location": "/usr/local/bin/goss",
+  "config_location": "/opt/goss/conf",
+  "listen_port": 8080,
+  "output_format": "tap",
+}
+
+compose_version: "1.26.2"
 docker_packages: {
   "all": {
-    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
+    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
     "docker_compose_location": "/usr/local/bin/docker-compose",
     "docker_compose_dir": "/opt/docker/compose"
   },

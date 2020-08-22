@@ -1,0 +1,3 @@
+check process gosserver with pidfile /var/run/gosserver.pid
+  start program = "/usr/sbin/daemonize -a -e /var/log/gosserver -o /var/log/gosserver -p /var/run/gosserver.pid {{ goss_binary['binary_location'] }} -g {{ goss_binary['config_location'] }}/goss.yaml serve -l :{{ goss_binary['listen_port'] }} -f {{ goss_binary['output_format'] }} -e /status" with timeout 60 seconds
+  if failed port 8080 for 6 cycles then restart

@@ -7,20 +7,20 @@
 
     - role: cassandra
       tags: [apply_cassandra]
-      when: ansible_hostname | search("^cassandra")
+      when: ansible_hostname | regex_search("^cassandra")
 
     - role: elasticsearch
       tags: [apply_elasticsearch]
-      when: ansible_hostname | search("^elasticsearch")
+      when: ansible_hostname | regex_search("^elasticsearch")
 
     - role: kafka
       tags: [apply_kafka]
-      when: ansible_hostname | search("^kafka")
+      when: ansible_hostname | regex_search("^kafka")
 
     - role: spark
       tags: [apply_spark]
-      when: ansible_hostname | search("^spark")
+      when: ansible_hostname | regex_search("^spark")
 
     - role: monitoror
       tags: [apply_monitoror]
-      when: ansible_hostname | search("^monitoror")
+      when: ansible_hostname | regex_search("^monitoror")

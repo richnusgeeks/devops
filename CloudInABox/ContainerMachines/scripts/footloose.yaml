@@ -5,7 +5,7 @@ machines:
 - count: 1
   spec:
     image: quay.io/footloose/ubuntu18.04
-    name: ubuntu1804-node%d
+    name: monitoror%d
     portMappings:
     - containerPort: 22
     - containerPort: 2812
@@ -27,10 +27,36 @@ machines:
 #    volumes:
 #    - type: volume
 #      destination: /var/lib/docker
-- count: 1
+- count: 3
   spec:
     image: quay.io/footloose/centos7
-    name: centos7-node%d
+    name: cassandra%d
+    portMappings:
+    - containerPort: 22
+    - containerPort: 2812
+    - containerPort: 8080
+    - containerPort: 38080
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+- count: 3
+  spec:
+    image: quay.io/footloose/centos7
+    name: elasticsearch%d
+    portMappings:
+    - containerPort: 22
+    - containerPort: 2812
+    - containerPort: 8080
+    - containerPort: 38080
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+- count: 3
+  spec:
+    image: quay.io/footloose/centos7
+    name: kafka%d
     portMappings:
     - containerPort: 22
     - containerPort: 2812

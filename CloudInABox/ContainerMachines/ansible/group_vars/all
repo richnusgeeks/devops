@@ -20,7 +20,7 @@ goss_binary: {
   "binary_location": "/usr/local/bin/goss",
   "config_location": "/opt/goss/conf",
   "listen_port": 8080,
-  "output_format": "tap",
+  "output_format": "documentation",
 }
 
 compose_version: "1.26.2"
@@ -69,4 +69,9 @@ cadvisor_properties: {
 
 dckrbnchscrty_properties: {
   "image_tag": "latest",
+}
+
+monitoror_properties: {
+  "image_tag": "latest",
+  "host_port": "28080"
 }

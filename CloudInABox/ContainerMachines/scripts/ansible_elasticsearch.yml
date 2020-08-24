@@ -9,6 +9,6 @@ services:
        dockerfile: Dockerfile_Ansible
      volumes:
        - ../ansible:/etc/ansible:ro
-     command: main.yml -t apply_docker
+     command: main.yml -t apply_elasticsearch
      mem_limit: 500m
      network_mode: host

@@ -9,6 +9,11 @@ ANSBLEDIR='../ansible'
 FTLSCTDIR='/var/lib/footloose'
 ASBLCMTEST='ansible_test.yml'
 ASBLCMDCKR='ansible_docker.yml'
+ASBLCMDCAS='ansible_cassandra.yml'
+ASBLCMDELS='ansible_elasticsearch.yml'
+ASBLCMDKAF='ansible_kafka.yml'
+ASBLCMDMTR='ansible_monitoror.yml'
+ASBLCMDSPR='ansible_spark.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSDL='footloose_delete.yml'
 RQRDCMNDS="awk
@@ -46,7 +51,8 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|show|
-                         test [ping|docker]|delete|cleandelete >"
+                         test [ping|docker|cassandra|elasticsearch|kafka|spark|monitoror]
+                        |delete|cleandelete >"
 EOF
   exit 0
 
@@ -120,7 +126,12 @@ testASBLRun() {
 
   if [[ ! -z "${1}" ]] && \
      [[ "${1}" != "ping" ]] && \
-     [[ "${1}" != "docker" ]]
+     [[ "${1}" != "docker" ]] && \
+     [[ "${1}" != "cassandra" ]] && \
+     [[ "${1}" != "elasticsearch" ]] && \
+     [[ "${1}" != "kafka" ]] && \
+     [[ "${1}" != "monitoror" ]] && \
+     [[ "${1}" != "spark" ]]
 
   then
     printUsage
@@ -143,6 +154,36 @@ testASBLRun() {
       exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDCKR}" up --build failed"
     fi
 
+  elif [[ "${1}" = "cassandra" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDCAS}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDCAS}" up --build failed"
+    fi
+  elif [[ "${1}" = "elasticsearch" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDELS}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDELS}" up --build failed"
+    fi
+  elif [[ "${1}" = "kafka" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDKAF}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDKAF}" up --build failed"
+    fi
+  elif [[ "${1}" = "monitoror" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDMTR}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDMTR}" up --build failed"
+    fi
+  elif [[ "${1}" = "spark" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDSPR}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDSPR}" up --build failed"
+    fi
   fi
 
 }

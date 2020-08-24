@@ -7,6 +7,7 @@ port:
     listening: true
     ip:
     - '::'
+
 service:
   sshd:
     enabled: true
@@ -27,12 +28,22 @@ group:
 process:
   sshd:
     running: true
+
+service:
+  docker:
+    enabled: true
+    running: true
+process:
+  containerd:
+    running: true
+
 dns:
   localhost:
     resolvable: true
     addrs:
       consist-of: [127.0.0.1]
     timeout: 500 # in milliseconds
+
 kernel-param:
   kernel.ostype:
     # required attributes

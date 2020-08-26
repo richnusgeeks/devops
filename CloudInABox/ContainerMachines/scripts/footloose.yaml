@@ -11,6 +11,7 @@ machines:
     - containerPort: 2812
     - containerPort: 8080
     - containerPort: 38080
+    - containerPort: 58080
     privileged: true
     volumes:
     - type: volume
@@ -57,6 +58,19 @@ machines:
   spec:
     image: quay.io/footloose/centos7
     name: kafka%d
+    portMappings:
+    - containerPort: 22
+    - containerPort: 2812
+    - containerPort: 8080
+    - containerPort: 38080
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+- count: 3
+  spec:
+    image: quay.io/footloose/centos7
+    name: spark%d
     portMappings:
     - containerPort: 22
     - containerPort: 2812

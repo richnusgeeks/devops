@@ -73,5 +73,5 @@ dckrbnchscrty_properties: {
 
 monitoror_properties: {
   "image_tag": "latest",
-  "host_port": "28080"
+  "host_port": "58080"
 }

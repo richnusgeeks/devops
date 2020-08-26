@@ -1,0 +1,4 @@
+check program monitoror
+  with path "{{ docker_packages['all']['docker_compose_dir'] }}/monitoror.sh"
+  every 30 cycles
+  if status !=0 then alert

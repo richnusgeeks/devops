@@ -8,6 +8,7 @@ CMPSFLDIR='.'
 ANSBLEDIR='../ansible'
 FTLSCTDIR='/var/lib/footloose'
 ASBLCMTEST='ansible_test.yml'
+ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
 ASBLCMDCAS='ansible_cassandra.yml'
 ASBLCMDELS='ansible_elasticsearch.yml'
@@ -15,6 +16,8 @@ ASBLCMDKAF='ansible_kafka.yml'
 ASBLCMDMTR='ansible_monitoror.yml'
 ASBLCMDSPR='ansible_spark.yml'
 FTLSCMPSCT='footloose_create.yml'
+FTLSCMPSST='footloose_start.yml'
+FTLSCMPSSP='footloose_stop.yml'
 FTLSCMPSDL='footloose_delete.yml'
 RQRDCMNDS="awk
            cat
@@ -50,8 +53,9 @@ exitOnErr() {
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0) < create|buildcreate|show|
-                         test [ping|docker|cassandra|elasticsearch|kafka|spark|monitoror]
+ Usage: $(basename $0) < create|buildcreate|start|stop|show|
+                         test [ping|goss|docker|cassandra|elasticsearch|
+                               kafka|spark|monitoror]
                         |delete|cleandelete >"
 EOF
   exit 0
@@ -67,6 +71,8 @@ parseArgs() {
 
   if [[ "${OPTN}" != "create" ]] && \
      [[ "${OPTN}" != "buildcreate" ]] && \
+     [[ "${OPTN}" != "start" ]] && \
+     [[ "${OPTN}" != "stop" ]] && \
      [[ "${OPTN}" != "show" ]] && \
      [[ "${OPTN}" != "test" ]] && \
      [[ "${OPTN}" != "delete" ]] &&
@@ -126,6 +132,7 @@ testASBLRun() {
 
   if [[ ! -z "${1}" ]] && \
      [[ "${1}" != "ping" ]] && \
+     [[ "${1}" != "goss" ]] && \
      [[ "${1}" != "docker" ]] && \
      [[ "${1}" != "cassandra" ]] && \
      [[ "${1}" != "elasticsearch" ]] && \
@@ -145,6 +152,13 @@ testASBLRun() {
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build
     then
       exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build failed"
+    fi
+
+  elif [[ "${1}" = "goss" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDGOS}" up --build
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDGOS}" up --build failed"
     fi
 
   elif [[ "${1}" = "docker" ]]
@@ -211,6 +225,14 @@ main() {
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up --build -d
     showAndTest "${OPTNTST}"
+  elif [[ "${OPTN}" = "start" ]]
+  then
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSST}" up
+    showAndTest "${OPTNTST}"
+  elif [[ "${OPTN}" = "stop" ]]
+  then
+    docker-compose -f "${CMPSFLDIR}/${FTLSCMPSSP}" up
+    showFTLStack
   elif [[ "${OPTN}" = "delete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up

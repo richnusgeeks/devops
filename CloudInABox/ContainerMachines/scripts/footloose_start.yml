@@ -4,14 +4,14 @@ services:
 
   footlose:
     image: footloose${FTLSTAG}
-    container_name: footloosedelete
+    container_name: footloosestart
     build:
       context: .
       dockerfile: Dockerfile_Footloose
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./footloose.yaml:/tmp/footloose.yaml:ro
-    command: delete
+    command: start
     mem_limit: 500m
     networks:
       - footloose-demo

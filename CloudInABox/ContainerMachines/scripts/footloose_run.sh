@@ -20,6 +20,8 @@ parseArgs() {
   fi
 
   if [[ "${OPTN}" != "create" ]] && \
+     [[ "${OPTN}" != "start" ]] && \
+     [[ "${OPTN}" != "stop" ]] && \
      [[ "${OPTN}" != "show"   ]] && \
      [[ "${OPTN}" != "delete" ]]
   then
@@ -38,6 +40,12 @@ main() {
     do
       sleep 10
     done
+  elif [[ "${OPTN}" = "start" ]]
+  then
+    footloose start -c /tmp/footloose.yaml
+  elif [[ "${OPTN}" = "stop" ]]
+  then
+    footloose stop -c /tmp/footloose.yaml
   elif [[ "${OPTN}" = "show" ]]
   then
     footloose show -c /tmp/footloose.yaml

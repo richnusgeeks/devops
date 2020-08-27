@@ -37,3 +37,4 @@
             dest="{{ monit_properties["monit_configad"] }}/goss"
   notify:
     - reload monit configs
+    - restart goss server

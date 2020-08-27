@@ -1,0 +1,11 @@
+check process zookeeper matching zookeeper
+  start program = "{{ kafka_properties["binary_location"] }}/zookeeper-server-start.sh -daemon {{ kafka_properties["config_location"] }}/zookeeper.properties" with timeout 60 seconds
+  stop program = "{{ kafka_properties["binary_location"] }}/zookeeper-server-stop.sh {{ kafka_properties["config_location"] }}/zookeeper.properties" with timeout 60 seconds
+  if failed port 2181 for 6 cycles then restart
+
+check process kafka matching kafkaServer
+  depends on zookeeper
+  
+  start program = "{{ kafka_properties["binary_location"] }}/kafka-server-start.sh -daemon {{ kafka_properties["config_location"] }}/server.properties" with timeout 60 seconds
+  stop program = "{{ kafka_properties["binary_location"] }}/kafka-server-stop.sh kafka_properties["config_location"] }}/zookeeper.properties" with timeout 60 seconds
+  if failed port 9092 for 6 cycles then restart

@@ -23,6 +23,15 @@ goss_binary: {
   "output_format": "documentation",
 }
 
+kafka_version: "2.6.0"
+kafka_scala_version: "2.13"
+kafka_properties: {
+  "kafka_archive": "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",
+  "download_url": "https://us.mirrors.quenda.co/apache/kafka/{{ kafka_version }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",
+  "binary_location": "/opt/kafka/bin",
+  "config_location": "/opt/kafka/config",
+}
+
 compose_version: "1.26.2"
 docker_packages: {
   "all": {

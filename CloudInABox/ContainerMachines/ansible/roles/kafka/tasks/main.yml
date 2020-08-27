@@ -1,1 +1,46 @@
 ---
+- name: install java for kafka
+  yum: name="java-1.8.0-openjdk-headless"
+       state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install java for kafka
+  apt: name="openjdk-8-jre-headless"
+       state=present
+  when: ansible_os_family|lower == 'debian'
+
+- name: deduce current kafka version
+  shell: if [ -x {{ kafka_properties["binary_location"] }}/kafka-server-start.sh ];then {{ kafka_properties["binary_location"] }}/kafka-server-start.sh --version|grep -i commit|awk '{print $(NF-1)}';fi
+  register: kafka_version_current
+
+- name: download kafka tarball
+  get_url: url="{{ kafka_properties["download_url"] }}"
+           dest="/tmp/{{ kafka_properties["kafka_archive"] }}"
+  when: kafka_version != kafka_version_current.stdout
+
+- name: install tar on amazonlinux2
+  yum: name=tar
+       state=present
+  when: ansible_distribution|lower == "amazon"
+
+- name: untar kafka tarball
+  unarchive: src="/tmp/{{ kafka_properties["kafka_archive"] }}"
+             dest="/tmp"
+             remote_src=yes
+  when: kafka_version != kafka_version_current.stdout
+
+- name: rename kafka directory
+  shell: mv -f /tmp/kafka_{{ kafka_scala_version }}-{{ kafka_version }} /opt/kafka
+  when: kafka_version != kafka_version_current.stdout
+
+- name: render monit config for kafka
+  template: src=kafkazkpr_{{ kafka_scala_version }}-{{ kafka_version }}.j2
+            dest="{{ monit_properties["monit_configad"] }}/kafkazkpr"
+  notify:
+    - reload monit configs

@@ -6,7 +6,9 @@ NUMOPTNMX=3
 DLYTOMSTL=5
 CMPSFLDIR='.'
 ANSBLEDIR='../ansible'
+ANSBLEHIN='hosts'
 FTLSCTDIR='/var/lib/footloose'
+FTLSCTRKY='cluster-key'
 ASBLCMTEST='ansible_test.yml'
 ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
@@ -26,6 +28,7 @@ RQRDCMNDS="awk
            docker
            docker-compose
            grep
+	   rm
            uname"
 
 preReq() {
@@ -100,18 +103,18 @@ createASBLInv() {
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro \
            footloose show | \
-       grep -v NAME | awk -F '  +' '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/hosts"
+       grep -v NAME | awk -F '  +' '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
   then
-    exitOnErr "docker run footloose show > ${ANSBLEDIR}/hosts failed"
+    exitOnErr "docker run footloose show > ${ANSBLEDIR}/${ANSBLEHIN} failed"
   fi
 
 }
 
 copyPrivKey() {
 
-  if ! docker cp "footloosecreate:${FTLSCTDIR}/cluster-key" "${ANSBLEDIR}"
+  if ! docker cp "footloosecreate:${FTLSCTDIR}/${FTLSCTRKY}" "${ANSBLEDIR}"
   then
-    exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/cluster-key ${ANSBLEDIR} failed"
+    exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/${FTLSCTRKY} ${ANSBLEDIR} failed"
   else
     if uname | grep -i darwin 2>&1 > /dev/null
     then
@@ -120,9 +123,9 @@ copyPrivKey() {
       PRMSN='+r'
     fi
 
-    if ! chmod "${PRMSN}" "${ANSBLEDIR}/cluster-key"
+    if ! chmod "${PRMSN}" "${ANSBLEDIR}/${FTLSCTRKY}"
     then
-      exitOnErr "chmod ${PRMSN} ${ANSBLEDIR}/cluster-key failed"
+      exitOnErr "chmod ${PRMSN} ${ANSBLEDIR}/${FTLSCTRKY} failed"
     fi
   fi
 
@@ -238,12 +241,14 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
+    rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down -v
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
+    rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then

@@ -19,11 +19,14 @@ goss_binary: {
   "download_url": "https://github.com/aelsabbahy/goss/releases/download/v{{ goss_version }}/goss-linux-amd64",
   "binary_location": "/usr/local/bin/goss",
   "config_location": "/opt/goss/conf",
+  "configad_location": "/opt/goss/conf/goss.d",
+  "sscript_location": "/usr/local/bin",
   "listen_port": 8080,
   "output_format": "documentation",
 }
 
 kafka_version: "2.6.0"
+kafka_java_version: "java-1.8.0-openjdk-headless"
 kafka_scala_version: "2.13"
 kafka_properties: {
   "kafka_archive": "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",

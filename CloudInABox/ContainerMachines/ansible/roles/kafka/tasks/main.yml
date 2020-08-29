@@ -1,6 +1,6 @@
 ---
 - name: install java for kafka
-  yum: name="java-1.8.0-openjdk-headless"
+  yum: name="{{ kafka_java_version }}"
        state=present
   when: ansible_os_family|lower == 'redhat' or
         ansible_os_family|lower == 'amazon'
@@ -44,3 +44,9 @@
             dest="{{ monit_properties["monit_configad"] }}/kafkazkpr"
   notify:
     - reload monit configs
+
+- name: render goss kafka test
+  template: src="goss_kafka_{{ kafka_scala_version }}-{{ kafka_version }}.yaml.j2"
+            dest="{{ goss_binary['configad_location'] }}/goss_kafka.yaml"
+  notify:
+    - restart goss server

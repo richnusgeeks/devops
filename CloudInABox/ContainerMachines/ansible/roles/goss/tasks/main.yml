@@ -26,9 +26,27 @@
         state=directory
         recurse=yes
 
-- name: render goss example test        
+- name: create additional goss config dir
+  file: path="{{ goss_binary['configad_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: render goss import config
   template: src="goss_{{ goss_version }}.yaml.j2"
             dest="{{ goss_binary['config_location'] }}/goss.yaml"
+  notify:
+    - restart goss server
+
+- name: render goss base test
+  template: src="goss_base_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['config_location'] }}/goss_base.yaml"
+  notify:
+    - restart goss server
+
+- name: render goss server script
+  template: src="gosserver_{{ goss_version }}.sh.j2"
+            dest="{{ goss_binary['sscript_location'] }}/gosserver"
+            mode='0750'
   notify:
     - restart goss server
 

@@ -2,20 +2,22 @@ cluster:
   name: cluster
   privateKey: cluster-key
 machines:
-- count: 1
-  spec:
-    image: quay.io/footloose/ubuntu18.04
-    name: monitoror%d
-    portMappings:
-    - containerPort: 22
-    - containerPort: 2812
-    - containerPort: 8080
-    - containerPort: 38080
-    - containerPort: 58080
-    privileged: true
-    volumes:
-    - type: volume
-      destination: /var/lib/docker
+#- count: 1
+#  spec:
+#    image: quay.io/footloose/ubuntu18.04
+#    name: monitoror%d
+#    networks:
+#    - cldinabox-demo
+#    portMappings:
+#    - containerPort: 22
+#    - containerPort: 2812
+#    - containerPort: 8080
+#    - containerPort: 38080
+#    - containerPort: 58080
+#    privileged: true
+#    volumes:
+#    - type: volume
+#      destination: /var/lib/docker
 #- count: 1
 #  spec:
 #    image: quay.io/footloose/ubuntu16.04
@@ -32,6 +34,9 @@ machines:
   spec:
     image: quay.io/footloose/centos7
     name: cassandra%d
+    networks:
+    - cldinabox-demo
+    portMappings:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
@@ -45,6 +50,9 @@ machines:
   spec:
     image: quay.io/footloose/centos7
     name: elasticsearch%d
+    networks:
+    - cldinabox-demo
+    portMappings:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
@@ -58,6 +66,9 @@ machines:
   spec:
     image: quay.io/footloose/centos7
     name: kafka%d
+    networks:
+    - cldinabox-demo
+    portMappings:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
@@ -71,6 +82,9 @@ machines:
   spec:
     image: quay.io/footloose/centos7
     name: spark%d
+    networks:
+    - cldinabox-demo
+    portMappings:
     portMappings:
     - containerPort: 22
     - containerPort: 2812

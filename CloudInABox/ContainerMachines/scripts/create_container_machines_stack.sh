@@ -9,6 +9,7 @@ ANSBLEDIR='../ansible'
 ANSBLEHIN='hosts'
 FTLSCTDIR='/var/lib/footloose'
 FTLSCTRKY='cluster-key'
+FTLSNTWRK='cldinabox-demo'
 ASBLCMTEST='ansible_test.yml'
 ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
@@ -17,6 +18,7 @@ ASBLCMDELS='ansible_elasticsearch.yml'
 ASBLCMDKAF='ansible_kafka.yml'
 ASBLCMDMTR='ansible_monitoror.yml'
 ASBLCMDSPR='ansible_spark.yml'
+DCKRCMPMTR='monitoror.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSST='footloose_start.yml'
 FTLSCMPSSP='footloose_stop.yml'
@@ -41,6 +43,15 @@ preReq() {
       exit -1
     fi
   done
+
+  if ! docker network ls | grep "${FTLSNTWRK}" 2>&1 > /dev/null
+  then
+    if ! docker network create "${FTLSNTWRK}"
+    then
+      echo " Error: docker network create ${FTLSNTWRK} failed, exiting ..."
+      exit -1
+    fi
+  fi
 
   export COMPOSE_IGNORE_ORPHANS=1
 
@@ -103,7 +114,7 @@ createASBLInv() {
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro \
            footloose show | \
-       grep -v NAME | awk -F '  +' '{ if ( $2~"^ubuntu" ) {print $4,"ansible_python_interpreter=/usr/bin/python3"} else {print $4} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
+       grep -v NAME | awk -F '  +' '{ if ( $4~"^ubuntu" ) {print $2,"ansible_python_interpreter=/usr/bin/python3"} else {print $2} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
   then
     exitOnErr "docker run footloose show > ${ANSBLEDIR}/${ANSBLEHIN} failed"
   fi
@@ -191,9 +202,9 @@ testASBLRun() {
     fi
   elif [[ "${1}" = "monitoror" ]]
   then
-    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDMTR}" up --build
+    if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDMTR}" up --build failed"
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d failed"
     fi
   elif [[ "${1}" = "spark" ]]
   then
@@ -241,6 +252,8 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
+    docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
@@ -248,6 +261,8 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" up
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down -v
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
+    docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]

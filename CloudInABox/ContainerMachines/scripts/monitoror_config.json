@@ -2,7 +2,6 @@
   "version": "2.0",
   "columns": 1,
   "tiles": [
-  { "type": "HTTP-STATUS", "params": {"url": "https://google.com"}},
   {
     "type": "GROUP",
     "label": "monitoror/localhost PING/PORT/HTTP Tests",

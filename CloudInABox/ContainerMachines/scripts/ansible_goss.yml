@@ -11,4 +11,8 @@ services:
        - ../ansible:/etc/ansible:ro
      command: main.yml -t apply_goss
      mem_limit: 500m
-     network_mode: host
+#     network_mode: host
+networks:
+  default:
+    external:
+      name: cldinabox-demo

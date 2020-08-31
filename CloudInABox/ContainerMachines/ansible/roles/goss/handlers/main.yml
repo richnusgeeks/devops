@@ -1,3 +1,3 @@
 ---
 - name: restart goss server
-  shell: if [ -f /var/run/gosserver.pid ];then kill $(cat /var/run/gosserver.pid);fi
+  shell: if [ -f /var/run/gosserver.pid ]; then kill $(cat /var/run/gosserver.pid) $(ps ax|grep goss|grep -v grep|awk '{print $1}'); else rm -f /var/run/gosserver.pid;kill $(ps ax|grep goss|grep -v grep|awk '{print $1}');fi

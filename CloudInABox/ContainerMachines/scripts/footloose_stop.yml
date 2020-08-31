@@ -13,8 +13,12 @@ services:
       - ./footloose.yaml:/tmp/footloose.yaml:ro
     command: stop
     mem_limit: 500m
-    networks:
-      - footloose-demo
+#    networks:
+#      - footloose-demo
 
+#networks:
+#  footloose-demo:
 networks:
-  footloose-demo:
+  default:
+    external:
+      name: cldinabox-demo

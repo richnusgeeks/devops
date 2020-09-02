@@ -1,5 +1,5 @@
 check process gosserver with pidfile /var/run/gosserver.pid
   start program = "/usr/sbin/daemonize -a -e /var/log/gosserver -o /var/log/gosserver -p /var/run/gosserver.pid {{ goss_binary["sscript_location"] }}/gosserver" with timeout 60 seconds
-  stop program = "/bin/kill $(cat /var/run/gosserver)"
+  stop program = "{{ goss_binary["sscript_location"] }}/gosserver_stop"
 
   if failed port {{ goss_binary['listen_port'] }} for 6 cycles then restart

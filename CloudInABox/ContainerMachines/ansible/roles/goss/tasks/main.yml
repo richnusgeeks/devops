@@ -43,12 +43,23 @@
   notify:
     - restart goss server
 
+- name: render bare min goss additional test
+  template: src="goss_adtnl_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['configad_location'] }}/goss_adtnl.yaml"
+  notify:
+    - restart goss server
+
 - name: render goss server script
   template: src="gosserver_{{ goss_version }}.sh.j2"
             dest="{{ goss_binary['sscript_location'] }}/gosserver"
             mode='0750'
   notify:
     - restart goss server
+
+- name: render goss server stop script
+  template: src="gosserver_stop_{{ goss_version }}.sh.j2"
+            dest="{{ goss_binary['sscript_location'] }}/gosserver_stop"
+            mode='0750'
 
 - name: render goss monit config
   template: src="goss_{{ goss_version }}.j2"

@@ -19,6 +19,11 @@
              remote_src=yes
   when: monit_version != monit_version_current.stdout
 
+- name: remove monit tarball
+  file: path="/tmp/{{ monit_properties["monit_archive"] }}"
+        state=absent
+  when: monit_version != monit_version_current.stdout
+
 - name: rename monit directory
   shell: mv -f /tmp/monit-{{ monit_version }} /opt/monit
   when: monit_version != monit_version_current.stdout

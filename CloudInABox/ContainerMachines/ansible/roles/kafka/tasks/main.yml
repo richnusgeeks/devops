@@ -35,6 +35,11 @@
              remote_src=yes
   when: kafka_version != kafka_version_current.stdout
 
+- name: remove kafka tarball
+  file: path="/tmp/{{ kafka_properties["kafka_archive"] }}"
+        state=absent
+  when: kafka_version != kafka_version_current.stdout
+
 - name: rename kafka directory
   shell: mv -f /tmp/kafka_{{ kafka_scala_version }}-{{ kafka_version }} /opt/kafka
   when: kafka_version != kafka_version_current.stdout

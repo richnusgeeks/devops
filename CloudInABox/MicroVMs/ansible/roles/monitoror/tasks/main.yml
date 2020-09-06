@@ -1,0 +1,19 @@
+---
+- name: render monitoror compose file
+  template: src=monitoror.yml.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror.yml"
+
+- name: render monitoror config file
+  template: src=monitoror_config.json.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror_config.json"
+
+- name: render monitoror helper script
+  template: src=monitoror.sh.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror.sh"
+            mode='0750'
+
+- name: render monit config for monitoror
+  template: src=monitoror.j2
+            dest="{{ monit_properties['monit_configad'] }}/monitoror"
+  notify:
+    - reload monit configs

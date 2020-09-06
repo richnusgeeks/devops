@@ -1,0 +1,18 @@
+FROM python:3-alpine
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="latest"
+LABEL description="docker based ansible test driver"
+
+RUN adduser -D -S ansible && \
+    pip install -U pip && \
+    apk add --no-cache --virtual .build-deps \
+      alpine-sdk libffi-dev openssl-dev && \
+    apk add --no-cache openssh-client && \
+    pip install ansible suitable && \
+    apk del .build-deps
+
+USER ansible
+WORKDIR /etc/ansible
+ENTRYPOINT ["ansible-playbook"]
+CMD ["-h"]

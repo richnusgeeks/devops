@@ -1,0 +1,69 @@
+---
+- name: install daemonize on redhat|amazon
+  yum: name="daemonize"
+       state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install daemonize
+  apt: name="daemonize"
+       state=present  
+  when: ansible_os_family|lower == 'debian'
+
+- name: download goss binary
+  get_url: url="{{ goss_binary['download_url'] }}"
+           dest="{{ goss_binary['binary_location'] }}"
+           mode='0755'
+           validate_certs=no
+
+- name: create goss config dir
+  file: path="{{ goss_binary['config_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: create additional goss config dir
+  file: path="{{ goss_binary['configad_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: render goss import config
+  template: src="goss_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['config_location'] }}/goss.yaml"
+  notify:
+    - restart goss server
+
+- name: render goss base test
+  template: src="goss_base_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['config_location'] }}/goss_base.yaml"
+  notify:
+    - restart goss server
+
+- name: render bare min goss additional test
+  template: src="goss_adtnl_{{ goss_version }}.yaml.j2"
+            dest="{{ goss_binary['configad_location'] }}/goss_adtnl.yaml"
+  notify:
+    - restart goss server
+
+- name: render goss server script
+  template: src="gosserver_{{ goss_version }}.sh.j2"
+            dest="{{ goss_binary['sscript_location'] }}/gosserver"
+            mode='0750'
+  notify:
+    - restart goss server
+
+- name: render goss server stop script
+  template: src="gosserver_stop_{{ goss_version }}.sh.j2"
+            dest="{{ goss_binary['sscript_location'] }}/gosserver_stop"
+            mode='0750'
+
+- name: render goss monit config
+  template: src="goss_{{ goss_version }}.j2"
+            dest="{{ monit_properties["monit_configad"] }}/goss"
+  notify:
+    - reload monit configs
+    - restart goss server

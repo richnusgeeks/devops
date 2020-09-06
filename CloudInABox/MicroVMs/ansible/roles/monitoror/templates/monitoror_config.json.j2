@@ -1,0 +1,285 @@
+{
+  "version": "2.0",
+  "columns": 1,
+  "tiles": [
+  { "type": "HTTP-STATUS", "params": {"url": "https://google.com"}},
+  {
+    "type": "GROUP",
+    "label": "monitoror/localhost PING/PORT/HTTP Tests",
+    "tiles": [
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "127.0.0.1"
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "127.0.0.1",
+        "port": 8080
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://localhost:8080"
+      }
+    }
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "cassandra PING/PORT/HTTP Tests",
+    "tiles": [
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "cassandra0"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "cassandra1"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "cassandra2"
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "cassandra0",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "cassandra1",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "cassandra2",
+        "port": 8080
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://cassandra0:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://cassandra1:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://cassandra2:8080/status"
+      }
+    }
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "elasticsearch PING/PORT/HTTP Tests",
+    "tiles": [
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "elasticsearch0"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "elasticsearch1"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "elasticsearch2"
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "elasticsearch0",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "elasticsearch1",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "elasticsearch2",
+        "port": 8080
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://elasticsearch0:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://elasticsearch1:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://elasticsearch2:8080/status"
+      }
+    }
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "kafka PING/PORT/HTTP Tests",
+    "tiles": [
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "kafka0"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "kafka1"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "kafka2"
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "kafka0",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "kafka1",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "kafka2",
+        "port": 8080
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://kafka0:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://kafka1:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://kafka2:8080/status"
+      }
+    }
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "elasticsearch PING/PORT/HTTP Tests",
+    "tiles": [
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "spark0"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "spark1"
+      }
+    },
+    {
+      "type": "PING",
+      "params": {
+        "hostname": "spark2"
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "spark0",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "spark1",
+        "port": 8080
+      }
+    },
+    {
+      "type": "PORT",
+      "params": {
+        "hostname": "spark2",
+        "port": 8080
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://spark0:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://spark1:8080/status"
+      }
+    },
+    {
+      "type": "HTTP-STATUS",
+      "params": {
+        "url": "http://spark2:8080/status"
+      }
+    }
+  ]
+  }
+
+  ]
+}

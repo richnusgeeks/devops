@@ -1,0 +1,14 @@
+version: '2.4'
+
+services:
+
+   ansible:
+     image: ansible${ANSLTAG}
+     build:
+       context: .
+       dockerfile: Dockerfile_Ansible
+     volumes:
+       - ../ansible:/etc/ansible:ro
+     command: main.yml -t apply_kafka
+     mem_limit: 500m
+     network_mode: host

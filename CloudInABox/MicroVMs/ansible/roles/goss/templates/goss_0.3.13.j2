@@ -1,0 +1,9 @@
+check process gosserver with pidfile /var/run/gosserver.pid
+{% if ansible_distribution_version == '20.04' %}
+  start program = "/usr/bin/daemonize -a -e /var/log/gosserver -o /var/log/gosserver -p /var/run/gosserver.pid {{ goss_binary["sscript_location"] }}/gosserver" with timeout 60 seconds
+{% else %}
+  start program = "/usr/sbin/daemonize -a -e /var/log/gosserver -o /var/log/gosserver -p /var/run/gosserver.pid {{ goss_binary["sscript_location"] }}/gosserver" with timeout 60 seconds
+{% endif %}
+  stop program = "{{ goss_binary["sscript_location"] }}/gosserver_stop"
+
+  if failed port {{ goss_binary['listen_port'] }} for 6 cycles then restart

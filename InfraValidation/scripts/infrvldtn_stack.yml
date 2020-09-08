@@ -23,7 +23,7 @@ services:
     volumes:
       - ./config/inspec:/etc/inspec
       - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
     networks:
@@ -37,7 +37,7 @@ services:
       context: .
       dockerfile: Dockerfile_DGoss
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/dgoss:/etc/dgoss:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
@@ -54,7 +54,7 @@ services:
       context: .
       dockerfile: Dockerfile_CSTest
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/cstest:/etc/cstest:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
@@ -69,7 +69,7 @@ services:
 #      context: .
 #      dockerfile: Dockerfile_Inspecat
 #    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
 #      - ./config/inspec:/etc/inspec:ro
 #      - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
 #    entrypoint: sh
@@ -85,7 +85,7 @@ services:
       context: .
       dockerfile: Dockerfile_Testinfra
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/testinfra:/etc/testinfra:ro
       - ./keys/out/test:/etc/ssl/certs/test_servers_pkey/test:ro
     entrypoint: sh

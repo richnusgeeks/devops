@@ -1,5 +1,5 @@
 #! /bin/bash
-set -uo pipefail
+set -o pipefail
 
 OPTN=${1}
 SRVC=${2}
@@ -31,6 +31,8 @@ preReq() {
       exitOnErr " Error: required command ${c} not found, exiting ..."
     fi
   done
+
+  export COMPOSE_IGNORE_ORPHANS=1
 
 }
 

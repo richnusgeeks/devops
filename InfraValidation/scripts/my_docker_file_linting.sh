@@ -1,5 +1,5 @@
 #! /bin/bash
-# Usage: DOCKER_FILE=<DockerfileName> ./all_docker_files_linting.sh
+# Usage: DOCKER_FILE=<DockerfileName> ./my_docker_file_linting.sh
 set -uo pipefail
 
 LOGF="$(basename "${0}"|sed 's/\.sh//').log"

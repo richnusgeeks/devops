@@ -22,6 +22,7 @@
 - name: download kafka tarball
   get_url: url="{{ kafka_properties["download_url"] }}"
            dest="/tmp/{{ kafka_properties["kafka_archive"] }}"
+           validate_certs=no
   when: kafka_version != kafka_version_current.stdout
 
 - name: install tar on amazonlinux2

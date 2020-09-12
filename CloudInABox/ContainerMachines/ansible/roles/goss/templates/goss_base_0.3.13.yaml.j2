@@ -7,10 +7,7 @@ port:
     listening: true
     ip:
     - '::'
-service:
-  sshd:
-    enabled: true
-    running: true
+
 user:
   sshd:
     exists: true
@@ -20,19 +17,27 @@ user:
     - sshd
     home: /var/empty/sshd
     shell: /sbin/nologin
+
 group:
   sshd:
     exists: true
     gid: 74
-process:
-  sshd:
-    running: true
+
+package:
+  docker-ce:
+    installed: true
 
 service:
+  sshd:
+    enabled: true
+    running: true
   docker:
     enabled: true
     running: true
+
 process:
+  sshd:
+    running: true
   containerd:
     running: true
 

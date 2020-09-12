@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+
+  testinfra:
+    image: testinfra:${TFRATAG:-latest}
+    container_name: testinfra
+    hostname: testinfra
+    build:
+      context: .
+      dockerfile: Dockerfile_Testinfra
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../configs/testinfra:/etc/testinfra
+      - ../ansible:/etc/ansible:ro
+    entrypoint: sh
+    command: "-c 'while true; do sleep 5; done'"
+
+networks:
+  default:
+    external:
+      name: cldinabox-demo        

@@ -16,9 +16,9 @@ ASBLCMDCKR='ansible_docker.yml'
 ASBLCMDCAS='ansible_cassandra.yml'
 ASBLCMDELS='ansible_elasticsearch.yml'
 ASBLCMDKAF='ansible_kafka.yml'
-ASBLCMDMTR='ansible_monitoror.yml'
 ASBLCMDSPR='ansible_spark.yml'
 DCKRCMPMTR='monitoror.yml'
+DCKRCMPTIR='testinfra.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSST='footloose_start.yml'
 FTLSCMPSSP='footloose_stop.yml'
@@ -31,7 +31,8 @@ RQRDCMNDS="awk
            docker-compose
            grep
 	   rm
-           uname"
+           uname
+           wc"
 
 preReq() {
 
@@ -152,6 +153,7 @@ testASBLRun() {
      [[ "${1}" != "elasticsearch" ]] && \
      [[ "${1}" != "kafka" ]] && \
      [[ "${1}" != "monitoror" ]] && \
+     [[ "${1}" != "testinfra" ]] && \
      [[ "${1}" != "spark" ]]
 
   then
@@ -206,6 +208,30 @@ testASBLRun() {
     then
       exitOnErr "docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d failed"
     fi
+  elif [[ "${1}" = "testinfra" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" up --build -d
+    then
+      exitOnErr "docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" up -d failed"
+    else
+
+# Parallel mode is mangling the output so not using currently.
+#      local nload=$(grep -w core /proc/cpuinfo 2>&1|wc -l)
+#      if [[ -n ${nload} ]]
+#      then
+#        if [[ ${nload} -gt 4 ]]
+#        then
+#          nload=4
+#        fi
+#      else
+#        nload=2
+#      fi
+#      docker exec -it testinfra py.test -v -n ${nload} \
+      docker exec -it testinfra py.test -v \
+	          --force-ansible \
+	          --hosts='ansible://all' \
+		  test_myinfra.py
+    fi
   elif [[ "${1}" = "spark" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDSPR}" up --build
@@ -253,6 +279,7 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
@@ -262,6 +289,7 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSDL}" down -v
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack

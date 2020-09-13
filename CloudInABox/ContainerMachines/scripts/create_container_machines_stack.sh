@@ -70,7 +70,7 @@ printUsage() {
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|start|stop|show|
                          test [ping|goss|docker|cassandra|elasticsearch|
-                               kafka|spark|monitoror]
+                               kafka|spark|monitoror|testinfra]
                         |delete|cleandelete >"
 EOF
   exit 0

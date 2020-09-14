@@ -307,3 +307,4 @@ main() {
 }
 
 main 2>&1
+# ./create_container_machines_stack.sh show|grep kafka|awk -F '{8080' '{print $2}'|awk -F '}' '{print $1}'|sed 's/ *//'|sort -n|xargs -I % nc -vz localhost %

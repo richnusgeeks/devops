@@ -17,8 +17,13 @@ dataDir=/tmp/zookeeper
 # the port at which the clients will connect
 clientPort=2181
 # disable the per-ip limit on the number of connections since this is a non-production config
-maxClientCnxns=0
+maxClientCnxns=50
 # Disable the adminserver by default to avoid port conflicts.
 # Set the port to something non-conflicting if choosing to enable this
 admin.enableServer=false
 # admin.serverPort=8080
+{% for host in groups['kafka'] %}
+server.{{ loop.index-1 }}={{ host }}:2888:3888
+{% endfor %}
+initLimit=10
+syncLimit=5

@@ -8,22 +8,26 @@
     - role: docker
       tags: [apply_docker]
 
+- hosts: cassandra
+  become: yes
+  roles:
     - role: cassandra
       tags: [apply_cassandra]
-      when: ansible_hostname | regex_search("^cassandra")
 
+- hosts: elasticsearch
+  become: yes
+  roles:
     - role: elasticsearch
       tags: [apply_elasticsearch]
-      when: ansible_hostname | regex_search("^elasticsearch")
 
+- hosts: kafka
+  become: yes
+  roles:
     - role: kafka
       tags: [apply_kafka]
-      when: ansible_hostname | regex_search("^kafka")
 
+- hosts: spark
+  become: yes
+  roles:
     - role: spark
       tags: [apply_spark]
-      when: ansible_hostname | regex_search("^spark")
-
-    - role: monitoror
-      tags: [apply_monitoror]
-      when: ansible_hostname | regex_search("^monitoror")

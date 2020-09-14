@@ -20,8 +20,8 @@
   register: kafka_version_current
 
 - name: download kafka tarball
-  get_url: url="{{ kafka_properties["download_url"] }}"
-           dest="/tmp/{{ kafka_properties["kafka_archive"] }}"
+  get_url: url="{{ kafka_properties['download_url'] }}"
+           dest="/tmp/{{ kafka_properties['kafka_archive'] }}"
            validate_certs=no
   when: kafka_version != kafka_version_current.stdout
 
@@ -31,13 +31,13 @@
   when: ansible_distribution|lower == "amazon"
 
 - name: untar kafka tarball
-  unarchive: src="/tmp/{{ kafka_properties["kafka_archive"] }}"
+  unarchive: src="/tmp/{{ kafka_properties['kafka_archive'] }}"
              dest="/tmp"
              remote_src=yes
   when: kafka_version != kafka_version_current.stdout
 
 - name: remove kafka tarball
-  file: path="/tmp/{{ kafka_properties["kafka_archive"] }}"
+  file: path="/tmp/{{ kafka_properties['kafka_archive'] }}"
         state=absent
   when: kafka_version != kafka_version_current.stdout
 
@@ -45,14 +45,32 @@
   shell: mv -f /tmp/kafka_{{ kafka_scala_version }}-{{ kafka_version }} /opt/kafka
   when: kafka_version != kafka_version_current.stdout
 
+- name: create zookeeper data dir
+  file: path="{{ kafka_properties['zookeeper_data_dir'] }}"
+        state=directory
+        recurse=yes
+        mode='0755'
+
+- name: create zookeeper myid file
+  template: src="myid_{{ kafka_scala_version }}-{{ kafka_version }}.j2"
+            dest="{{ kafka_properties['zookeeper_data_dir'] }}/myid"
+
+- name: render zookeeper config for kafka
+  template: src="zookeeper_{{ kafka_scala_version }}-{{ kafka_version }}.properties.j2"
+            dest="{{ kafka_properties['config_location'] }}/zookeeper.properties"
+            mode='0644'
+  notify:
+    - restart zookeeper
+
+- name: render server config for kafka
+  template: src="server_{{ kafka_scala_version }}-{{ kafka_version }}.properties.j2"
+            dest="{{ kafka_properties['config_location'] }}/server.properties"
+            mode='0644'
+  notify:
+    - restart kafka
+
 - name: render monit config for kafka
-  template: src=kafkazkpr_{{ kafka_scala_version }}-{{ kafka_version }}.j2
-            dest="{{ monit_properties["monit_configad"] }}/kafkazkpr"
+  template: src="kafkazkpr_{{ kafka_scala_version }}-{{ kafka_version }}.j2"
+            dest="{{ monit_properties['monit_configad'] }}/kafkazkpr"
   notify:
     - reload monit configs
-
-- name: render goss kafka test
-  template: src="goss_kafka_{{ kafka_scala_version }}-{{ kafka_version }}.yaml.j2"
-            dest="{{ goss_binary['configad_location'] }}/goss_kafka.yaml"
-  notify:
-    - restart goss server

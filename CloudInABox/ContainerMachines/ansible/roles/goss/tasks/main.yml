@@ -67,3 +67,15 @@
   notify:
     - reload monit configs
     - restart goss server
+
+- include: cassandra.yml
+  when: ansible_hostname | regex_search("^cassandra")
+
+- include: elasticsearch.yml
+  when: ansible_hostname | regex_search("^elasticsearch")
+
+- include: kafka.yml
+  when: ansible_hostname | regex_search("^kafka")
+
+- include: spark.yml
+  when: ansible_hostname | regex_search("^spark")

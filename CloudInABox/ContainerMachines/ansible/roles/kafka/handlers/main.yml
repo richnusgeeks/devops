@@ -1,3 +1,6 @@
 ---
+- name: restart zookeeper
+  shell: /opt/monit/bin/monit -c /opt/monit/conf/monitrc restart zookeeper
+
 - name: restart kafka
   shell: /opt/monit/bin/monit -c /opt/monit/conf/monitrc restart kafka

@@ -88,7 +88,9 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
+    - containerPort: 7077
     - containerPort: 8080
+    - containerPort: 8081
     - containerPort: 38080
     privileged: true
     volumes:

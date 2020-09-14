@@ -1,1 +1,58 @@
 ---
+- name: install java for spark
+  yum: name="{{ spark_java_version }}"
+       state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install java for spark
+  apt: name="openjdk-8-jre-headless"
+       state=present
+  when: ansible_os_family|lower == 'debian'
+
+- name: deduce current spark version
+  shell: if [ -x {{ spark_properties["utility_location"] }}/spark-shell.sh ];then {{ spark_properties["utility_location"] }}/spark-shell.sh --version 2>&1|grep version|grep -iv using|awk '{print $NF}';fi
+  register: spark_version_current
+
+- name: download spark tarball
+  get_url: url="{{ spark_properties["download_url"] }}"
+           dest="/tmp/{{ spark_properties["spark_archive"] }}"
+           validate_certs=no
+  when: spark_version != spark_version_current.stdout
+
+- name: install tar on amazonlinux2
+  yum: name=tar
+       state=present
+  when: ansible_distribution|lower == "amazon"
+
+- name: untar spark tarball
+  unarchive: src="/tmp/{{ spark_properties["spark_archive"] }}"
+             dest="/tmp"
+             remote_src=yes
+  when: spark_version != spark_version_current.stdout
+
+- name: remove spark tarball
+  file: path="/tmp/{{ spark_properties["spark_archive"] }}"
+        state=absent
+  when: spark_version != spark_version_current.stdout
+
+- name: rename spark directory
+  shell: mv -f /tmp/{{ spark_properties["spark_archive"] | regex_replace('.tgz') }} /opt/spark
+  when: spark_version != spark_version_current.stdout
+
+#- name: render monit config for spark
+#  template: src=sparkzkpr_{{ spark_scala_version }}-{{ spark_version }}.j2
+#            dest="{{ monit_properties["monit_configad"] }}/sparkzkpr"
+#  notify:
+#    - reload monit configs
+#
+#- name: render goss spark test
+#  template: src="goss_spark_{{ spark_scala_version }}-{{ spark_version }}.yaml.j2"
+#            dest="{{ goss_binary['configad_location'] }}/goss_spark.yaml"
+#  notify:
+#    - restart goss server

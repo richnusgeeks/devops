@@ -35,6 +35,17 @@ kafka_properties: {
   "config_location": "/opt/kafka/config",
 }
 
+spark_version: "3.0.1"
+spark_java_version: "java-1.8.0-openjdk-headless"
+spark_hadoop_version: "2.7"
+spark_properties: {
+  "spark_archive": "spark-{{ spark_version }}-bin-hadoop{{ spark_hadoop_version }}.tgz",
+  "download_url": "https://apache.osuosl.org/spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-hadoop{{ spark_hadoop_version }}.tgz",
+  "binary_location": "/opt/spark/sbin",
+  "utility_location": "/opt/spark/bin",
+  "config_location": "/opt/spark/conf",
+}
+
 compose_version: "1.26.2"
 docker_packages: {
   "all": {

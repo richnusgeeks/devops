@@ -218,7 +218,7 @@
   },
   {
     "type": "GROUP",
-    "label": "elasticsearch PING/PORT/HTTP Tests",
+    "label": "spark PING/PORT/HTTP Tests",
     "tiles": [
     {
       "type": "PING",

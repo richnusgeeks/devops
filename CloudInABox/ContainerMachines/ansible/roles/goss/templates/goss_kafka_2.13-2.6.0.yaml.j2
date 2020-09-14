@@ -1,6 +1,27 @@
+addr:
+  tcp://kafka0:2181:
+    reachable: true
+    timeout: 500
+  tcp://kafka1:2181:
+    reachable: true
+    timeout: 500
+  tcp://kafka2:2181:
+    reachable: true
+    timeout: 500
+  tcp://kafka0:9092:
+    reachable: true
+    timeout: 500
+  tcp://kafka1:9092:
+    reachable: true
+    timeout: 500
+  tcp://kafka2:9092:
+    reachable: true
+    timeout: 500
+
 package:
   {{ kafka_java_version }}:
     installed: true 
+
 port:
   tcp:2181:
     listening: true
@@ -18,6 +39,7 @@ port:
 #    listening: true
 #    ip:
 #    - ::
+
 process:
   java:
     running: true

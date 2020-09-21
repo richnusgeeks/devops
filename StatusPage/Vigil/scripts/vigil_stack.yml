@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+
+  vigil:
+    image: valeriansaliou/vigil:${VGILTAG:-v1.18.0}
+    volumes:
+      - ./configs/config.cfg:/etc/vigil.cfg
+    ports:
+      - "48080:8080"
+    restart: unless-stopped
+    networks:
+      - vigil-demo
+
+networks:
+  vigil-demo:

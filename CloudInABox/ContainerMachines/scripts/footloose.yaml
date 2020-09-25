@@ -40,7 +40,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
-    - containerPort: 8080
+    - containerPort: 58080
     - containerPort: 38080
     privileged: true
     volumes:
@@ -56,7 +56,7 @@ machines:
     portMappings:
     - containerPort: 22
     - containerPort: 2812
-    - containerPort: 8080
+    - containerPort: 58080
     - containerPort: 38080
     privileged: true
     volumes:
@@ -71,9 +71,11 @@ machines:
     portMappings:
     portMappings:
     - containerPort: 22
+    - containerPort: 2181
     - containerPort: 2812
-    - containerPort: 8080
+    - containerPort: 9092
     - containerPort: 38080
+    - containerPort: 58080
     privileged: true
     volumes:
     - type: volume
@@ -92,6 +94,7 @@ machines:
     - containerPort: 8080
     - containerPort: 8081
     - containerPort: 38080
+    - containerPort: 58080
     privileged: true
     volumes:
     - type: volume

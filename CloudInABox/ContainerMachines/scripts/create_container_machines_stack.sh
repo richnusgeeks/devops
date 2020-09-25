@@ -19,6 +19,7 @@ ASBLCMDKAF='ansible_kafka.yml'
 ASBLCMDSPR='ansible_spark.yml'
 DCKRCMPMTR='monitoror.yml'
 DCKRCMPTIR='testinfra.yml'
+DCKRCMPVGL='vigil.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSST='footloose_start.yml'
 FTLSCMPSSP='footloose_stop.yml'
@@ -73,7 +74,7 @@ printUsage() {
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|start|stop|show|
                          test [ping|goss|docker|cassandra|elasticsearch|
-                               kafka|spark|monitoror|testinfra]
+                               kafka|spark|monitoror|testinfra|vigil]
                         |delete|cleandelete >"
 EOF
   exit 0
@@ -157,6 +158,7 @@ testASBLRun() {
      [[ "${1}" != "kafka" ]] && \
      [[ "${1}" != "monitoror" ]] && \
      [[ "${1}" != "testinfra" ]] && \
+     [[ "${1}" != "vigil" ]] && \
      [[ "${1}" != "spark" ]]
 
   then
@@ -170,52 +172,52 @@ testASBLRun() {
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMTEST} up --build failed"
     fi
 
   elif [[ "${1}" = "goss" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDGOS}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDGOS}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMDGOS} up --build failed"
     fi
 
   elif [[ "${1}" = "docker" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDCKR}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDCKR}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMDCKR} up --build failed"
     fi
 
   elif [[ "${1}" = "cassandra" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDCAS}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDCAS}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMDCAS} up --build failed"
     fi
   elif [[ "${1}" = "elasticsearch" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDELS}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDELS}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMDELS} up --build failed"
     fi
   elif [[ "${1}" = "kafka" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMDKAF}" up --build
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${ASBLCMDKAF}" up --build failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMDKAF} up --build failed"
     fi
   elif [[ "${1}" = "monitoror" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPMTR} up -d failed"
     fi
   elif [[ "${1}" = "testinfra" ]]
   then
     if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" up --build -d
     then
-      exitOnErr "docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" up -d failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPTIR} up -d failed"
     else
 
 # Parallel mode is mangling the output so not using currently.
@@ -234,6 +236,12 @@ testASBLRun() {
 	          --force-ansible \
 	          --hosts='ansible://all' \
 		  test_myinfra.py
+    fi
+  elif [[ "${1}" = "vigil" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" up --build -d
+    then
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPVGL} up -d failed"
     fi
   elif [[ "${1}" = "spark" ]]
   then
@@ -283,6 +291,7 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" down
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
@@ -293,6 +302,7 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
+    docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" down
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack

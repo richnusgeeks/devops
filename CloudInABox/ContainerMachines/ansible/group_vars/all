@@ -21,7 +21,7 @@ goss_binary: {
   "config_location": "/opt/goss/conf",
   "configad_location": "/opt/goss/conf/goss.d",
   "sscript_location": "/usr/local/bin",
-  "listen_port": 8080,
+  "listen_port": 58080,
   "output_format": "documentation",
 }
 
@@ -97,5 +97,5 @@ dckrbnchscrty_properties: {
 
 monitoror_properties: {
   "image_tag": "latest",
-  "host_port": "58080"
+  "host_port": "58888"
 }

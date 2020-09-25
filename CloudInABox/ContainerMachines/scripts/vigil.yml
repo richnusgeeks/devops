@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+
+  vigil:
+    image: valeriansaliou/vigil:${VGILTAG:-v1.18.0}
+    volumes:
+      - ../configs/vigil/config.cfg:/etc/vigil.cfg:ro
+    ports:
+      - "58080:8080"
+    restart: unless-stopped
+
+networks:
+  default:
+    external:
+      name: cldinabox-demo

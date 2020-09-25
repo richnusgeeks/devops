@@ -53,39 +53,39 @@
       "type": "PORT",
       "params": {
         "hostname": "cassandra0",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "cassandra1",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "cassandra2",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://cassandra0:8080/status"
+        "url": "http://cassandra0:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://cassandra1:8080/status"
+        "url": "http://cassandra1:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://cassandra2:8080/status"
+        "url": "http://cassandra2:58080/status"
       }
     }
   ]
@@ -116,39 +116,39 @@
       "type": "PORT",
       "params": {
         "hostname": "elasticsearch0",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "elasticsearch1",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "elasticsearch2",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://elasticsearch0:8080/status"
+        "url": "http://elasticsearch0:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://elasticsearch1:8080/status"
+        "url": "http://elasticsearch1:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://elasticsearch2:8080/status"
+        "url": "http://elasticsearch2:58080/status"
       }
     }
   ]
@@ -179,39 +179,39 @@
       "type": "PORT",
       "params": {
         "hostname": "kafka0",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "kafka1",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "kafka2",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://kafka0:8080/status"
+        "url": "http://kafka0:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://kafka1:8080/status"
+        "url": "http://kafka1:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://kafka2:8080/status"
+        "url": "http://kafka2:58080/status"
       }
     }
   ]
@@ -242,39 +242,39 @@
       "type": "PORT",
       "params": {
         "hostname": "spark0",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "spark1",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "PORT",
       "params": {
         "hostname": "spark2",
-        "port": 8080
+        "port": 58080
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://spark0:8080/status"
+        "url": "http://spark0:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://spark1:8080/status"
+        "url": "http://spark1:58080/status"
       }
     },
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://spark2:8080/status"
+        "url": "http://spark2:58080/status"
       }
     }
   ]

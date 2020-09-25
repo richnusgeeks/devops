@@ -1,7 +1,14 @@
 ---
-- name: render goss spark test
-  template: src="goss_spark_{{ spark_version }}-{{ spark_hadoop_version }}.yaml.j2"
+- name: render goss spark master test
+  template: src="goss_sparkmaster_{{ spark_version }}-{{ spark_hadoop_version }}.yaml.j2"
             dest="{{ goss_binary['configad_location'] }}/goss_spark.yaml"
   notify:
     - restart goss server
+  when: ansible_hostname | regex_search("^spark0")
 
+- name: render goss spark worker test
+  template: src="goss_sparkworker_{{ spark_version }}-{{ spark_hadoop_version }}.yaml.j2"
+            dest="{{ goss_binary['configad_location'] }}/goss_spark.yaml"
+  notify:
+    - restart goss server
+  when: ansible_hostname | regex_search("^spark[1-9]")

@@ -2,19 +2,11 @@ package:
   {{ spark_java_version }}:
     installed: true 
 port:
-  tcp:7077:
+  tcp:{{ spark_properties["worker_ui_port"] }}:
     listening: true
     ip:
     - 0.0.0.0
-#  tcp6:7077:
-#    listening: true
-#    ip:
-#    - ::
-  tcp:8081:
-    listening: true
-    ip:
-    - 0.0.0.0
-#  tcp6:8081:
+#  tcp6:{{ spark_properties["worker_ui_port"] }}:
 #    listening: true
 #    ip:
 #    - ::

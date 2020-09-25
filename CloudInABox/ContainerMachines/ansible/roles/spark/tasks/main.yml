@@ -16,7 +16,7 @@
   when: ansible_os_family|lower == 'debian'
 
 - name: deduce current spark version
-  shell: if [ -x {{ spark_properties["utility_location"] }}/spark-shell.sh ];then {{ spark_properties["utility_location"] }}/spark-shell.sh --version 2>&1|grep version|grep -iv using|awk '{print $NF}';fi
+  shell: if [ -x {{ spark_properties["utility_location"] }}/spark-shell ];then {{ spark_properties["utility_location"] }}/spark-shell --version 2>&1|grep version|grep -iv using|awk '{print $NF}';fi
   register: spark_version_current
 
 - name: download spark tarball
@@ -45,14 +45,16 @@
   shell: mv -f /tmp/{{ spark_properties["spark_archive"] | regex_replace('.tgz') }} /opt/spark
   when: spark_version != spark_version_current.stdout
 
-#- name: render monit config for spark
-#  template: src=sparkzkpr_{{ spark_scala_version }}-{{ spark_version }}.j2
-#            dest="{{ monit_properties["monit_configad"] }}/sparkzkpr"
-#  notify:
-#    - reload monit configs
-#
-#- name: render goss spark test
-#  template: src="goss_spark_{{ spark_scala_version }}-{{ spark_version }}.yaml.j2"
-#            dest="{{ goss_binary['configad_location'] }}/goss_spark.yaml"
-#  notify:
-#    - restart goss server
+- name: render monit config for spark master
+  template: src=sparkmaster_{{ spark_version }}-{{ spark_hadoop_version }}.j2
+            dest="{{ monit_properties["monit_configad"] }}/spark"
+  notify:
+    - reload monit configs
+  when: ansible_hostname | regex_search("^spark0")
+
+- name: render monit config for spark worker
+  template: src=sparkworker_{{ spark_version }}-{{ spark_hadoop_version }}.j2
+            dest="{{ monit_properties["monit_configad"] }}/spark"
+  notify:
+    - reload monit configs
+  when: ansible_hostname | regex_search("^spark[1-9]")

@@ -45,6 +45,9 @@ spark_properties: {
   "binary_location": "/opt/spark/sbin",
   "utility_location": "/opt/spark/bin",
   "config_location": "/opt/spark/conf",
+  "master_port": 7077,
+  "master_ui_port": 8080,
+  "worker_ui_port": 8081,
 }
 
 compose_version: "1.26.2"

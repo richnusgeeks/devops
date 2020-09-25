@@ -1,0 +1,4 @@
+check process sparkworker matching worker
+  start program = "{{ spark_properties["binary_location"] }}/start-slave.sh spark0:{{ spark_properties["master_port"] }}" with timeout 300 seconds
+  stop program = "{{ spark_properties["binary_location"] }}/stop-slave.sh" with timeout 300 seconds
+  if failed port {{ spark_properties["master_ui_port"] }} for 30 cycles then restart

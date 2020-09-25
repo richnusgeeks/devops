@@ -1,0 +1,4 @@
+check process sparkmaster matching master
+  start program = "{{ spark_properties["binary_location"] }}/start-master.sh" with timeout 300 seconds
+  stop program = "{{ spark_properties["binary_location"] }}/stop-master.sh" with timeout 300 seconds
+  if failed port {{ spark_properties["master_ui_port"] }} for 30 cycles then restart

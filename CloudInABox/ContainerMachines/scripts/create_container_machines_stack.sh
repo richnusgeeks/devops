@@ -220,19 +220,23 @@ testASBLRun() {
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPTIR} up -d failed"
     else
 
-# Parallel mode is mangling the output so not using currently.
-#      local nload=$(grep -w core /proc/cpuinfo 2>&1|wc -l)
-#      if [[ -n ${nload} ]]
-#      then
-#        if [[ ${nload} -gt 4 ]]
-#        then
-#          nload=4
-#        fi
-#      else
-#        nload=2
-#      fi
-#      docker exec -it testinfra py.test -v -n ${nload} \
-      docker exec -it testinfra py.test -v \
+      if uname | grep -i darwin 2>&1 > /dev/null
+      then
+        local nload=$(sysctl -a 2>&1|grep machdep.cpu.core_count|awk '{print $NF}')
+      else
+        local nload=$(grep -w core /proc/cpuinfo 2>&1|wc -l)
+      fi
+
+      if [[ -n ${nload} ]]
+      then
+        if [[ ${nload} -gt 4 ]]
+        then
+          nload=4
+        fi
+      else
+        nload=2
+      fi
+      docker exec -it testinfra py.test -n ${nload} \
 	          --force-ansible \
 	          --hosts='ansible://all' \
 		  test_myinfra.py

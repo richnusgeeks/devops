@@ -1,3 +1,10 @@
+mount:
+  /:
+    exists: true
+    filesystem: overlay
+    usage:
+      lt: 90
+
 port:
   tcp:22:
     listening: true

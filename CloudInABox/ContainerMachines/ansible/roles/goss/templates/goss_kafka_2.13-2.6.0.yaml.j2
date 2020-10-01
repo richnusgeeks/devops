@@ -1,20 +1,20 @@
 addr:
-  tcp://kafka0:2181:
+  tcp://kafka0:{{ kafka_properties["zookeeper_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka1:2181:
+  tcp://kafka1:{{ kafka_properties["zookeeper_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka2:2181:
+  tcp://kafka2:{{ kafka_properties["zookeeper_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka0:9092:
+  tcp://kafka0:{{ kafka_properties["kafka_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka1:9092:
+  tcp://kafka1:{{ kafka_properties["kafka_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka2:9092:
+  tcp://kafka2:{{ kafka_properties["kafka_port"] }}:
     reachable: true
     timeout: 500
 

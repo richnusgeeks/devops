@@ -1,3 +1,7 @@
+addr:
+  tcp://spark0:{{ spark_properties["master_port"] }}:
+    reachable: true
+    timeout: 500
 package:
   {{ spark_java_version }}:
     installed: true 
@@ -13,3 +17,11 @@ port:
 process:
   java:
     running: true
+command:
+  examplepypi:
+    # required attributes
+    exit-status: 0
+    # defaults to hash key
+    exec: "{{ spark_properties["utility_location"] }}/spark-submit --master spark://spark0:{{ spark_properties["master_port"] }} {{ spark_properties["examples_location"] }}/src/main/python/pi.py"
+    timeout: 20000 # in milliseconds
+    skip: false

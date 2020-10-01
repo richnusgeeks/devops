@@ -34,6 +34,8 @@ kafka_properties: {
   "binary_location": "/opt/kafka/bin",
   "config_location": "/opt/kafka/config",
   "zookeeper_data_dir": "/tmp/zookeeper",
+  "zookeeper_port": 2181,
+  "kafka_port": 9092,
 }
 
 spark_version: "3.0.1"
@@ -45,6 +47,7 @@ spark_properties: {
   "binary_location": "/opt/spark/sbin",
   "utility_location": "/opt/spark/bin",
   "config_location": "/opt/spark/conf",
+  "examples_location": "/opt/spark/examples",
   "master_port": 7077,
   "master_ui_port": 8080,
   "worker_ui_port": 8081,

@@ -1,17 +1,19 @@
 # This image is published for public usage to
 # https://hub.docker.com/r/richnusgeeks/cstest
-FROM alpine:3.10
+FROM alpine:3.12
 LABEL "com.richnusgeeks.vendor"="richnusgeeks"
 LABEL "com.richnusgeeks.category"="utility"
 LABEL version="latest"
 LABEL description="docker based testing driver for container structure test"
+
+ENV CST_VERSION 1.9.1
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 WORKDIR /tmp
 RUN apk add --no-cache --virtual=cst-deps ca-certificates curl \
   && apk add --no-cache bash \
   && curl -sSLk -o /sbin/tini "https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'\"' '{print $2}')" \
-  && curl -sSLk -o /usr/local/bin/container-structure-test "$(curl -sSLk https://github.com/GoogleContainerTools/container-structure-test/releases|grep Linux/amd64|awk -F'\"' '{print $2}'|head -1)" \
+  && curl -sSLk -o /usr/local/bin/container-structure-test "https://storage.googleapis.com/container-structure-test/v${CST_VERSION}/container-structure-test-linux-amd64" \
   && chmod +x /usr/local/bin/container-structure-test /sbin/tini \
   && mkdir -p /etc/cstest \
   && curl -sSLk -o /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '\"' '{print $2}'|sort -nr|head -1)" \

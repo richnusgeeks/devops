@@ -5,6 +5,7 @@ set -uo pipefail
 
 TRACE="${TRACE_FLAG:-0}"
 DEBUG="${DEBUG_FLAG:-0}"
+NOCOLOR="${NOCOLOR_FLAG:-1}"
 DCKRFL="${DOCKER_FILE:-Dockerfile}"
 DCKRIMG="${DOCKER_IMAGE:-none}"
 CSTRPRT="\n=== CSTestRun: Dockerfile:${DCKRFL} , Image:${DCKRIMG} ==="
@@ -46,6 +47,11 @@ prntMsg() {
   local msg=$1
   local clr=$2
 
+  if [[ ${NOCOLOR} -eq 1 ]]
+  then
+    clr='none'
+  fi
+
   if [[ "${clr}" = "red" ]]
   then
     echo -e "\033[31;49;10m${msg}\033[m"
@@ -58,6 +64,9 @@ prntMsg() {
   elif [[ "${clr}" = "blue" ]]
   then
     echo -e "\033[34;49;10m${msg}\033[m"
+  elif [[ "${clr}" = "none" ]]
+  then
+    echo "${msg}"
   fi
 
 }
@@ -284,7 +293,13 @@ runCntnrStst() {
   testONBUILD
   crteCstCnfg
 
-  local cstrun=$(container-structure-test test --image "${DCKRIMG}" --config "/tmp/${CSTCNFG}" 2>&1)
+  if [[ ${NOCOLOR} -eq 1 ]]
+  then
+    local cstrun=$(container-structure-test test --no-color --image "${DCKRIMG}" --config "/tmp/${CSTCNFG}" 2>&1)
+  else
+    local cstrun=$(container-structure-test test --image "${DCKRIMG}" --config "/tmp/${CSTCNFG}" 2>&1)
+  fi
+
   if echo "${cstrun}" | grep FAIL > /dev/null 2>&1
   then
     RETSTATUS=1

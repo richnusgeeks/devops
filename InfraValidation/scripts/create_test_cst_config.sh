@@ -228,6 +228,7 @@ commandTests:
   - name: "dump tini version"
     command: "/sbin/tini"
     args: ["--version"]
+    expectedOutput: ["${TINIVER}"]
 
 fileExistenceTests:
   - name: "tini existence"

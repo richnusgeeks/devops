@@ -15,6 +15,7 @@ RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
   && chmod +x /usr/local/bin/footloose
 
 COPY footloose_run.sh /usr/local/bin/run.sh
+COPY render_footloose_config.sh /usr/local/bin/rndrftlscnfg
 WORKDIR /var/lib/footloose
 
 ENTRYPOINT ["run.sh"]

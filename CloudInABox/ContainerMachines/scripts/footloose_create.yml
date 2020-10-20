@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile_Footloose
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./footloose.yaml:/tmp/footloose.yaml:ro
+      - ./footloose.cfg:/etc/footloose.cfg:ro
     command: create
     mem_limit: 500m
 #    networks:

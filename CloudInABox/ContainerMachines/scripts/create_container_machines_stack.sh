@@ -106,7 +106,7 @@ parseArgs() {
 showFTLStack() {
 
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
-                           -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro \
+                           -v $(pwd)/footloose.cfg:/etc/footloose.cfg:ro \
             footloose show
   then
     exitOnErr 'docker run footloose show failed'
@@ -116,13 +116,25 @@ showFTLStack() {
 
 createASBLInv() {
 
-  local ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v $(pwd)/footloose.yaml:/tmp/footloose.yaml:ro footloose show)
+  local ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v $(pwd)/footloose.cfg:/etc/footloose.cfg:ro footloose show|grep '^cluster\-')
 #       grep -v NAME | awk -F '  +' '{ if ( $4~"^ubuntu" ) {print $2,"ansible_python_interpreter=/usr/bin/python3"} else {print $2} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
   for h in $(echo "${ftlshw}" | grep -v NAME | awk -F '  +' '{print $2}'|sed 's/[0-9]\{1,\}//'|sort -u)
   do
     echo -e "[${h}]\n$(echo "${ftlshw}" | grep "${h}" \
        | awk -F '  +' '{print $2}')\n"
   done | tee "${ANSBLEDIR}/${ANSBLEHIN}"
+
+}
+
+renderVGLCnfg() {
+
+  true
+
+}
+
+renderMTRCnfg() {
+
+  true
 
 }
 
@@ -209,6 +221,7 @@ testASBLRun() {
     fi
   elif [[ "${1}" = "monitoror" ]]
   then
+    renderMTRCnfg
     if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d
     then
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPMTR} up -d failed"
@@ -243,6 +256,7 @@ testASBLRun() {
     fi
   elif [[ "${1}" = "vigil" ]]
   then
+    renderVGLCnfg
     if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" up --build -d
     then
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPVGL} up -d failed"

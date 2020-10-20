@@ -32,6 +32,7 @@ parseArgs() {
 main() {
 
   parseArgs
+  rndrftlscnfg
 
   if [[ "${OPTN}" = "create" ]]
   then

@@ -1,0 +1,15 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+goss_version: "0.3.13"
+goss_binary: {
+  "download_url": "https://github.com/aelsabbahy/goss/releases/download/v{{ goss_version }}/goss-linux-amd64",
+  "binary_location": "/usr/local/bin/goss",
+  "config_location": "/opt/goss/conf",
+  "configad_location": "/opt/goss/conf/goss.d",
+  "sscript_location": "/usr/local/bin",
+  "listen_port": 58080,
+  "output_format": "documentation",
+}

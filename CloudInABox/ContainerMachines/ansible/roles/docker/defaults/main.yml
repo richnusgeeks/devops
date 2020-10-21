@@ -1,0 +1,52 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+compose_version: "1.26.2"
+docker_packages: {
+  "all": {
+    "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",
+    "docker_compose_location": "/usr/local/bin/docker-compose",
+    "docker_compose_dir": "/opt/docker/compose"
+  },
+
+  "redhat": {
+    "utility": [
+      "yum-utils",
+      "device-mapper-persistent-data",
+      "lvm2"
+    ],
+    "main": [
+      "docker-ce",
+      "docker-ce-cli",
+      "containerd.io"
+    ],
+    "repo": "https://download.docker.com/linux/centos/docker-ce.repo"
+  },
+
+  "debian": {
+    "utility": [
+      "apt-transport-https",
+      "ca-certificates",
+      "curl",
+      "gnupg2",
+      "software-properties-common"
+    ],
+    "main": [
+      "docker-ce",
+      "docker-ce-cli",
+      "containerd.io"
+    ],
+    "repo": "deb [arch=amd64] https://download.docker.com/linux/debian {{ansible_distribution_release}} stable"
+  }
+}
+
+cadvisor_properties: {
+  "image_tag": "latest",
+  "host_port": 38080
+}
+
+dckrbnchscrty_properties: {
+  "image_tag": "latest",
+}

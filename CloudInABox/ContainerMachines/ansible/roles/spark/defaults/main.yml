@@ -1,0 +1,19 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+spark_version: "3.0.1"
+spark_java_version: "java-1.8.0-openjdk-headless"
+spark_hadoop_version: "2.7"
+spark_properties: {
+  "spark_archive": "spark-{{ spark_version }}-bin-hadoop{{ spark_hadoop_version }}.tgz",
+  "download_url": "https://apache.osuosl.org/spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-hadoop{{ spark_hadoop_version }}.tgz",
+  "binary_location": "/opt/spark/sbin",
+  "utility_location": "/opt/spark/bin",
+  "config_location": "/opt/spark/conf",
+  "examples_location": "/opt/spark/examples",
+  "master_port": 7077,
+  "master_ui_port": 8080,
+  "worker_ui_port": 8081,
+}

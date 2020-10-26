@@ -12,4 +12,24 @@ goss_binary: {
   "sscript_location": "/usr/local/bin",
   "listen_port": 58080,
   "output_format": "documentation",
+  "goss_srvcnfig": "/lib/systemd/system/goss.service",
+}
+
+kafka_version: "2.6.0"
+kafka_java_version: "java-1.8.0-openjdk-headless"
+kafka_scala_version: "2.13"
+kafka_properties: {
+  "zookeeper_port": 2181,
+  "kafka_port": 9092,
+}
+
+spark_version: "3.0.1"
+spark_java_version: "java-1.8.0-openjdk-headless"
+spark_hadoop_version: "2.7"
+spark_properties: {
+  "utility_location": "/opt/spark/bin",
+  "examples_location": "/opt/spark/examples",
+  "master_port": 7077,
+  "master_ui_port": 8080,
+  "worker_ui_port": 8081,
 }

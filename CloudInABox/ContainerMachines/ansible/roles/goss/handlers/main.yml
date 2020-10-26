@@ -1,3 +1,7 @@
 ---
-- name: restart goss server
-  shell: "{{ goss_binary['sscript_location'] }}/gosserver_stop || true"
+- name: restart goss service
+  service: name=goss
+           state=restarted
+
+#- name: restart goss server
+#  shell: "{{ goss_binary['sscript_location'] }}/gosserver_stop || true"

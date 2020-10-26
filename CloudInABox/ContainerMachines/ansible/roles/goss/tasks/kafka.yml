@@ -3,4 +3,4 @@
   template: src="goss_kafka_{{ kafka_scala_version }}-{{ kafka_version }}.yaml.j2"
             dest="{{ goss_binary['configad_location'] }}/goss_kafka.yaml"
   notify:
-    - restart goss server
+    - restart goss service

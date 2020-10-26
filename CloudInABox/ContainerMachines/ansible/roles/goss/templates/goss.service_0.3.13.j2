@@ -1,0 +1,13 @@
+[Unit]
+Description=GOSS - Quick and Easy server validation
+After=network.target
+Documentation=https://github.com/aelsabbahy/goss/blob/master/docs/manual.md 
+
+[Service]
+ExecStart=/usr/local/bin/gosserver
+ExecStop=/bin/kill -s QUIT ${MAINPID}
+Restart = on-abnormal
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

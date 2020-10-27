@@ -1,0 +1,15 @@
+[Unit]
+Description=Monitoror - A wallboard monitoring app to monitor server status
+After=network.target
+Documentation=https://monitoror.com/documentation/ 
+
+[Service]
+Environment="MO_PORT={{ monitoror_binary["listen_port"] }}"
+Environment="MO_CONFIG={{ monitoror_binary["config_location"] }}"
+ExecStart={{ monitoror_binary["binary_location"] }}
+ExecStop=/bin/kill -s QUIT ${MAINPID}
+Restart = on-abnormal
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

@@ -44,9 +44,19 @@ tee -a "${FTLSCFGOUFL}" <<EOF
 EOF
 for p in $(echo "${Ports}"|sed 's/,/ /g')
 do
+if echo "${p}" | grep ':' > /dev/null 2>&1
+then
+hstprt="$(echo "${p}" | awk -F':' '{print $1}')"
+ctrprt="$(echo "${p}" | awk -F':' '{print $2}')"
+tee -a "${FTLSCFGOUFL}" <<EOF
+    - containerPort: ${ctrprt}
+      hostPort: ${hstprt}
+EOF
+else
 tee -a "${FTLSCFGOUFL}" <<EOF
     - containerPort: ${p}
 EOF
+fi
 done
 tee -a "${FTLSCFGOUFL}" <<EOF
     privileged: true

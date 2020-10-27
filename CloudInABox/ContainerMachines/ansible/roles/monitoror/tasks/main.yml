@@ -1,19 +1,45 @@
 ---
-- name: render monitoror compose file
-  template: src=monitoror.yml.j2
-            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror.yml"
+- name: deduce current monitoror version
+  shell: if [ -x {{ monitoror_binary["binary_location"] }} ];then {{ monitoror_binary["binary_location"] }} -v|grep 'monitoror version'|awk '{print $(NF-1)}';fi
+  register: monitoror_version_current
 
-- name: render monitoror config file
-  template: src=monitoror_config.json.j2
-            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror_config.json"
+- name: create monitoror bin dir
+  file: path="{{ monitoror_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
 
-- name: render monitoror helper script
-  template: src=monitoror.sh.j2
-            dest="{{ docker_packages['all']['docker_compose_dir'] }}/monitoror.sh"
-            mode='0750'
+- name: download monitoror binary
+  get_url: url="{{ monitoror_binary['download_url'] }}"
+           dest="{{ monitoror_binary['binary_location'] }}"
+           mode='0755'
+           validate_certs=no
+  when: monitoror_version != monitoror_version_current.stdout
 
-- name: render monit config for monitoror
-  template: src=monitoror.j2
-            dest="{{ monit_properties['monit_configad'] }}/monitoror"
+- name: create monitoror config dir
+  file: path="{{ monitoror_binary['config_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: copy monitoror conf
+  copy: src=config.json
+        dest="{{ monitoror_binary['config_location'] }}"
+        mode='0644'
+
+- name: render monitoror systemd service config
+  template: src=monitoror.service_{{ monitoror_version }}.j2
+            dest={{ monitoror_binary["monitoror_srvcnfig"] }}
+  notify:
+    - reload services
+    - restart monitoror service
+
+- name: start and enable monitoror service
+  service: name=monitoror
+           state=started
+           enabled=true
+
+- name: render monitoror monit config
+  template: src="monitoror_{{ monitoror_version }}.j2"
+            dest="{{ monit_properties["monit_configad"] }}/monitoror"
   notify:
     - reload monit configs
+    - restart monitoror service

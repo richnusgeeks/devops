@@ -1,0 +1,5 @@
+check process monitoror matching monitoror
+  start program = "/usr/bin/systemctl start monitoror" with timeout 60 seconds
+  stop program = "/usr/bin/systemctl stop monitoror"
+
+  if failed port {{ monitoror_binary['listen_port'] }} for 6 cycles then restart

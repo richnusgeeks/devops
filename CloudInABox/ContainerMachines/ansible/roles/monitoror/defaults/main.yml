@@ -1,0 +1,13 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+monitoror_version: "4.0.1"
+monitoror_binary: {
+  "download_url": "https://github.com/monitoror/monitoror/releases/download/{{monitoror_version}}/monitoror-linux-amd64-{{monitoror_version}}",
+  "binary_location": "/opt/monitoror/bin/monitoror",
+  "config_location": "/opt/monitoror/conf/config.json",
+  "listen_port": 58080,
+  "monitoror_srvcnfig": "/lib/systemd/system/monitoror.service",
+}

@@ -8,6 +8,18 @@
     - role: docker
       tags: [apply_docker]
 
+- hosts: monitoror
+  become: yes
+  roles:
+    - role: monitoror
+      tags: [apply_monitoror]
+
+- hosts: vigil
+  become: yes
+  roles:
+    - role: vigil
+      tags: [apply_vigil]
+
 - hosts: cassandra
   become: yes
   roles:

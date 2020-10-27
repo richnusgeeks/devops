@@ -8,6 +8,6 @@ monitoror_binary: {
   "download_url": "https://github.com/monitoror/monitoror/releases/download/{{monitoror_version}}/monitoror-linux-amd64-{{monitoror_version}}",
   "binary_location": "/opt/monitoror/bin/monitoror",
   "config_location": "/opt/monitoror/conf/config.json",
-  "listen_port": 58080,
+  "listen_port": 58880,
   "monitoror_srvcnfig": "/lib/systemd/system/monitoror.service",
 }

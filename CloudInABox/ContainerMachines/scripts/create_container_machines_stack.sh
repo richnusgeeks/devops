@@ -17,8 +17,12 @@ ASBLCMDCAS='ansible_cassandra.yml'
 ASBLCMDELS='ansible_elasticsearch.yml'
 ASBLCMDKAF='ansible_kafka.yml'
 ASBLCMDSPR='ansible_spark.yml'
+ASBLCMPMTR='ansible_monitoror.yml'
+ASBLCMPVGL='ansible_vigil.yml'
 DCKRCMPMTR='monitoror.yml'
 DCKRCMPTIR='testinfra.yml'
+SRVCNFGMTR='../configs/monitoror/config.json'
+SRVCNFGVGL='../configs/vigil/config.cfg'
 DCKRCMPVGL='vigil.yml'
 FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSST='footloose_start.yml'
@@ -128,7 +132,74 @@ createASBLInv() {
 
 renderVGLCnfg() {
 
-  true
+  tee "${SRVCNFGVGL}" <<EOF
+[server]
+
+log_level = "debug"
+inet = "0.0.0.0:8080"
+workers = 4
+reporter_token = "REPLACE_THIS_WITH_A_SECRET_KEY"
+
+[assets]
+
+path = "./res/assets/"
+
+[branding]
+
+page_title = "CloudInABox Status"
+page_url = "https://richnusgeeks.com/"
+company_name = "RNG"
+icon_color = "#1972F5"
+icon_url = "https://avatars0.githubusercontent.com/u/226598?s=60&v=4"
+logo_color = "#1972F5"
+logo_url = "https://avatars0.githubusercontent.com/u/226598?s=60&v=4"
+website_url = "https://richnusgeeks.com/"
+support_url = "mailto:richnusgeeks@gmail.com"
+custom_html = ""
+
+[metrics]
+
+poll_interval = 10
+poll_retry = 2
+
+poll_http_status_healthy_above = 200
+poll_http_status_healthy_below = 400
+
+poll_delay_dead = 30
+poll_delay_sick = 10
+
+push_delay_dead = 20
+
+push_system_cpu_sick_above = 0.90
+push_system_ram_sick_above = 0.90
+
+script_interval = 300
+
+local_delay_dead = 40
+
+[notify]
+
+startup_notification = true
+reminder_interval = 300
+
+[notify.email]
+
+from = "status@crisp.chat"
+to = "status@crisp.chat"
+
+smtp_host = "localhost"
+smtp_port = 587
+smtp_username = "user-access"
+smtp_password = "user-password"
+smtp_encrypt = false
+
+[notify.slack]
+
+hook_url = "https://hooks.slack.com/services/xxxx"
+mention_channel = true
+
+
+EOF
 
 }
 
@@ -222,9 +293,9 @@ testASBLRun() {
   elif [[ "${1}" = "monitoror" ]]
   then
     renderMTRCnfg
-    if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPMTR}" up -d
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMPMTR}" up --build
     then
-      exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPMTR} up -d failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMPMTR} up --build failed"
     fi
   elif [[ "${1}" = "testinfra" ]]
   then
@@ -257,9 +328,9 @@ testASBLRun() {
   elif [[ "${1}" = "vigil" ]]
   then
     renderVGLCnfg
-    if ! docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" up --build -d
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMPVGL}" up --build
     then
-      exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPVGL} up -d failed"
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMPVGL} up --build failed"
     fi
   elif [[ "${1}" = "spark" ]]
   then

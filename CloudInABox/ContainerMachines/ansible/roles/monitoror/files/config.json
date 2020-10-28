@@ -22,7 +22,7 @@
     {
       "type": "HTTP-STATUS",
       "params": {
-        "url": "http://localhost:8080"
+        "url": "http://localhost:58880"
       }
     }
   ]

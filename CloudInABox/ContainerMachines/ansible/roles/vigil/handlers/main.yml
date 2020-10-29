@@ -1,0 +1,4 @@
+---
+- name: restart vigil service
+  service: name=vigil
+           state=restarted

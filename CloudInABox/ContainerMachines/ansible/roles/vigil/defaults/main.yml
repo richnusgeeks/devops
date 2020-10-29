@@ -1,0 +1,14 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+vigil_version: "1.18.0"
+vigil_binary: {
+  "archive_name": "v{{ vigil_version }}-x86_64.tar.gz",
+  "download_url": "https://github.com/valeriansaliou/vigil/releases/download/v{{ vigil_version }}/v{{ vigil_version }}-x86_64.tar.gz",
+  "binary_location": "/opt/vigil/bin/vigil",
+  "config_location": "/opt/vigil/conf/config.cfg",
+  "listen_port": 58888,
+  "vigil_srvcnfig": "/lib/systemd/system/vigil.service"
+}

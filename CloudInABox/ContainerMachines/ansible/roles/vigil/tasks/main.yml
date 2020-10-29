@@ -1,0 +1,79 @@
+---
+- name: deduce current vigil version
+  shell: if [ -x {{ vigil_binary["binary_location"] }} ];then {{ vigil_binary["binary_location"] }} -V|grep 'vigil-server'|awk '{print $NF}';fi
+  register: vigil_version_current
+
+- name: download vigil tarball
+  get_url: url="{{ vigil_binary['download_url'] }}"
+           dest="/tmp/{{ vigil_binary['archive_name'] }}"
+           validate_certs=no
+  when: vigil_version != vigil_version_current.stdout
+
+- name: install tar on amazonlinux2
+  yum: name=tar
+       state=present
+  when: ansible_distribution|lower == "amazon"
+
+- name: untar vigil tarball
+  unarchive: src="/tmp/{{ vigil_binary["archive_name"] }}"
+             dest="/tmp"
+             remote_src=yes
+  when: vigil_version != vigil_version_current.stdout
+
+- name: remove vigil tarball
+  file: path="/tmp/{{ vigil_binary["archive_name"] }}"
+        state=absent
+  when: vigil_version != vigil_version_current.stdout
+
+- name: move vigil directory
+  shell: mv -f /tmp/vigil /opt/vigil
+  when: vigil_version != vigil_version_current.stdout
+
+- name: create vigil bin dir
+  file: path="{{ vigil_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: create vigil config dir
+  file: path="{{ vigil_binary['config_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: move vigil binary
+  shell: mv -f /opt/vigil/vigil {{ vigil_binary['binary_location'] | dirname }}
+  when: vigil_version != vigil_version_current.stdout
+
+- name: move vigil resources
+  shell: mv -f /opt/vigil/res {{ vigil_binary['binary_location'] | dirname }}
+  when: vigil_version != vigil_version_current.stdout
+
+- name: render vigil config
+  template: src=config.cfg_{{ vigil_version }}.j2
+        dest="{{ vigil_binary['config_location'] }}"
+        mode='0644'
+  notify:
+    - restart vigil service
+
+- name: remove vigil default conf
+  file: path="/opt/vigil/config.cfg"
+        state=absent
+  when: vigil_version != vigil_version_current.stdout
+
+- name: render vigil systemd service config
+  template: src=vigil.service_{{ vigil_version }}.j2
+            dest={{ vigil_binary["vigil_srvcnfig"] }}
+  notify:
+    - reload services
+    - restart vigil service
+
+- name: start and enable vigil service
+  service: name=vigil
+           state=started
+           enabled=true
+
+- name: render vigil monit config
+  template: src="vigil_{{ vigil_version }}.j2"
+            dest="{{ monit_properties["monit_configad"] }}/vigil"
+  notify:
+    - reload monit configs
+    - restart vigil service

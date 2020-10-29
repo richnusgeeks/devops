@@ -1,0 +1,148 @@
+[server]
+
+log_level = "debug"
+inet = "0.0.0.0:{{ vigil_binary['listen_port'] }}"
+workers = 4
+reporter_token = "REPLACE_THIS_WITH_A_SECRET_KEY"
+
+[assets]
+
+path = "{{ vigil_binary['binary_location'] | dirname }}/res/assets/"
+
+[branding]
+
+page_title = "CloudInABox Status"
+page_url = "https://richnusgeeks.com/"
+company_name = "RNG"
+icon_color = "#1972F5"
+icon_url = "https://avatars0.githubusercontent.com/u/226598?s=60&v=4"
+logo_color = "#1972F5"
+logo_url = "https://avatars0.githubusercontent.com/u/226598?s=60&v=4"
+website_url = "https://richnusgeeks.com/"
+support_url = "mailto:richnusgeeks@gmail.com"
+custom_html = ""
+
+[metrics]
+
+poll_interval = 10
+poll_retry = 2
+
+poll_http_status_healthy_above = 200
+poll_http_status_healthy_below = 400
+
+poll_delay_dead = 30
+poll_delay_sick = 10
+
+push_delay_dead = 20
+
+push_system_cpu_sick_above = 0.90
+push_system_ram_sick_above = 0.90
+
+script_interval = 300
+
+local_delay_dead = 40
+
+[notify]
+
+startup_notification = true
+reminder_interval = 300
+
+[notify.email]
+
+from = "vigil@richnusgeeks.com"
+to = "vigil@richnusgeeks.com"
+
+smtp_host = "localhost"
+smtp_port = 587
+smtp_username = "user-access"
+smtp_password = "user-password"
+smtp_encrypt = false
+
+[notify.slack]
+
+hook_url = "https://hooks.slack.com/services/xxxx"
+mention_channel = true
+
+[probe]
+
+[[probe.service]]
+
+id = "kafka"
+label = "kafka nodes"
+
+[[probe.service.node]]
+
+id = "kafkaicmp"
+label = "kafka icmp"
+mode = "poll"
+
+replicas = [
+  "icmp://kafka0",
+  "icmp://kafka1",
+  "icmp://kafka2"
+]
+
+[[probe.service.node]]
+
+id = "kafkatcp"
+label = "kafka tcp 58080"
+mode = "poll"
+
+replicas = [
+  "tcp://kafka0:58080",
+  "tcp://kafka1:58080",
+  "tcp://kafka2:58080"
+]
+
+[[probe.service.node]]
+
+id = "kafkahttp"
+label = "kafka http 58080"
+mode = "poll"
+
+replicas = [
+  "http://kafka0:58080/status",
+  "http://kafka1:58080/status",
+  "http://kafka2:58080/status"
+]
+
+[[probe.service]]
+
+id = "spark"
+label = "spark nodes"
+
+[[probe.service.node]]
+
+id = "sparkicmp"
+label = "spark icmp"
+mode = "poll"
+
+replicas = [
+  "icmp://spark0",
+  "icmp://spark1",
+  "icmp://spark2"
+]
+
+[[probe.service.node]]
+
+id = "sparktcp"
+label = "spark tcp 58080"
+mode = "poll"
+
+replicas = [
+  "tcp://spark0:58080",
+  "tcp://spark1:58080",
+  "tcp://spark2:58080"
+]
+
+[[probe.service.node]]
+
+id = "sparkhttp"
+label = "spark http 58080"
+mode = "poll"
+
+replicas = [
+  "http://spark0:58080/status",
+  "http://spark1:58080/status",
+  "http://spark2:58080/status"
+]

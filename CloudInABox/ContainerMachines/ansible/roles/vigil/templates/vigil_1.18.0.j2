@@ -1,0 +1,5 @@
+check process vigil matching vigil
+  start program = "/usr/bin/systemctl start vigil" with timeout 60 seconds
+  stop program = "/usr/bin/systemctl stop vigil"
+
+  if failed port {{ vigil_binary['listen_port'] }} for 6 cycles then restart

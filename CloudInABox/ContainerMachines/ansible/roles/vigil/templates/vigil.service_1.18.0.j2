@@ -6,8 +6,9 @@ Documentation=https://github.com/valeriansaliou/vigil
 [Service]
 ExecStart={{ vigil_binary["binary_location"] }} -c {{ vigil_binary["config_location"] }}
 ExecStop=/bin/kill -s QUIT ${MAINPID}
-Restart = on-abnormal
-StandardOutput=null
+Restart=on-abnormal
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

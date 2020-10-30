@@ -1,25 +1,19 @@
 ---
-#- name: install daemonize on redhat|amazon
-#  yum: name="daemonize"
-#       state=present
-#  when: ansible_os_family|lower == 'redhat' or
-#        ansible_os_family|lower == 'amazon'
+- name: deduce goss curent version
+  shell: if [ -x {{ goss_binary["binary_location"] }} ];then {{ goss_binary["binary_location"] }} -v|grep 'goss version'|awk '{print $NF}'|sed 's/v//';fi
+  register: goss_version_current
 
-- name: debian => update apt package index
-  shell: apt-get update
-  ignore_errors: yes
-  when: ansible_os_family|lower == 'debian'
-
-#- name: debian => install daemonize
-#  apt: name="daemonize"
-#       state=present
-#  when: ansible_os_family|lower == 'debian'
+- name: create goss bin dir
+  file: path="{{ goss_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
 
 - name: download goss binary
   get_url: url="{{ goss_binary['download_url'] }}"
            dest="{{ goss_binary['binary_location'] }}"
            mode='0755'
            validate_certs=no
+  when: goss_version != goss_version_current.stdout
 
 - name: create goss config dir
   file: path="{{ goss_binary['config_location'] }}"
@@ -51,8 +45,8 @@
 
 - name: render goss server script
   template: src="gosserver_{{ goss_version }}.sh.j2"
-            dest="{{ goss_binary['sscript_location'] }}/gosserver"
-            mode='0750'
+            dest="{{ goss_binary['binary_location'] | dirname }}/gosserver"
+            mode='0755'
   notify:
     - restart goss service
 
@@ -67,11 +61,6 @@
   service: name=goss
            state=started
            enabled=true
-
-#- name: render goss server stop script
-#  template: src="gosserver_stop_{{ goss_version }}.sh.j2"
-#            dest="{{ goss_binary['sscript_location'] }}/gosserver_stop"
-#            mode='0750'
 
 - name: render goss monit config
   template: src="goss_{{ goss_version }}.j2"

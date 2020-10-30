@@ -4,10 +4,11 @@ After=network.target
 Documentation=https://github.com/aelsabbahy/goss/blob/master/docs/manual.md 
 
 [Service]
-ExecStart=/usr/local/bin/gosserver
+ExecStart={{ goss_binary['binary_location'] | dirname }}/gosserver
 ExecStop=/bin/kill -s QUIT ${MAINPID}
-Restart = on-abnormal
-StandardOutput=null
+Restart=on-abnormal
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

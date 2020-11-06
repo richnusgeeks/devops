@@ -5,6 +5,7 @@ monit_properties: {
   "monit_archive": "monit-{{ monit_version }}-linux-x64.tar.gz",
   "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/{{ monit_version }}/monit-{{ monit_version }}-linux-x64.tar.gz",
   "monit_execbnfl": "/opt/monit/bin/monit",
+  "monit_configpt": 52812,
   "monit_configfl": "/opt/monit/conf/monitrc",
   "monit_configad": "/opt/monit/conf/monit.d",
   "monit_srvcnfig": "/lib/systemd/system/monit.service"

@@ -1,7 +1,7 @@
 set daemon 10
 set log /var/log/monit.log
 
-set httpd port 2812 and
+set httpd port {{ monit_properties["monit_configpt"] }} and
   use address 0.0.0.0
   allow localhost
   allow 0.0.0.0/0

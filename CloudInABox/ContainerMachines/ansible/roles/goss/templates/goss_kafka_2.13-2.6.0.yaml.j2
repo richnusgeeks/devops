@@ -1,41 +1,32 @@
 addr:
-  tcp://kafka0:{{ kafka_properties["zookeeper_port"] }}:
+{%raw%}{{- range mkSlice "kafka0" "kafka1" "kafka2"}}{%endraw%}
+
+  tcp://{%raw%}{{.}}{%endraw%}:{{ kafka_properties["zookeeper_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka1:{{ kafka_properties["zookeeper_port"] }}:
+  tcp://{%raw%}{{.}}{%endraw%}:{{ kafka_properties["kafka_port"] }}:
     reachable: true
     timeout: 500
-  tcp://kafka2:{{ kafka_properties["zookeeper_port"] }}:
-    reachable: true
-    timeout: 500
-  tcp://kafka0:{{ kafka_properties["kafka_port"] }}:
-    reachable: true
-    timeout: 500
-  tcp://kafka1:{{ kafka_properties["kafka_port"] }}:
-    reachable: true
-    timeout: 500
-  tcp://kafka2:{{ kafka_properties["kafka_port"] }}:
-    reachable: true
-    timeout: 500
+{%raw%}{{end}}{%endraw%}
 
 package:
   {{ kafka_java_version }}:
     installed: true 
 
 port:
-  tcp:2181:
+  tcp:{{ kafka_properties["zookeeper_port"] }}:
     listening: true
     ip:
     - 0.0.0.0
-#  tcp6:2181:
+#  tcp6:{{ kafka_properties["zookeeper_port"] }}:
 #    listening: true
 #    ip:
 #    - ::
-  tcp:9092:
+  tcp:{{ kafka_properties["kafka_port"] }}:
     listening: true
     ip:
     - 0.0.0.0
-#  tcp6:9092:
+#  tcp6:{{ kafka_properties["kafka_port"] }}:
 #    listening: true
 #    ip:
 #    - ::

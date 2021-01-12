@@ -1,0 +1,75 @@
+---
+- name: deduce consul current version
+  shell: if [ -x {{ consul_binary["binary_location"] }} ];then {{ consul_binary["binary_location"] }} version|grep Consul|awk '{print $NF}'|sed 's/v//';fi
+  register: consul_version_current
+
+- name: create consulserver bin directory
+  file: path="{{ consul_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: download consul archive
+  get_url: url="{{ consul_binary['download_url'] }}"
+           dest="/tmp/{{ consul_binary['download_url'] | basename }}"
+           validate_certs=no
+  when: consul_version != consul_version_current.stdout
+
+- name: install unzip for unarchival 
+  yum: name=unzip
+       state=present
+
+- name: unarchive consul archive
+  unarchive: src="/tmp/{{ consul_binary['download_url'] | basename }}"
+             dest="/tmp"
+             remote_src=yes
+  when: consul_version != consul_version_current.stdout
+
+- name: move consul binary
+  shell: mv -f /tmp/{{ consul_binary['binary_location'] | basename }} {{ consul_binary['binary_location'] | dirname }}
+  when: consul_version != consul_version_current.stdout
+
+- name: remove consul archive
+  file: path="/tmp/{{ consul_binary['download_url'] | basename }}"
+        state=absent
+  when: consul_version != consul_version_current.stdout
+
+- name: create consulserver config directory
+  file: path="{{ consul_binary['config_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: create consulserver additional config directory
+  file: path="{{ consul_binary['configad_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: create consulserver data directory
+  file: path="{{ consul_binary['data_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: generate gossip encryption key
+  shell: "if [[ -z $(grep encrypt {{ consul_binary['config_location'] }} | awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ]];then {{ consul_binary['binary_location'] }} keygen;fi"
+  register: gosenckey
+  run_once: true
+
+- name: render consulserver configuration
+  template: src="consul.json.j2"
+            dest="{{ consul_binary['config_location'] }}"
+  when: gosenckey.stdout_lines|length > 0
+  notify:
+    - restart consul server
+
+- name: render consulserver systemd unit
+  template: src="consul.service.j2"
+            dest="{{ consul_binary['consul_srvcnfig'] }}"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart consul server
+
+- name: start and enable consul service
+  service: name=consul
+           state=started
+           enabled=true

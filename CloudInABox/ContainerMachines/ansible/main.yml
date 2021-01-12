@@ -8,6 +8,15 @@
     - role: docker
       tags: [apply_docker]
 
+#    - role: template
+#      tags: [apply_template]
+
+- hosts: consul
+  become: yes
+  roles:
+    - role: consulserver
+      tags: [apply_consul]
+
 - hosts: monitoror
   become: yes
   roles:

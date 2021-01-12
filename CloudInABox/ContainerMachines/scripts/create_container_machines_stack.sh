@@ -11,6 +11,8 @@ FTLSCTDIR='/var/lib/footloose'
 FTLSCTRKY='cluster-key'
 FTLSNTWRK='cldinabox-demo'
 ASBLCMTEST='ansible_test.yml'
+ASBLCMCSRV='ansible_consul.yml'
+ASBLCMCTPL='ansible_template.yml'
 ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
 ASBLCMDCAS='ansible_cassandra.yml'
@@ -77,8 +79,9 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|start|stop|show|
-                         test [ping|goss|docker|cassandra|elasticsearch|
-                               kafka|spark|monitoror|testinfra|vigil]
+                         test [ping|goss|consul|template|docker|
+                               cassandra|elasticsearch|kafka|spark|
+                               monitoror|testinfra|vigil]
                         |delete|cleandelete >"
 EOF
   exit 0
@@ -234,6 +237,8 @@ testASBLRun() {
 
   if [[ ! -z "${1}" ]] && \
      [[ "${1}" != "ping" ]] && \
+     [[ "${1}" != "consul" ]] && \
+     [[ "${1}" != "template" ]] && \
      [[ "${1}" != "goss" ]] && \
      [[ "${1}" != "docker" ]] && \
      [[ "${1}" != "cassandra" ]] && \
@@ -256,6 +261,13 @@ testASBLRun() {
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMTEST}" up --build
     then
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMTEST} up --build failed"
+    fi
+
+  elif [[ "${1}" = "consul" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMCSRV}" up --build
+    then
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMCSRV} up --build failed"
     fi
 
   elif [[ "${1}" = "goss" ]]
@@ -407,3 +419,4 @@ main() {
 
 main 2>&1
 # ./create_container_machines_stack.sh show|grep kafka|awk -F '{8080' '{print $2}'|awk -F '}' '{print $1}'|sed 's/ *//'|sort -n|xargs -I % nc -vz localhost %
+# ./create_container_machines_stack.sh show|sed -n '/^cluster:/,/^NAME/p'|grep -v NAME > footloose.yaml

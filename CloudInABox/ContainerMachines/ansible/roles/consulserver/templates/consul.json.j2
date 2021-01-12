@@ -1,0 +1,14 @@
+{
+  "data_dir": "{{ consul_binary['data_location'] }}",
+  "log_level": "DEBUG",
+  "bootstrap_expect": {{ groups['consul'] | count }},
+  "server": true,
+  "bind_addr": "{%raw%}{{ {%endraw%}GetInterfaceIP{%raw%} \"eth0\" }}{%endraw%}",
+  "retry_join": ["{{groups['consul'] | join(',') | replace(',','\",\"')}}"],
+  "client_addr": "0.0.0.0",
+  "ports": {
+    "http": {{ consul_binary['http_port'] }}
+  },
+  "ui": true,
+  "enable_local_script_checks": true
+}

@@ -1,0 +1,15 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+consul_version: "1.9.1"
+consul_binary: {
+  "download_url": "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip",
+  "binary_location": "/opt/consul/bin/consul",
+  "config_location": "/opt/consul/conf/consul.json",
+  "configad_location": "/opt/consul/conf/consul.d",
+  "data_location": "/opt/consul/data",
+  "http_port": 58500,
+  "consul_srvcnfig": "/lib/systemd/system/consul.service",
+}

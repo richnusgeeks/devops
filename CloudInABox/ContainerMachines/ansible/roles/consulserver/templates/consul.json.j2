@@ -10,5 +10,6 @@
     "http": {{ consul_binary['http_port'] }}
   },
   "ui": true,
+  "encrypt": "{{ gosenckey.stdout_lines[0] }}",
   "enable_local_script_checks": true
 }

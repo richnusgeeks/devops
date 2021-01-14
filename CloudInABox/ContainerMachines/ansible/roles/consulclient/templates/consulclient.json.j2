@@ -1,0 +1,12 @@
+{
+  "data_dir": "{{ consul_binary['data_location'] }}",
+  "log_level": "DEBUG",
+  "server": false,
+  "bind_addr": "{%raw%}{{ {%endraw%}GetInterfaceIP{%raw%} \"eth0\" }}{%endraw%}",
+  "retry_join": ["{{groups['consul'] | join(',') | replace(',','\",\"')}}"],
+  "ports": {
+    "http": {{ consul_binary['http_port'] }}
+  },
+  "encrypt": "{{ gosenckey.stdout_lines[0] }}",
+  "enable_local_script_checks": true
+}

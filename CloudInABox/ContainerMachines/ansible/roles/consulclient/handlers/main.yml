@@ -2,6 +2,6 @@
 - name: reload services
   shell: systemctl daemon-reload
 
-- name: restart consul server
-  service: name=consulserver
+- name: restart consul client
+  service: name=consulclient
            state=restarted

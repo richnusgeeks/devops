@@ -1,0 +1,12 @@
+[Unit]
+Description=consul agent
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{ consul_binary["binary_location"] }} agent -config-file={{ consul_binary["config_location"] }} -config-dir={{ consul_binary["configad_location"] }} -pid-file=/var/run/consul.pid
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

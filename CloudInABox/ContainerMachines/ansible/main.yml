@@ -8,7 +8,13 @@
     - role: docker
       tags: [apply_docker]
 
-#    - role: template
+- hosts: all:!consul
+  become: yes
+  roles:
+    - role: consulclient
+      tags: [apply_client]
+
+#    - role: consultemplate
 #      tags: [apply_template]
 
 - hosts: consul

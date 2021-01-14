@@ -11,5 +11,5 @@ consul_binary: {
   "configad_location": "/opt/consul/conf/consul.d",
   "data_location": "/opt/consul/data",
   "http_port": 58500,
-  "consul_srvcnfig": "/lib/systemd/system/consulserver.service",
+  "consul_srvcnfig": "/lib/systemd/system/consulclient.service",
 }

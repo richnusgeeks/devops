@@ -3,7 +3,7 @@
   shell: if [ -x {{ consul_binary["binary_location"] }} ];then {{ consul_binary["binary_location"] }} version|grep Consul|awk '{print $NF}'|sed 's/v//';fi
   register: consul_version_current
 
-- name: create consulserver bin directory
+- name: create consulclient bin directory
   file: path="{{ consul_binary['binary_location'] | dirname }}"
         state=directory
         recurse=yes
@@ -33,43 +33,43 @@
         state=absent
   when: consul_version != consul_version_current.stdout
 
-- name: create consulserver config directory
+- name: create consulclient config directory
   file: path="{{ consul_binary['config_location'] | dirname }}"
         state=directory
         recurse=yes
 
-- name: create consulserver additional config directory
+- name: create consulclient additional config directory
   file: path="{{ consul_binary['configad_location'] }}"
         state=directory
         recurse=yes
 
-- name: create consulserver data directory
+- name: create consulclient data directory
   file: path="{{ consul_binary['data_location'] }}"
         state=directory
         recurse=yes
 
-- name: generate gossip encryption key
-  shell: "if [[ -z $(grep encrypt {{ consul_binary['config_location'] }} | awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ]];then {{ consul_binary['binary_location'] }} keygen;fi"
+- name: extract gossip encryption key
+  shell: grep encrypt {{ consul_binary['config_location'] }}|awk -F'"' '{print $4}'
+  delegate_to: "{{groups['consul'][0]}}"
   register: gosenckey
-  run_once: true
 
-- name: render consulserver configuration
-  template: src="consulserver.json.j2"
+- name: render consulclient configuration
+  template: src="consulclient.json.j2"
             dest="{{ consul_binary['config_location'] }}"
   when: gosenckey.stdout_lines|length > 0
   notify:
-    - restart consul server
+    - restart consul client
 
-- name: render consulserver systemd unit
-  template: src="consulserver.service.j2"
+- name: render consulclient systemd unit
+  template: src="consulclient.service.j2"
             dest="{{ consul_binary['consul_srvcnfig'] }}"
             owner=root
             group=root
   notify:
     - reload services
-    - restart consul server
+    - restart consul client
 
 - name: start and enable consul service
-  service: name=consulserver
+  service: name=consulclient
            state=started
            enabled=true

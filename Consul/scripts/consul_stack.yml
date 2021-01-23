@@ -3,7 +3,7 @@ version: '2.4'
 services:
 
   consul-agent-1: &consul-agent
-    image: consul${CNSLTAG}
+    image: consul:${CNSLTAG:-1.9}
     volumes:
       - ./configs/agent/:/consul/config/
     command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0 -encrypt \"${SCRTKEY}\""
@@ -40,44 +40,42 @@ services:
   consul-esm:
     depends_on:
       - consul-server-bootstrap
-    image: consul-esm${CESMTAG}
+    image: consul-esm:${CESMTAG:-0.5.0}
     build:
       context: .
       dockerfile: Dockerfile_ConsulESM
-    volumes:
-      - .:/mnt
     environment:
       - CONSUL_HTTP_ADDR=consul-server-bootstrap:8500
-    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-esm -config-dir=/etc/consul-esm.d"
+    command: dockerize -wait tcp://consul-server-bootstrap:8500 consul-esm -config-dir=/etc/consul-esm.d
     mem_limit: 500m
     restart: always
     networks:
       - consul-demo
 
-#  consul-alerts:
-#    depends_on:
-#      - consul-server-bootstrap
-#    image: consul-alerts${CALRTAG}
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_ConsulAlerts
-#    volumes:
-#      - .:/mnt
-#    ports:
-#      - "19000:9000"
-#    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && consul-alerts start --alert-addr=0.0.0.0:9000 --consul-addr=consul-server-bootstrap:8500 --watch-events --watch-checks --log-level=debug"
-#    mem_limit: 500m
-#    restart: always
-#    networks:
-#      - consul-demo
+  consul-alerts:
+    depends_on:
+      - consul-server-bootstrap
+    image: consul-alerts:${CALRTAG:-0.6.0}
+    build:
+      context: .
+      dockerfile: Dockerfile_ConsulAlerts
+    ports:
+      - "19000:9000"
+    entrypoint: dockerize -wait tcp://consul-server-bootstrap:8500 consul-alerts start --alert-addr=0.0.0.0:9000 --consul-addr=consul-server-bootstrap:8500 --watch-events --watch-checks --log-level=debug
+    mem_limit: 500m
+    restart: always
+    networks:
+      - consul-demo
 
   hashiui:
     depends_on:
       - consul-server-bootstrap
-    image: jippi/hashi-ui${HSUITAG}
+    image: hashi-ui:${HSUITAG:-1.3.8}
+    build:
+      context: .
+      dockerfile: Dockerfile_HashiUI
     volumes:
       - ./certs/out:/etc/ssl/certs
-      - .:/mnt
     ports:
       - "3000:3000"
     environment:
@@ -87,7 +85,7 @@ services:
       - HTTPS_ENABLE=true
       - SERVER_CERT=/etc/ssl/certs/test.crt
       - SERVER_KEY=/etc/ssl/certs/test.key
-    command: sh -c "/mnt/wait-for-command.sh -c 'nc -vz consul-server-bootstrap 8500' -s 0 && /hashi-ui"
+    command: dockerize -wait tcp://consul-server-bootstrap:8500 hashi-ui
     mem_limit: 500m
     restart: always
     networks:
@@ -96,7 +94,7 @@ services:
   consulbench:
     depends_on:
       - hashiui
-    image: consulbench${CNSBTAG}
+    image: consulbench:${CNSBTAG:-0.0.1}
     build:
       context: .
       dockerfile: Dockerfile_ConsulBench
@@ -106,7 +104,7 @@ services:
       - consul-demo
 
   echoserver:
-    image: echoserver${ESVRTAG}
+    image: echoserver:${ESVRTAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile_EchoServer
@@ -120,7 +118,7 @@ services:
   testclient:
     depends_on:
       - echoserver
-    image: alpine${TSTCTAG}
+    image: alpine:${TSTCTAG:-3.13}
     command: sh -c "echo 'hello to socat from nc' | nc echoserver 8181"
     mem_limit: 250m
     networks:

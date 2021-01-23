@@ -55,6 +55,8 @@ parseArgs() {
     printUsage
   fi
 
+  export COMPOSE_IGNORE_ORPHANS=1
+
 }
 
 genScrtKey() {

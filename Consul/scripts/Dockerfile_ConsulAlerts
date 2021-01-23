@@ -1,15 +1,31 @@
-FROM alpine:3.11
+FROM golang:alpine AS builder
 
-ENV GOPATH /go
+RUN apk add --no-cache git && \
+    go get github.com/fusiondog/consul-alerts
 
-RUN mkdir -p /go && \
-    apk add --no-cache bash ca-certificates git go alpine-sdk && \
-    go get -v github.com/AcalephStorage/consul-alerts && \
-    mv /go/bin/consul-alerts /bin && \
-    go get -v github.com/hashicorp/consul && \
-    mv /go/bin/consul /bin && \
-    rm -rf /go && \
-    apk del --purge go git alpine-sdk
+FROM consul:1.9 AS consul
 
+FROM alpine:3.13 AS dockerize
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget --no-check-certificate https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && echo "**** fix for host id mapping error ****" \
+    && chown root:root /usr/local/bin/dockerize
+
+#FROM scratch
+FROM alpine:3.13 AS tlacptst
+
+RUN apk add --update --no-cache ca-certificates tzdata
+
+# set up nsswitch.conf for Go's "netgo" implementation
+# https://github.com/gliderlabs/docker-alpine/issues/367#issuecomment-424546457
+RUN test ! -e /etc/nsswitch.conf && echo 'hosts: files dns' > /etc/nsswitch.conf
+
+COPY --from=builder /go/bin/consul-alerts /usr/local/bin
+COPY --from=consul /bin/consul /usr/local/bin
+COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin
 EXPOSE 9000
-CMD ["consul-alerts"]
+#ENTRYPOINT ["consul-alerts"]
+#CMD ["--version"]

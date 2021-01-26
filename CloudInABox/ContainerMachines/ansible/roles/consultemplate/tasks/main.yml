@@ -1,0 +1,60 @@
+---
+- name: deduce consultemplate current version
+  shell: if [ -x {{ consultemplate_binary["binary_location"] }} ];then {{ consultemplate_binary["binary_location"] }} -v|awk '{print $(NF-1)}'|sed 's/v//';fi
+  register: consultemplate_version_current
+
+- name: create consultemplate bin directory
+  file: path="{{ consultemplate_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: download consultemplate archive
+  get_url: url="{{ consultemplate_binary['download_url'] }}"
+           dest="/tmp/{{ consultemplate_binary['download_url'] | basename }}"
+           validate_certs=no
+  when: consultemplate_version != consultemplate_version_current.stdout
+
+- name: unarchive consultemplate archive
+  unarchive: src="/tmp/{{ consultemplate_binary['download_url'] | basename }}"
+             dest="/tmp"
+             remote_src=yes
+  when: consultemplate_version != consultemplate_version_current.stdout
+
+- name: move consultemplate binary
+  shell: mv -f /tmp/{{ consultemplate_binary['binary_location'] | basename }} {{ consultemplate_binary['binary_location'] | dirname }}
+  when: consultemplate_version != consultemplate_version_current.stdout
+
+- name: remove consultemplate archive
+  file: path="/tmp/{{ consultemplate_binary['download_url'] | basename }}"
+        state=absent
+  when: consultemplate_version != consultemplate_version_current.stdout
+
+- name: create consultemplate config directory
+  file: path="{{ consultemplate_binary['config_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: create consultemplate additional config directory
+  file: path="{{ consultemplate_binary['configad_location'] }}"
+        state=directory
+        recurse=yes
+
+- name: render consultemplate configuration
+  template: src="consultemplate.hcl.j2"
+            dest="{{ consultemplate_binary['config_location'] }}"
+  notify:
+    - restart consul template
+
+- name: render consultemplate systemd unit
+  template: src="consultemplate.service.j2"
+            dest="{{ consultemplate_binary['consultemplate_srvcnfig'] }}"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart consul template
+
+- name: start and enable consul service
+  service: name=consultemplate
+           state=started
+           enabled=true

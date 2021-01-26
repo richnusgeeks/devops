@@ -1,0 +1,12 @@
+[Unit]
+Description=consultemplate agent
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+ExecStart={{ consultemplate_binary["binary_location"] }} -config={{ consultemplate_binary["config_location"] }} -config={{ consultemplate_binary["configad_location"] }}
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

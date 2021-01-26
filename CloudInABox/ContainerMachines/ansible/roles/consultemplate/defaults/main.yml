@@ -1,0 +1,14 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+consultemplate_version: "0.25.1"
+consultemplate_binary: {
+  "download_url": "https://releases.hashicorp.com/consultemplate-template/{{ consul_version }}/consul-template_{{ consul_version }}_linux_amd64.tgz",
+  "binary_location": "/opt/consultemplatetemplate/bin/consul-template",
+  "config_location": "/opt/consultemplatetemplate/conf/template.hcl",
+  "configad_location": "/opt/consultemplatetemplate/conf/template.d",
+  "consul_port": 58500,
+  "consultemplate_srvcnfig": "/lib/systemd/system/consultemplate.service",
+}

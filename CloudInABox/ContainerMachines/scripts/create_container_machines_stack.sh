@@ -461,4 +461,4 @@ main() {
 
 main 2>&1
 # ./create_container_machines_stack.sh show|grep kafka|awk -F '{8080' '{print $2}'|awk -F '}' '{print $1}'|sed 's/ *//'|sort -n|xargs -I % nc -vz localhost %
-# ./create_container_machines_stack.sh show|sed -n '/^cluster:/,/^NAME/p'|grep -v NAME > footloose.yaml
+# ./create_container_machines_stack.sh show|sed -n '/^NAME/,$p'|grep -v NAME|awk -F"  +" '{print $2,"  ,",$3}'|awk -F"," '{for(i=1; i<=NF; i++) if($i ~ /58080/) print $1,$i}'|sed -e 's/[0-9]\->//' -e 's/ \{2,\}/ /'

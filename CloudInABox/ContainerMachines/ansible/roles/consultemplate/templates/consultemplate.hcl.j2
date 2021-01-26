@@ -1,0 +1,23 @@
+consul {
+
+  address = "127.0.0.1:{{ consul_port }}"
+
+  retry {
+
+    enabled = true
+    attempts = 12
+    backoff = "250ms"
+    max_backoff = "1m"
+
+  }
+
+}
+
+log_level = "debug"
+
+wait {
+
+  min = "5s"
+  max = "10s"
+
+}

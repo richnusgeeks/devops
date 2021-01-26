@@ -1,0 +1,59 @@
+---
+- name: deduce consulesm current version
+  shell: if [ -x {{ consulesm_binary["binary_location"] }} ];then {{ consulesm_binary["binary_location"] }} -version|head -1|sed 's/v//';fi
+  register: consulesm_version_current
+
+- name: create consulesm bin directory
+  file: path="{{ consulesm_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: download consulesm archive
+  get_url: url="{{ consulesm_binary['download_url'] }}"
+           dest="/tmp/{{ consulesm_binary['download_url'] | basename }}"
+           validate_certs=no
+  when: consulesm_version != consulesm_version_current.stdout
+
+- name: install unzip for unarchival 
+  yum: name=unzip
+       state=present
+
+- name: unarchive consulesm archive
+  unarchive: src="/tmp/{{ consulesm_binary['download_url'] | basename }}"
+             dest="/tmp"
+             remote_src=yes
+  when: consulesm_version != consulesm_version_current.stdout
+
+- name: move consulesm binary
+  shell: mv -f /tmp/{{ consulesm_binary['binary_location'] | basename }} {{ consulesm_binary['binary_location'] | dirname }}
+  when: consulesm_version != consulesm_version_current.stdout
+
+- name: remove consulesm archive
+  file: path="/tmp/{{ consulesm_binary['download_url'] | basename }}"
+        state=absent
+  when: consulesm_version != consulesm_version_current.stdout
+
+- name: create consulesm config directory
+  file: path="{{ consulesm_binary['config_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: render consulesm configuration
+  template: src="consul-esm.hcl.j2"
+            dest="{{ consulesm_binary['config_location'] }}"
+  notify:
+    - restart consulesm
+
+- name: render consulesm systemd unit
+  template: src="consulesm.service.j2"
+            dest="{{ consulesm_binary['consulesm_srvcnfig'] }}"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart consulesm
+
+- name: start and enable consulesm service
+  service: name=consulesm
+           state=started
+           enabled=true

@@ -1,0 +1,13 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+consulesm_version: "0.5.0"
+consulesm_binary: {
+  "download_url": "https://releases.hashicorp.com/consul-esm/{{ consulesm_version }}/consul-esm_{{ consulesm_version }}_linux_amd64.zip",
+  "binary_location": "/opt/consulesm/bin/consul-esm",
+  "config_location": "/opt/consulesm/conf/consul-esm.hcl",
+  "consul_port": 58500,
+  "consulesm_srvcnfig": "/lib/systemd/system/consulesm.service",
+}

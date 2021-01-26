@@ -15,6 +15,7 @@ ASBLCMCSRV='ansible_cnslsrvr.yml'
 ASBLCMCLNT='ansible_cnslclnt.yml'
 ASBLCMCTPL='ansible_cnsltmplt.yml'
 ASBLCMHSUI='ansible_hashiui.yml'
+ASBLCMCESM='ansible_cnslesm.yml'
 ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
 ASBLCMDCAS='ansible_cassandra.yml'
@@ -83,8 +84,8 @@ printUsage() {
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|start|stop|show|
                          test [ping|goss|consulserver|consulclient|
-                               hashiui|consultemplate|docker|cassandra|
-                               elasticsearch|kafka|spark|
+                               consulesm|hashiui|consultemplate|docker|
+                               cassandra|elasticsearch|kafka|spark|
                                monitoror|testinfra|vigil]
                         |delete|cleandelete|config >"
 EOF
@@ -244,8 +245,9 @@ testASBLRun() {
      [[ "${1}" != "ping" ]] && \
      [[ "${1}" != "consulserver" ]] && \
      [[ "${1}" != "consulclient" ]] && \
-     [[ "${1}" != "hashiui" ]] && \
      [[ "${1}" != "consultemplate" ]] && \
+     [[ "${1}" != "consulesm" ]] && \
+     [[ "${1}" != "hashiui" ]] && \
      [[ "${1}" != "goss" ]] && \
      [[ "${1}" != "docker" ]] && \
      [[ "${1}" != "cassandra" ]] && \
@@ -282,6 +284,13 @@ testASBLRun() {
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMCLNT}" up --build
     then
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMCLNT} up --build failed"
+    fi
+
+  elif [[ "${1}" = "consulesm" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMCESM}" up --build
+    then
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMCESM} up --build failed"
     fi
 
   elif [[ "${1}" = "hashiui" ]]

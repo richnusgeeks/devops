@@ -1,0 +1,31 @@
+---
+- name: create hashiui bin directory
+  file: path="{{ hashiui_binary['binary_location'] | dirname }}"
+        state=directory
+        recurse=yes
+
+- name: download hashiui archive
+  get_url: url="{{ hashiui_binary['download_url'] }}"
+           dest="/tmp/{{ hashiui_binary['download_url'] | basename }}"
+           validate_certs=no
+
+- name: move hashiui binary
+  shell: mv -f /tmp/{{ hashiui_binary['download_url'] | basename }} {{ hashiui_binary['binary_location'] }}
+
+- name: set mode for hashiui binary
+  file: path={{ hashiui_binary["binary_location"] }}
+        mode='0750'
+
+- name: render hashiui systemd unit
+  template: src="hashiui.service.j2"
+            dest="{{ hashiui_binary['hashiui_srvcnfig'] }}"
+            owner=root
+            group=root
+  notify:
+    - reload services
+    - restart hashiui
+
+- name: start and enable hashiui service
+  service: name=hashiui
+           state=started
+           enabled=true

@@ -8,20 +8,32 @@
     - role: docker
       tags: [apply_docker]
 
+- hosts: consul
+  become: yes
+  roles:
+    - role: consulserver
+      tags: [apply_server]
+
 - hosts: all:!consul
   become: yes
   roles:
     - role: consulclient
       tags: [apply_client]
 
-#    - role: consultemplate
-#      tags: [apply_template]
+    - role: consultemplate
+      tags: [apply_template]
 
-- hosts: consul
+- hosts: hashiui
   become: yes
   roles:
-    - role: consulserver
-      tags: [apply_consul]
+    - role: hashiui
+      tags: [apply_hashiui]
+
+- hosts: all
+  become: yes
+  roles:
+    - role: goss
+      tags: [apply_goss]
 
 - hosts: monitoror
   become: yes

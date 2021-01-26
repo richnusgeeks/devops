@@ -1,0 +1,13 @@
+---
+monit_properties: {
+  "monit_configad": "/opt/monit/conf/monit.d",
+}
+
+hashiui_version: "1.3.8"
+hashiui_binary: {
+  "download_url": "https://github.com/jippi/hashi-ui/releases/download/v{{ hashiui_version }}/hashi-ui-linux-amd64",
+  "binary_location": "/opt/hashiui/bin/hashiui",
+  "http_port": 53000,
+  "client_port": 58500,
+  "hashiui_srvcnfig": "/lib/systemd/system/hashiui.service",
+}

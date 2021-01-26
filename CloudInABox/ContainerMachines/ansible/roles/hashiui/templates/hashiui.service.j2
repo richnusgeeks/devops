@@ -1,0 +1,19 @@
+[Unit]
+Description=hashiui
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Environment=LISTEN_ADDRESS={{ ansible_eth0.ipv4.address }}:{{ hashiui_binary["http_port"] }}
+# Seems a hashiui bug as false doesn't turn off https
+#Environment=HTTPS_ENABLE=false
+Environment=CONSUL_ADDR=127.0.0.1:{{ hashiui_binary["client_port"] }}
+Environment=CONSUL_ENABLE=true
+Environment=CONSUL_READ_ONLY=true
+
+Restart=on-failure
+ExecStart={{ hashiui_binary["binary_location"] }}
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

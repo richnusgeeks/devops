@@ -14,6 +14,7 @@ ASBLCMTEST='ansible_test.yml'
 ASBLCMCSRV='ansible_cnslsrvr.yml'
 ASBLCMCLNT='ansible_cnslclnt.yml'
 ASBLCMCTPL='ansible_cnsltmplt.yml'
+ASBLCMHSUI='ansible_hashiui.yml'
 ASBLCMDGOS='ansible_goss.yml'
 ASBLCMDCKR='ansible_docker.yml'
 ASBLCMDCAS='ansible_cassandra.yml'
@@ -31,6 +32,7 @@ FTLSCMPSCT='footloose_create.yml'
 FTLSCMPSST='footloose_start.yml'
 FTLSCMPSSP='footloose_stop.yml'
 FTLSCMPSDL='footloose_delete.yml'
+FTLSCNFGFL='footloose.yaml'
 RQRDCMNDS="awk
            cat
            chmod
@@ -81,10 +83,10 @@ printUsage() {
   cat <<EOF
  Usage: $(basename $0) < create|buildcreate|start|stop|show|
                          test [ping|goss|consulserver|consulclient|
-                               consultemplate|docker|cassandra|
+                               hashiui|consultemplate|docker|cassandra|
                                elasticsearch|kafka|spark|
                                monitoror|testinfra|vigil]
-                        |delete|cleandelete >"
+                        |delete|cleandelete|config >"
 EOF
   exit 0
 
@@ -103,8 +105,9 @@ parseArgs() {
      [[ "${OPTN}" != "stop" ]] && \
      [[ "${OPTN}" != "show" ]] && \
      [[ "${OPTN}" != "test" ]] && \
-     [[ "${OPTN}" != "delete" ]] &&
-     [[ "${OPTN}" != "cleandelete" ]]
+     [[ "${OPTN}" != "delete" ]] && \
+     [[ "${OPTN}" != "cleandelete" ]] && \
+     [[ "${OPTN}" != "config" ]]
 
   then
     printUsage
@@ -241,6 +244,7 @@ testASBLRun() {
      [[ "${1}" != "ping" ]] && \
      [[ "${1}" != "consulserver" ]] && \
      [[ "${1}" != "consulclient" ]] && \
+     [[ "${1}" != "hashiui" ]] && \
      [[ "${1}" != "consultemplate" ]] && \
      [[ "${1}" != "goss" ]] && \
      [[ "${1}" != "docker" ]] && \
@@ -278,6 +282,13 @@ testASBLRun() {
     if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMCLNT}" up --build
     then
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMCLNT} up --build failed"
+    fi
+
+  elif [[ "${1}" = "hashiui" ]]
+  then
+    if ! docker-compose -f "${CMPSFLDIR}/${ASBLCMHSUI}" up --build
+    then
+      exitOnErr "docker-compose -f ${CMPSFLDIR}/${ASBLCMHSUI} up --build failed"
     fi
 
   elif [[ "${1}" = "consultemplate" ]]
@@ -411,7 +422,8 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" down
     docker network rm "${FTLSNTWRK}"
-    rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
+    rm -f "${FTLSCTRKY}" "${FTLSCNFGFL}" \
+	  "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
@@ -422,7 +434,8 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPTIR}" down
     docker-compose -f "${CMPSFLDIR}/${DCKRCMPVGL}" down
     docker network rm "${FTLSNTWRK}"
-    rm -f "${FTLSCTRKY}" "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
+    rm -f "${FTLSCTRKY}" "${FTLSCNFGFL}" \
+	  "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then
@@ -430,6 +443,9 @@ main() {
   elif [[ "${OPTN}" = "show" ]]
   then
     showFTLStack
+  elif [[ "${OPTN}" = "config" ]]
+  then
+    showFTLStack|sed -n '/^cluster:/,/^NAME/p'|grep -v NAME > "${FTLSCNFGFL}"
   fi
 
 }

@@ -9,7 +9,7 @@ services:
        dockerfile: Dockerfile_Ansible
      volumes:
        - ../ansible:/etc/ansible:ro
-     command: main.yml -t apply_server
+     command: main.yml -t apply_hashiui
      mem_limit: 500m
 #     network_mode: host
 networks:

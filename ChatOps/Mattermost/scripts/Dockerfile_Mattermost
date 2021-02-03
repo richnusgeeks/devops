@@ -1,0 +1,11 @@
+FROM alpine as downloader
+
+ENV RAVEN_VERSION 3.2.2
+
+RUN wget https://github.com/standup-raven/standup-raven/releases/download/v${RAVEN_VERSION}/mattermost-plugin-standup-raven-v${RAVEN_VERSION}-linux-amd64.tar.gz
+
+FROM mattermost/mattermost-preview:latest
+
+ENV RAVEN_VERSION 3.2.2
+
+COPY --from=downloader /mattermost-plugin-standup-raven-v${RAVEN_VERSION}-linux-amd64.tar.gz /mm/mattermost/prepackaged_plugins/

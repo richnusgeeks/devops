@@ -22,7 +22,8 @@ services:
       - "${TMPDIR:-/tmp/terraform}:/tmp/terraform"
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - "14566-14599:4566-4599"
+      - "14566:4566"
+      - "14571:4571"
       - "${PORT_WEB_UI-18080}:${PORT_WEB_UI-18080}"
     environment:
       - SERVICES=${SERVICES- }

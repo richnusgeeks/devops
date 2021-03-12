@@ -1,8 +1,6 @@
-# cat cloud-config.yaml|multipass launch -n test --cloud-init -
+# cat cloud-config.yaml|multipass launch -m 2G -n test --cloud-init -
 # ssh -oStrictHostKeyChecking=no ubuntu@test.local
-# multipass delete test
-# multipass purge
-# ssh-keygen -R test.localhost
+# multipass delete test && multipass purge && ssh-keygen -R test.localhost
 #cloud-config
 users:
   - default
@@ -14,11 +12,12 @@ users:
     ssh_import_id: None
     lock_passwd: true
     ssh_authorized_keys:
-      - <public key>
+      - PUBLICKEY
 package_update: true
 package_upgrade: true
 packages:
   - avahi-daemon
+  - openjdk-8-jre-headless
 write_files:
   - content: |
       set daemon 10
@@ -44,13 +43,49 @@ write_files:
     path: /opt/monit/monit.d/spaceinode
     owner: root:root
     permissions: '0600'
+  - content: |
+      check process zookeeper matching zookeeper
+        start program = "/opt/kafka/bin/zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper.properties" with timeout 60 seconds
+        if failed port 2181 for 6 cycles then restart
+
+      check process kafka matching kafkaServer
+        depends on zookeeper
+        start program = "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties" with timeout 60 seconds
+        if failed port 9092 for 6 cycles then restart
+    path: /opt/monit/monit.d/zkprkfk
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      [Unit]
+      Description=Pro-active monitoring utility for unix systems
+      After=network.target
+      Documentation=man:monit(1) https://mmonit.com/wiki/Monit/HowTo
+
+      [Service]
+      Type=simple
+      KillMode=process
+      ExecStart=/opt/monit/bin/monit -I -c /opt/monit/conf/monitrc
+      ExecStop=/opt/monit/bin/monit -c /opt/monit/conf/monitrc quit
+      ExecReload=/opt/monit/bin/monit -c /opt/monit/conf/monitrc reload
+      Restart = on-abnormal
+      StandardOutput=null
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /lib/systemd/system/monit.service
+    owner: root:root
+    permissions: '0600'
 runcmd:
   - [ wget, "https://mmonit.com/monit/dist/binary/5.27.0/monit-5.27.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
   - [ cp, monit-5.27.0/bin/monit, /opt/monit/bin/monit ]
   - [ rm, -rfv, monit.tgz, monit-5.27.0 ]
-  - /opt/monit/bin/monit -c /opt/monit/conf/monitrc
+  - wget "https://apache.claz.org/kafka/2.7.0/kafka_2.13-2.7.0.tgz" -O kafka.tgz
+  - tar zxvf kafka.tgz
+  - mv kafka_2.13-2.7.0 /opt/kafka
+  - rm -rfv kafka.tgz
+  - systemctl start monit
 output:
   init:
     output: "> /var/log/cloud-init.out"

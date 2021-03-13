@@ -1,6 +1,6 @@
-# cat cloud-config.yaml|multipass launch -m 2G -n test --cloud-init -
-# ssh -oStrictHostKeyChecking=no ubuntu@test.local
-# multipass delete test && multipass purge && ssh-keygen -R test.localhost
+# cat cloud-config-kafka.yaml|multipass launch -m 2G -n kafka --cloud-init -
+# ssh -oStrictHostKeyChecking=no ubuntu@kafka.local
+# multipass delete kafka && multipass purge && ssh-keygen -R kafka.local
 #cloud-config
 users:
   - default

@@ -1,0 +1,92 @@
+# cat cloud-config-spark.yaml|multipass launch -m 2G -n spark --cloud-init -
+# ssh -oStrictHostKeyChecking=no ubuntu@spark.local
+# multipass delete spark && multipass purge && ssh-keygen -R spark.local
+#cloud-config
+users:
+  - default
+  - name: ubuntu
+    gecos: Ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    ssh_import_id: None
+    lock_passwd: true
+    ssh_authorized_keys:
+      - PUBLICKEY
+package_update: true
+package_upgrade: true
+packages:
+  - avahi-daemon
+  - openjdk-8-jre-headless
+write_files:
+  - content: |
+      set daemon 10
+      set log /var/log/monit.log
+
+      set mail-format { from: monit@richnusgeeks.demo }
+
+      set httpd port 2812 and
+        use address 0.0.0.0
+        allow localhost
+        allow 0.0.0.0/0
+        allow admin:monit
+        allow guest:guest readonly
+
+      include /opt/monit/monit.d/*
+    path: /opt/monit/conf/monitrc
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      check filesystem rootfs with path /
+        if space usage > 90% then alert
+        if inode usage > 90% then alert
+    path: /opt/monit/monit.d/spaceinode
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      check process sparkmaster matching master
+        start program = "/opt/spark/sbin/start-master.sh" with timeout 300 seconds
+        stop program = "/opt/spark/sbin/stop-master.sh" with timeout 300 seconds
+        if failed port 8080 for 30 cycles then restart
+    path: /opt/monit/monit.d/sparkmaster
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      [Unit]
+      Description=Pro-active monitoring utility for unix systems
+      After=network.target
+      Documentation=man:monit(1) https://mmonit.com/wiki/Monit/HowTo
+
+      [Service]
+      Type=simple
+      KillMode=process
+      ExecStart=/opt/monit/bin/monit -I -c /opt/monit/conf/monitrc
+      ExecStop=/opt/monit/bin/monit -c /opt/monit/conf/monitrc quit
+      ExecReload=/opt/monit/bin/monit -c /opt/monit/conf/monitrc reload
+      Restart = on-abnormal
+      StandardOutput=null
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /lib/systemd/system/monit.service
+    owner: root:root
+    permissions: '0600'
+runcmd:
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.27.0/monit-5.27.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ tar, zxvf, monit.tgz ]
+  - [ mkdir, /opt/monit/bin ]
+  - [ cp, monit-5.27.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.27.0 ]
+  - wget "https://apache.osuosl.org/spark/spark-3.1.1/spark-3.1.1-bin-hadoop2.7.tgz" -O spark.tgz
+  - tar zxvf spark.tgz
+  - mv spark-3.1.1-bin-hadoop2.7 /opt/spark
+  - rm -rfv spark.tgz
+  - systemctl start monit
+output:
+  init:
+    output: "> /var/log/cloud-init.out"
+    error: "> /var/log/cloud-init.err"
+  config: "tee -a /var/log/cloud-config.log"
+  final:
+    - ">> /var/log/cloud-final.out"
+    - "/var/log/cloud-final.err"

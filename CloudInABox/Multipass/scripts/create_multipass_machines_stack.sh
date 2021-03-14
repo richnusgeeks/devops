@@ -3,15 +3,19 @@
 OPTN=${1}
 OPTNTST=${2}
 NUMOPTNMX=3
-DLYTOMSTL=5
-INSTCFDIR='.'
-INSTCFILE='instances.list'
-declare -A instancesDict
+DLYTOMSTL=3
+CLDCNFGDR='.'
+MEMAMOUNT='2G'
+PUBKEYLOC="${HOME}/.ssh/id_rsa.pub"
 RQRDCMNDS="awk
+           basename
            cat
            date
            grep
-           multipass"
+           multipass
+           sed
+           ssh
+           ssh-keygen"
 
 preReq() {
 
@@ -36,9 +40,9 @@ exitOnErr() {
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0) < create|start|stop|show|
-                         test [ping|goss|docker|cassandra|elasticsearch|
-                               kafka|spark|monitoror]
+ Usage: $(basename $0) < ping|start|stop|show|
+                         create [cassandra|consuldev|elasticsearch|
+                                 kafka|nomadev|spark|vaultdev]
                         |delete|cleandelete >"
 EOF
   exit 0
@@ -53,28 +57,33 @@ parseArgs() {
   fi
 
   if [[ "${OPTN}" != "create" ]] && \
+     [[ "${OPTN}" != "cleandelete" ]] && \
+     [[ "${OPTN}" != "delete" ]] && \
+     [[ "${OPTN}" != "ping" ]] && \
      [[ "${OPTN}" != "start" ]] && \
      [[ "${OPTN}" != "stop" ]] && \
-     [[ "${OPTN}" != "show" ]] && \
-     [[ "${OPTN}" != "test" ]] && \
-     [[ "${OPTN}" != "delete" ]]
-
+     [[ "${OPTN}" != "show" ]]
   then
     printUsage
   fi
 
   if [[ "${OPTN}" = "create" ]]
   then
-    if [[ ! -f "${INSTCFDIR}/${INSTCFILE}" ]]
+    if [[ "${OPTNTST}" != "cassandra" ]]     && \
+       [[ "${OPTNTST}" != "consuldev" ]]     && \
+       [[ "${OPTNTST}" != "elasticsearch" ]] && \
+       [[ "${OPTNTST}" != "kafka" ]]         && \
+       [[ "${OPTNTST}" != "nomadev" ]]       && \
+       [[ "${OPTNTST}" != "spark" ]]         && \
+       [[ "${OPTNTST}" != "vaultdev" ]]
     then
-      echo " Error: instances listing file ${INSTCFDIR}/${INSTCFILE} not found, exiting ..."
-      exit -1
+      printUsage
     fi
   fi
 
 }
 
-showMLPSStack() {
+showMLPStack() {
 
   if ! multipass ls
   then
@@ -83,7 +92,7 @@ showMLPSStack() {
 
 }
 
-startMLPSStack() {
+startMLPStack() {
 
   if ! multipass start --all
   then
@@ -92,7 +101,7 @@ startMLPSStack() {
 
 }
 
-stopMLPSStack() {
+stopMLPStack() {
 
   if ! multipass stop --all
   then
@@ -101,7 +110,19 @@ stopMLPSStack() {
 
 }
 
-deleteMLPSStack() {
+deleteMLPStack() {
+
+  if ! multipass delete --all
+  then
+    exitOnErr "multipass delete --all failed"
+  fi
+
+}
+
+clndlteMLPStack() {
+
+  multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
+                 xargs -I % ssh-keygen -R %.local
 
   if ! multipass delete --all -p
   then
@@ -112,60 +133,43 @@ deleteMLPSStack() {
 
 setupStack() {
 
-  if [[ "${1}" = "goss" ]] || \
-     [[ "${1}" = "docker" ]]
+  if [[ ! -f "${CLDCNFGDR}/cloud-config-${1}.yaml" ]]
   then
-    for i in $(showMLPSStack | grep -v Name | awk '{print $3}')
-    do
-      if ! multipass transfer 
-    done
-  else
-    for i in $(showMLPSStack | grep -v Name | grep "${1}" | awk '{print $3}')
-    do
-
-    done
+    exitOnErr "required ${CLDCNFGDR}/cloud-config-${1}.yaml not found"
   fi
+
+  local pubkey="$(cat ${PUBKEYLOC})"
+  if ! sed -i.orig "s|PUBLICKEY|${pubkey}|" "${CLDCNFGDR}/cloud-config-${1}.yaml"
+  then
+    exitOnErr "sed -i.orig \"s|PUBLICKEY|\${pubkey}|\" ${CLDCNFGDR}/cloud-config-${1}.yaml failed"
+  fi
+
+  if ! cat "cloud-config-${1}.yaml"|multipass launch -m "${MEMAMOUNT}" -n "${1}" --cloud-init -
+  then
+    mv -f cloud-config-${1}.yaml{.orig,}
+    exitOnErr "multipass launch -m ${MEMAMOUNT} -n "${1}" --cloud-init cloud-config-${1}.yaml failed"
+  fi
+
+  mv -f cloud-config-${1}.yaml{.orig,}
 
 }
 
-testMLPSRun() {
+pingStack() {
 
-  if [[ ! -z "${1}" ]] && \
-     [[ "${1}" != "ping" ]] && \
-     [[ "${1}" != "goss" ]] && \
-     [[ "${1}" != "docker" ]] && \
-     [[ "${1}" != "cassandra" ]] && \
-     [[ "${1}" != "elasticsearch" ]] && \
-     [[ "${1}" != "kafka" ]] && \
-     [[ "${1}" != "monitoror" ]] && \
-     [[ "${1}" != "spark" ]]
-
-  then
-    printUsage
-  fi
-
-  if [[ -z "${1}" ]] || [[ "${1}" = "ping" ]]
-  then
-    pingNodes
-  elif [[ "${1}" = "goss" ]]          || \
-       [[ "${1}" = "docker" ]]        || \
-       [[ "${1}" = "cassandra" ]]     || \
-       [[ "${1}" = "elasticsearch" ]] || \
-       [[ "${1}" = "kafka" ]]         || \
-       [[ "${1}" = "monitoror" ]]     || \
-       [[ "${1}" = "spark" ]]
-  then
-    setupStack "${1}"
-  fi
+  multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
+    xargs -I % \
+    sh -c 'echo HOST: %.local;ssh -oStrictHostKeyChecking=no ubuntu@%.local \
+           sudo ss -ltnp;echo'
 
 }
 
-showAndTest() {
+createAndShow() {
 
-  showMLPStack
-  sleep "${DLYTOMSTL}"
+  setupStack "${1}"
   echo
-  testMLPSRun "${1}"
+  sleep "${DLYTOMSTL}"
+  showMLPStack
+  echo
 
 }
 
@@ -177,22 +181,27 @@ main() {
 
   if [[ "${OPTN}" = "create" ]]
   then
-    showAndTest "${OPTNTST}"
-  elif [[ "${OPTN}" = "start" ]]
+    createAndShow "${OPTNTST}"
+  elif [[ "${OPTN}" = "cleandelete" ]]
   then
-    startMLPStack
-    showAndTest "${OPTNTST}"
-  elif [[ "${OPTN}" = "stop" ]]
-  then
-    stopMLPStack
+    clndlteMLPStack
     showMLPStack
   elif [[ "${OPTN}" = "delete" ]]
   then
     deleteMLPStack
     showMLPStack
-  elif [[ "${OPTN}" = "test" ]]
+  elif [[ "${OPTN}" = "ping" ]]
   then
-    showAndTest "${OPTNTST}"
+    pingStack
+    showMLPStack
+  elif [[ "${OPTN}" = "start" ]]
+  then
+    startMLPStack
+    showMLPStack
+  elif [[ "${OPTN}" = "stop" ]]
+  then
+    stopMLPStack
+    showMLPStack
   elif [[ "${OPTN}" = "show" ]]
   then
     showMLPStack

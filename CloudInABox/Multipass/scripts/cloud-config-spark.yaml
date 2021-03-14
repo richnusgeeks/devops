@@ -77,6 +77,13 @@ runcmd:
   - [ mkdir, /opt/monit/bin ]
   - [ cp, monit-5.27.0/bin/monit, /opt/monit/bin/monit ]
   - [ rm, -rfv, monit.tgz, monit-5.27.0 ]
+  - wget "https://get.docker.com" -O get-docker.sh
+  - sh get-docker.sh
+  - rm -fv get-docker.sh
+  - usermod -aG docker ubuntu
+  - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+  - chmod 0755 /usr/local/bin/docker-compose
+  - mkdir -p /opt/docker/compose
   - wget "https://apache.osuosl.org/spark/spark-3.1.1/spark-3.1.1-bin-hadoop2.7.tgz" -O spark.tgz
   - tar zxvf spark.tgz
   - mv spark-3.1.1-bin-hadoop2.7 /opt/spark

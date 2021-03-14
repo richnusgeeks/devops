@@ -20,6 +20,7 @@ packages:
   - openjdk-8-jre-headless
 write_files:
   - content: |
+      CHECK SYSTEM apachekafka
       set daemon 10
       set log /var/log/monit.log
 
@@ -44,13 +45,18 @@ write_files:
     owner: root:root
     permissions: '0600'
   - content: |
+      # hostname and descriptive name should be different e.g.
+      # no kafka descriptive name on a kafka host. If same then
+      # use SET SYSTEM as shown above.
       check process zookeeper matching zookeeper
         start program = "/opt/kafka/bin/zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper.properties" with timeout 60 seconds
+        stop program = "/opt/kafka/bin/zookeeper-server-stop.sh /opt/kafka/config/zookeeper.properties" with timeout 60 seconds
         if failed port 2181 for 6 cycles then restart
 
       check process kafka matching kafkaServer
         depends on zookeeper
         start program = "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties" with timeout 60 seconds
+        stop program = "/opt/kafka/bin/kafka-server-stop.sh /opt/kafka/config/server.properties" with timeout 60 seconds
         if failed port 9092 for 6 cycles then restart
     path: /opt/monit/monit.d/zkprkfk
     owner: root:root
@@ -76,11 +82,18 @@ write_files:
     owner: root:root
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.27.0/monit-5.27.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.27.2/monit-5.27.2-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.27.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.27.0 ]
+  - [ cp, monit-5.27.2/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.27.2 ]
+  - wget "https://get.docker.com" -O get-docker.sh
+  - sh get-docker.sh
+  - rm -fv get-docker.sh
+  - usermod -aG docker ubuntu
+  - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+  - chmod 0755 /usr/local/bin/docker-compose
+  - mkdir -p /opt/docker/compose
   - wget "https://apache.claz.org/kafka/2.7.0/kafka_2.13-2.7.0.tgz" -O kafka.tgz
   - tar zxvf kafka.tgz
   - mv kafka_2.13-2.7.0 /opt/kafka

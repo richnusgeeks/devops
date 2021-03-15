@@ -74,7 +74,8 @@ write_files:
       ExecStop=/opt/monit/bin/monit -c /opt/monit/conf/monitrc quit
       ExecReload=/opt/monit/bin/monit -c /opt/monit/conf/monitrc reload
       Restart = on-abnormal
-      StandardOutput=null
+      StandardOutput=journal
+      StandardError=journal
 
       [Install]
       WantedBy=multi-user.target

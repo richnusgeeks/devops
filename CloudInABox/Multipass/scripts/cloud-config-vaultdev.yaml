@@ -1,6 +1,6 @@
-# cat cloud-config-spark.yaml|multipass launch -m 2G -n spark --cloud-init -
-# ssh -oStrictHostKeyChecking=no ubuntu@spark.local
-# multipass delete spark && multipass purge && ssh-keygen -R spark.local
+# cat cloud-config-vaultdev.yaml|multipass launch -m 2G -n vaultdev --cloud-init -
+# ssh -oStrictHostKeyChecking=no ubuntu@vaultdev.local
+# multipass delete vaultdev && multipass purge && ssh-keygen -R vaultdev.local
 #cloud-config
 users:
   - default
@@ -17,9 +17,10 @@ package_update: true
 package_upgrade: true
 packages:
   - avahi-daemon
-  - openjdk-8-jre-headless
+  - zip
 write_files:
   - content: |
+      CHECK SYSTEM vaultserver
       set daemon 10
       set log /var/log/monit.log
 
@@ -44,11 +45,11 @@ write_files:
     owner: root:root
     permissions: '0600'
   - content: |
-      check process sparkmaster matching master
-        start program = "/opt/spark/sbin/start-master.sh" with timeout 300 seconds
-        stop program = "/opt/spark/sbin/stop-master.sh" with timeout 300 seconds
-        if failed port 8080 for 30 cycles then restart
-    path: /opt/monit/monit.d/sparkmaster
+      check process vaultdev matching vault
+        start program = "/bin/systemctl start vaultdev" with timeout 10 seconds
+        stop program = "/bin/systemctl stop vaultdev" with timeout 10 seconds
+        if failed port 8200 for 2 cycles then restart
+    path: /opt/monit/monit.d/vaultdev
     owner: root:root
     permissions: '0600'
   - content: |
@@ -72,6 +73,24 @@ write_files:
     path: /lib/systemd/system/monit.service
     owner: root:root
     permissions: '0600'
+  - content: |
+      [Unit]
+      Description=Vault server development mode
+      After=network.target
+      Documentation=https://www.vaultproject.io/docs
+
+      [Service]
+      ExecStart=/usr/local/bin/vault server -dev
+      ExecStop=/bin/kill -s QUIT ${MAINPID}
+      Restart = on-abnormal
+      StandardOutput=journal
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /lib/systemd/system/vaultdev.service
+    owner: root:root
+    permissions: '0600'
 runcmd:
   - [ wget, "https://mmonit.com/monit/dist/binary/5.27.2/monit-5.27.2-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
@@ -85,11 +104,11 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://apache.osuosl.org/spark/spark-3.1.1/spark-3.1.1-bin-hadoop2.7.tgz" -O spark.tgz
-  - tar zxvf spark.tgz
-  - mv spark-3.1.1-bin-hadoop2.7 /opt/spark
-  - rm -rfv spark.tgz
+  - wget "https://releases.hashicorp.com/vault/1.7.0-rc1/vault_1.7.0-rc1_linux_amd64.zip" -O vault.zip
+  - unzip -o vault.zip -d /usr/local/bin
+  - rm -fv vault.zip
   - systemctl start monit
+  - systemctl start vaultdev
 output:
   init:
     output: "> /var/log/cloud-init.out"

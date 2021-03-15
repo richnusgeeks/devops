@@ -1,4 +1,5 @@
 #! /bin/bash
+set -o pipefail
 
 OPTN=${1}
 OPTNTST=${2}
@@ -15,7 +16,8 @@ RQRDCMNDS="awk
            multipass
            sed
            ssh
-           ssh-keygen"
+           ssh-keygen
+           wc"
 
 preReq() {
 
@@ -121,8 +123,16 @@ deleteMLPStack() {
 
 clndlteMLPStack() {
 
-  multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
-                 xargs -I % ssh-keygen -R %.local
+  local numhsts=$(multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}'|wc -l)
+
+  if [[ ${numhsts} -gt 1 ]]
+  then
+    multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $3}' | \
+                   xargs -I % ssh-keygen -R %
+  else
+    multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
+                   xargs -I % ssh-keygen -R %.local
+  fi
 
   if ! multipass delete --all -p
   then
@@ -156,10 +166,20 @@ setupStack() {
 
 pingStack() {
 
-  multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
-    xargs -I % \
-    sh -c 'echo HOST: %.local;ssh -oStrictHostKeyChecking=no ubuntu@%.local \
+  local numhsts=$(multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}'|wc -l)
+
+  if [[ ${numhsts} -gt 1 ]]
+  then
+    multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $3}' | \
+      xargs -I % \
+      sh -c 'echo HOST: %;ssh -oStrictHostKeyChecking=no ubuntu@% \
            sudo ss -ltnp;echo'
+  else
+    multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}' | \
+      xargs -I % \
+      sh -c 'echo HOST: %.local;ssh -oStrictHostKeyChecking=no ubuntu@%.local \
+           sudo ss -ltnp;echo'
+  fi
 
 }
 

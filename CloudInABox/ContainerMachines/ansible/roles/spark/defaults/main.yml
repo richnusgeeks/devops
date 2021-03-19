@@ -3,7 +3,7 @@ monit_properties: {
   "monit_configad": "/opt/monit/conf/monit.d",
 }
 
-spark_version: "3.0.1"
+spark_version: "3.1.1"
 spark_java_version: "java-1.8.0-openjdk-headless"
 spark_hadoop_version: "2.7"
 spark_properties: {

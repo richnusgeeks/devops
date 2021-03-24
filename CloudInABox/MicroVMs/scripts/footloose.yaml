@@ -20,7 +20,7 @@ machines:
       cpus: 2
       memory: 2GB
       diskSize: 20GB
-      kernel: "weaveworks/ignite-kernel:4.19.47"
+      kernel: "weaveworks/ignite-kernel:5.4.102"
 - count: 1
   spec:
     image: weaveworks/ignite-ubuntu:18.04
@@ -39,7 +39,7 @@ machines:
       cpus: 2
       memory: 2GB
       diskSize: 20GB
-      kernel: "weaveworks/ignite-kernel:4.19.47"
+      kernel: "weaveworks/ignite-kernel:5.4.102"
 - count: 1
   spec:
     image: weaveworks/ignite-centos:7
@@ -58,4 +58,4 @@ machines:
       cpus: 2
       memory: 2GB
       diskSize: 20GB
-      kernel: "weaveworks/ignite-kernel:4.19.47"
+      kernel: "weaveworks/ignite-kernel:5.4.102"

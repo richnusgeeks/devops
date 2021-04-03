@@ -12,7 +12,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ../configs/testinfra:/etc/testinfra
-      - ../ansible:/etc/ansible:ro
+      - ../../Common/ansible:/etc/ansible:ro
     entrypoint: sh
     command: "-c 'while true; do sleep 5; done'"
 

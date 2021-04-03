@@ -23,6 +23,12 @@
     - role: consultemplate
       tags: [apply_template]
 
+- hosts: consulesm
+  become: yes
+  roles:
+    - role: consulesm
+      tags: [apply_esm]
+
 - hosts: hashiui
   become: yes
   roles:

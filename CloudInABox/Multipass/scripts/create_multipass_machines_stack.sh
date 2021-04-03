@@ -7,6 +7,7 @@ NUMOPTNMX=3
 DLYTOMSTL=3
 CLDCNFGDR='.'
 MEMAMOUNT='2G'
+DSKAMOUNT='10G'
 PUBKEYLOC="${HOME}/.ssh/id_rsa.pub"
 RQRDCMNDS="awk
            basename
@@ -43,8 +44,8 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename $0) < ping|start|stop|show|
-                         create [cassandra|consuldev|elasticsearch|
-                                 kafka|nomadev|spark|vaultdev]
+                         [create|ssh] [cassandra|consuldev|elasticsearchod|
+                                       kafka|nomadev|spark|vaultdev]
                         |delete|cleandelete >"
 EOF
   exit 0
@@ -59,6 +60,7 @@ parseArgs() {
   fi
 
   if [[ "${OPTN}" != "create" ]] && \
+     [[ "${OPTN}" != "ssh" ]] && \
      [[ "${OPTN}" != "cleandelete" ]] && \
      [[ "${OPTN}" != "delete" ]] && \
      [[ "${OPTN}" != "ping" ]] && \
@@ -69,11 +71,11 @@ parseArgs() {
     printUsage
   fi
 
-  if [[ "${OPTN}" = "create" ]]
+  if [[ "${OPTN}" = "create" ]] || [[ "${OPTN}" = "ssh" ]]
   then
     if [[ "${OPTNTST}" != "cassandra" ]]     && \
        [[ "${OPTNTST}" != "consuldev" ]]     && \
-       [[ "${OPTNTST}" != "elasticsearch" ]] && \
+       [[ "${OPTNTST}" != "elasticsearchod" ]] && \
        [[ "${OPTNTST}" != "kafka" ]]         && \
        [[ "${OPTNTST}" != "nomadev" ]]       && \
        [[ "${OPTNTST}" != "spark" ]]         && \
@@ -154,7 +156,9 @@ setupStack() {
     exitOnErr "sed -i.orig \"s|PUBLICKEY|\${pubkey}|\" ${CLDCNFGDR}/cloud-config-${1}.yaml failed"
   fi
 
-  if ! cat "cloud-config-${1}.yaml"|multipass launch -m "${MEMAMOUNT}" -n "${1}" --cloud-init -
+  if ! cat "cloud-config-${1}.yaml"|multipass launch -m "${MEMAMOUNT}" \
+                                                     -d "${DSKAMOUNT}" \
+                                                     -n "${1}" --cloud-init -
   then
     mv -f cloud-config-${1}.yaml{.orig,}
     exitOnErr "multipass launch -m ${MEMAMOUNT} -n "${1}" --cloud-init cloud-config-${1}.yaml failed"
@@ -183,6 +187,26 @@ pingStack() {
 
 }
 
+# FIXME: entering into microvm seems always waiting for stdin,
+#        some tty n decriptors mess as a logical guess.
+sshMicroVM() {
+
+  local numhsts=$(multipass ls | grep -v Name | awk '{if($1 !~ /[0-9]\./) print $1}'|wc -l)
+
+  if [[ ${numhsts} -gt 1 ]]
+  then
+    multipass ls | grep -v Name | grep "${1}" | \
+      awk '{if($1 !~ /[0-9]\./) print $3}' | \
+      xargs -I % sh -c 'ssh -tt -oStrictHostKeyChecking=no ubuntu@%'
+  else
+    multipass ls | grep -v Name | grep "${1}" | \
+      awk '{if($1 !~ /[0-9]\./) print $1}' | \
+      xargs -I % \
+      sh -c 'ssh -tt -oStrictHostKeyChecking=no ubuntu@%.local'
+  fi
+
+}
+
 createAndShow() {
 
   setupStack "${1}"
@@ -202,6 +226,9 @@ main() {
   if [[ "${OPTN}" = "create" ]]
   then
     createAndShow "${OPTNTST}"
+  elif [[ "${OPTN}" = "ssh" ]]
+  then
+    sshMicroVM "${OPTNTST}"
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
     clndlteMLPStack

@@ -1,6 +1,6 @@
-# cat cloud-config-nomadev.yaml|multipass launch -m 2G -n nomadev --cloud-init -
-# ssh -oStrictHostKeyChecking=no ubuntu@nomadev.local
-# multipass delete nomadev && multipass purge && ssh-keygen -R nomadev.local
+# cat cloud-config-elasticsearchod.yaml|multipass launch -m 2G -n elasticsearchod --cloud-init -
+# ssh -oStrictHostKeyChecking=no ubuntu@elasticsearchod.local
+# multipass delete elasticsearchod && multipass purge && ssh-keygen -R elasticsearchod.local
 #cloud-config
 users:
   - default
@@ -17,10 +17,9 @@ package_update: true
 package_upgrade: true
 packages:
   - avahi-daemon
-  - zip
 write_files:
   - content: |
-      CHECK SYSTEM nomadagent
+      CHECK SYSTEM odfelasticsearch
       set daemon 10
       set log /var/log/monit.log
 
@@ -45,14 +44,6 @@ write_files:
     owner: root:root
     permissions: '0600'
   - content: |
-      check process nomadev matching nomad
-        start program = "/bin/systemctl start nomadev" with timeout 10 seconds
-        stop program = "/bin/systemctl stop nomadev" with timeout 10 seconds
-        if failed port 4646 for 2 cycles then restart
-    path: /opt/monit/monit.d/nomadev
-    owner: root:root
-    permissions: '0600'
-  - content: |
       [Unit]
       Description=Pro-active monitoring utility for unix systems
       After=network.target
@@ -74,22 +65,53 @@ write_files:
     owner: root:root
     permissions: '0600'
   - content: |
-      [Unit]
-      Description=Nomad agent development mode
-      After=network.target
-      Documentation=https://www.nomadproject.io/docs
-
-      [Service]
-      ExecStart=/usr/local/bin/nomad agent -dev -client '0.0.0.0'
-      ExecStop=/bin/kill -s QUIT ${MAINPID}
-      Restart = on-abnormal
-      StandardOutput=journal
-      StandardError=journal
-
-      [Install]
-      WantedBy=multi-user.target
-    path: /lib/systemd/system/nomadev.service
-    owner: root:root
+      version: "2.4"
+      services:
+        elasticsearchod:
+          image: amazon/opendistro-for-elasticsearch:1.13.2
+          container_name: elasticsearchod
+          hostname: elasticsearchod
+          mem_limit: 1.2g
+          healthcheck:
+            test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:admin'", "--insecure"]
+            interval: 5s
+            timeout: 5s
+            retries: 60
+          networks:
+            - elasticsearchod-test
+          volumes:
+            - elasticsearchod-data:/var/lib/elasticsearchod
+          restart: unless-stopped
+          environment:
+            - cluster.name=elsod
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          ulimits:
+            memlock:
+              soft: -1
+              hard: -1
+            nofile:
+              soft: 65536
+              hard: 65536
+        elasticsearchodws:
+          image: node:lts-alpine3.13
+          container_name: elasticsearchodws
+          hostname: elasticsearchodws
+          mem_limit: 512m
+          entrypoint: sh
+          command: "-c 'while true; do sleep 5; done'"
+          networks:
+            - elasticsearchod-test
+          depends_on:
+            elasticsearchod:
+              condition: service_healthy
+      volumes:
+        elasticsearchod-data:
+      networks:
+        elasticsearchod-test:
+    path: /opt/docker/compose/elasticsearchod.yml
+    owner: ubuntu:ubuntu
     permissions: '0600'
 runcmd:
   - [ wget, "https://mmonit.com/monit/dist/binary/5.28.0/monit-5.28.0-linux-x64.tar.gz", -O, monit.tgz ]
@@ -104,11 +126,8 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://releases.hashicorp.com/nomad/1.0.4/nomad_1.0.4_linux_amd64.zip" -O nomad.zip
-  - unzip -o nomad.zip -d /usr/local/bin
-  - rm -fv nomad.zip
   - systemctl start monit
-  - systemctl start nomadev
+  - docker-compose -f /opt/docker/compose/elasticsearchod.yml up -d
 output:
   init:
     output: "> /var/log/cloud-init.out"

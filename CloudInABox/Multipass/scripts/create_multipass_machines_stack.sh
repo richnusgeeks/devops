@@ -6,6 +6,7 @@ OPTNTST=${2}
 NUMOPTNMX=3
 DLYTOMSTL=3
 CLDCNFGDR='.'
+NUMCPUALC=1
 MEMAMOUNT='2G'
 DSKAMOUNT='10G'
 PUBKEYLOC="${HOME}/.ssh/id_rsa.pub"
@@ -156,12 +157,21 @@ setupStack() {
     exitOnErr "sed -i.orig \"s|PUBLICKEY|\${pubkey}|\" ${CLDCNFGDR}/cloud-config-${1}.yaml failed"
   fi
 
-  if ! cat "cloud-config-${1}.yaml"|multipass launch -m "${MEMAMOUNT}" \
+  if [[ "${1}" = "cassandra" ]] || \
+     [[ "${1}" = "elasticsearchod" ]] || \
+     [[ "${1}" = "kafka" ]] || \
+     [[ "${1}" = "spark" ]]
+  then
+    NUMCPUALC=2
+  fi
+
+  if ! cat "cloud-config-${1}.yaml"|multipass launch -c "${NUMCPUALC}" \
+	                                             -m "${MEMAMOUNT}" \
                                                      -d "${DSKAMOUNT}" \
                                                      -n "${1}" --cloud-init -
   then
     mv -f cloud-config-${1}.yaml{.orig,}
-    exitOnErr "multipass launch -m ${MEMAMOUNT} -n "${1}" --cloud-init cloud-config-${1}.yaml failed"
+    exitOnErr "multipass launch -c ${NUMCPUALC} -m ${MEMAMOUNT} -n "${1}" --cloud-init cloud-config-${1}.yaml failed"
   fi
 
   mv -f cloud-config-${1}.yaml{.orig,}

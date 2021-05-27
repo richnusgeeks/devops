@@ -73,12 +73,12 @@ write_files:
           hostname: elasticsearchod
           mem_limit: 1.2g
           healthcheck:
-            test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:admin'", "--insecure"]
+            #test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:admin'", "--insecure"]
+            test: ["CMD", "curl", "-XGET", "http://localhost:9200"]
             interval: 5s
             timeout: 5s
             retries: 60
-          networks:
-            - elasticsearchod-test
+          network_mode: host
           volumes:
             - elasticsearchod-data:/var/lib/elasticsearchod
           restart: unless-stopped
@@ -86,6 +86,11 @@ write_files:
             - cluster.name=elsod
             - discovery.type=single-node
             - bootstrap.memory_lock=true
+            - opendistro_security.disabled=true
+            - http.cors.enabled=true
+            - http.cors.allow-credentials=true
+            - "http.cors.allow-origin=http://localhost:1358,http://localhost:9000"
+            - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization"
             - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
           ulimits:
             memlock:
@@ -94,22 +99,43 @@ write_files:
             nofile:
               soft: 65536
               hard: 65536
-        elasticsearchodws:
-          image: node:lts-alpine3.13
-          container_name: elasticsearchodws
-          hostname: elasticsearchodws
+        elasticsearchodwu:
+          image: lmenezes/cerebro:0.8.3
+          container_name: elasticsearchodwu
+          hostname: elasticsearchodwu
           mem_limit: 512m
-          entrypoint: sh
-          command: "-c 'while true; do sleep 5; done'"
-          networks:
-            - elasticsearchod-test
+          network_mode: host
+          restart: unless-stopped
           depends_on:
             elasticsearchod:
               condition: service_healthy
+        elasticsearchodmwu:
+          image: appbaseio/dejavu:3.4.7
+          container_name: elasticsearchodmwu
+          hostname: elasticsearchodmwu
+          mem_limit: 512m
+          network_mode: host
+          restart: unless-stopped
+          depends_on:
+            elasticsearchod:
+              condition: service_healthy
+          #elasticsearchodws:
+          #elasticsearchodws:
+          #image: node:10-alpine3.10
+          #container_name: elasticsearchodws
+          #hostname: elasticsearchodws
+          #mem_limit: 512m
+          #entrypoint: sh
+          #command: "-c 'while true; do sleep 5; done'"
+          #networks:
+          #  - elasticsearchod-test
+          #depends_on:
+          #  elasticsearchod:
+          #    condition: service_healthy
       volumes:
         elasticsearchod-data:
-      networks:
-        elasticsearchod-test:
+      #networks:
+       #elasticsearchod-test:
     path: /opt/docker/compose/elasticsearchod.yml
     owner: ubuntu:ubuntu
     permissions: '0600'
@@ -123,7 +149,7 @@ runcmd:
   - sh get-docker.sh
   - rm -fv get-docker.sh
   - usermod -aG docker ubuntu
-  - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+  - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
   - systemctl start monit

@@ -101,7 +101,7 @@ runcmd:
   - sh get-docker.sh
   - rm -fv get-docker.sh
   - usermod -aG docker ubuntu
-  - wget "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+  - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
   - wget "https://releases.hashicorp.com/consul/1.9.4/consul_1.9.4_linux_amd64.zip" -O consul.zip

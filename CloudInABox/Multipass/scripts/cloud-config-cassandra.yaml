@@ -77,8 +77,9 @@ write_files:
             interval: 5s
             timeout: 5s
             retries: 60
-          networks:
-            - cassandra-test
+            #networks:
+            #- cassandra-test
+          network_mode: host
           volumes:
             - cassandra-data:/var/lib/cassandra
           restart: unless-stopped
@@ -88,22 +89,37 @@ write_files:
             CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
             CASSANDRA_NUM_TOKENS: 4
             CASSANDRA_RACK: CassandraTest
-        cassandraws:
-          image: cassandra:3.11
-          container_name: cassandraws
-          hostname: cassandraws
+        cassandrawu:
+          image: ipushc/cassandra-web
+          container_name: cassandrawu
+          hostname: cassandrawu
           mem_limit: 512m
-          entrypoint: bash
-          command: "-c 'while true; do sleep 5; done'"
-          networks:
-            - cassandra-test
+          #networks:
+          #  - cassandra-test
+          network_mode: host
+          restart: unless-stopped
+          environment:
+            HOST_PORT: ":8080"
+            CASSANDRA_HOST: localhost
           depends_on:
             cassandra:
               condition: service_healthy
+        #cassandraws:
+        #  image: cassandra:3.11
+        #  container_name: cassandraws
+        #  hostname: cassandraws
+        #  mem_limit: 512m
+        #  entrypoint: bash
+        #  command: "-c 'while true; do sleep 5; done'"
+        #  networks:
+        #    - cassandra-test
+        #  depends_on:
+        #    cassandra:
+        #      condition: service_healthy
       volumes:
         cassandra-data:
-      networks:
-        cassandra-test:
+      #networks:
+        #cassandra-test:
     path: /opt/docker/compose/cassandra.yml
     owner: ubuntu:ubuntu
     permissions: '0600'

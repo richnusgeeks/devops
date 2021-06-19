@@ -1,0 +1,61 @@
+version: "2.4"
+
+services:
+    postgres:
+      image: postgres:13.3-alpine
+      container_name: postgres
+      hostname: postgres
+      mem_limit: 512m
+      healthcheck:
+        test: ["CMD", "psql", "-U", "postgres", "-c", "\\copyright"]
+        interval: 5s
+        timeout: 5s
+        retries: 60
+      networks:
+        - wacrud-test
+      volumes:
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      restart: unless-stopped
+      environment:
+        POSTGRES_PASSWORD: postgres
+
+    wacrudtest:
+      image: wacrudtest
+      build:
+        context: .
+        dockerfile: Dockerfile_WappCRUDTst
+      container_name: wacrudtest
+      hostname: wacrudtest
+      ports:
+        - "18080:8080"
+      mem_limit: 512m
+      healthcheck:
+        test: ["CMD", "//dockerize", "-wait", "tcp:////localhost:8080"]
+        interval: 5s
+        timeout: 5s
+        retries: 60
+      networks:
+        - wacrud-test
+      restart: unless-stopped
+      depends_on:
+        postgres:
+          condition: service_healthy
+
+    adminer:
+      image: adminer
+      container_name: adminer
+      hostname: adminer
+      ports:
+        - "8080:8080"
+      mem_limit: 512m
+      networks:
+        - wacrud-test
+      restart: unless-stopped
+      environment:
+        ADMINER_DEFAULT_SERVER: postgres
+      depends_on:
+        postgres:
+          condition: service_healthy
+
+networks:
+  wacrud-test:

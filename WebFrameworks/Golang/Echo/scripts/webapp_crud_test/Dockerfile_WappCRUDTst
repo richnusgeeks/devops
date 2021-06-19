@@ -1,0 +1,30 @@
+FROM golang:1.16-alpine3.13 AS builder
+
+ENV CGO_ENABLED=0
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /go/src/webapp_crud_test
+COPY *.go go.* /go/src/webapp_crud_test/
+RUN  go get \
+  && go build
+
+FROM alpine:3.13 AS dockerize
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN apk add --update --no-cache ca-certificates tzdata \
+  && wget --no-check-certificate https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && echo "**** fix for host id mapping error ****" \
+  && chown root:root /usr/local/bin/dockerize
+
+FROM scratch
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="service"
+LABEL version="latest"
+LABEL description="docker based Echo webapp CRUD test"
+
+COPY --from=dockerize /usr/local/bin/dockerize /
+COPY --from=builder /go/src/webapp_crud_test/wacrudtest /
+
+ENTRYPOINT ["/wacrudtest"]

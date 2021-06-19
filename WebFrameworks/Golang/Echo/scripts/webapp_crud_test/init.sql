@@ -1,0 +1,6 @@
+CREATE TABLE employees (
+  Id VARCHAR (10) NOT NULL,
+  name VARCHAR (30) NOT NULL,
+  salary VARCHAR (10) NOT NULL,
+  age VARCHAR (5) NOT NULL
+);

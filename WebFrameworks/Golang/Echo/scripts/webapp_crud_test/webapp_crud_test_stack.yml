@@ -11,6 +11,8 @@ services:
         interval: 5s
         timeout: 5s
         retries: 60
+      volumes:
+        - postgres-test:/var/lib/postgresql/data
       networks:
         - wacrud-test
       volumes:
@@ -27,7 +29,7 @@ services:
       container_name: wacrudtest
       hostname: wacrudtest
       ports:
-        - "18080:8080"
+        - "58080:8080"
       mem_limit: 512m
       healthcheck:
         test: ["CMD", "//dockerize", "-wait", "tcp:////localhost:8080"]
@@ -37,6 +39,8 @@ services:
       networks:
         - wacrud-test
       restart: unless-stopped
+      environment:
+        DB_NAME: postgres
       depends_on:
         postgres:
           condition: service_healthy
@@ -46,7 +50,7 @@ services:
       container_name: adminer
       hostname: adminer
       ports:
-        - "8080:8080"
+        - "48080:8080"
       mem_limit: 512m
       networks:
         - wacrud-test
@@ -56,6 +60,9 @@ services:
       depends_on:
         postgres:
           condition: service_healthy
+
+volumes:
+  postgres-test:
 
 networks:
   wacrud-test:

@@ -1,111 +1,108 @@
 package main
 
 import (
-  "net/http"
-  "database/sql"
-  "github.com/labstack/echo/v4"
-  "fmt"
-  "log"
-  _"github.com/lib/pq"
+	"database/sql"
+	"fmt"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/lib/pq"
+	"net/http"
+	"os"
 )
 
-func main() {
+type Employee struct {
+	Name   string `json: "name"`
+	Salary string `json: "salary"`
+	Age    string `json: "age"`
+}
 
-  var err error
-  var db *sql.DB
-  db, err = sql.Open("postgres", "host=postgres user=postgres password=postgres dbname=postgres sslmode=disable")
-  if err != nil {
-    log.Fatal(err)
-  }
+type Employees struct {
+	Employees []Employee `json:"employees"`
+}
 
-  if err = db.Ping(); err != nil {
-    panic(err)
-  } else {
-    fmt.Println("DB Connected...")
-  }
-
-  e := echo.New()
-
-  type Employee struct {
-    Id string `json:"id"`
-    Name string `json:"name"`
-    Salary string `json: "salary"`
-    Age string `json : "age"`
-  }
-  type Employees struct {
-    Employees []Employee `json:"employees"`
-  }
-
-  e.POST("/employee", func(c echo.Context) error {
-    u := new(Employee)
-    if err := c.Bind(u); err != nil {
-      return err
-    }
-    sqlStatement := "INSERT INTO employees (name, salary,age)VALUES ($1, $2, $3, $4)"
-    res, err := db.Query(sqlStatement, u.Name, u.Salary, u.Age, u.Id)
-    if err != nil {
-      fmt.Println(err)
-    } else {
-      fmt.Println(res)
-      return c.JSON(http.StatusCreated, u)
-    }
-    return c.String(http.StatusOK, "ok")
-  })
-
-  e.PUT("/employee", func(c echo.Context) error {
-	u := new(Employee)
-	if err := c.Bind(u); err != nil {
-		return err
-	}
-	sqlStatement := "UPDATE employees SET name=$1,salary=$2,age=$3 WHERE id=$5"
-	res, err := db.Query(sqlStatement, u.Name, u.Salary, u.Age, u.Id)
+func checkError(err error) {
 	if err != nil {
-		fmt.Println(err)
-		//return c.JSON(http.StatusCreated, u);
-	} else {
+		panic(err)
+	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+func main() {
+	host := getEnv("DB_HOST", "postgres")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	pswd := getEnv("DB_PSWD", "postgres")
+	dbnm := getEnv("DB_NAME", "wacrudtest")
+
+	psqlconn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, pswd, dbnm)
+
+	db, err := sql.Open("postgres", psqlconn)
+	checkError(err)
+
+	err = db.Ping()
+	defer db.Close()
+
+	// setup Echo
+	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	// setup Routes
+	e.POST("/employees", func(c echo.Context) error {
+		u := new(Employee)
+		err := c.Bind(u)
+		checkError(err)
+
+		sqlStatement := "INSERT INTO employees (name, salary, age) VALUES ($1, $2, $3)"
+		res, err := db.Query(sqlStatement, u.Name, u.Salary, u.Age)
+		checkError(err)
 		fmt.Println(res)
 		return c.JSON(http.StatusCreated, u)
-	}
-	return c.String(http.StatusOK, u.Id)
-  })
+	})
 
-  e.DELETE("/employee/:id", func(c echo.Context) error {
-	id := c.Param("id")
-	sqlStatement := "DELETE FROM employees WHERE id = $1"
-	res, err := db.Query(sqlStatement, id)
-	if err != nil {
-		fmt.Println(err)
-		//return c.JSON(http.StatusCreated, u);
-	} else {
-		fmt.Println(res)
-		return c.JSON(http.StatusOK, "Deleted")
-	}
-	return c.String(http.StatusOK, id+"Deleted")
-  })
+	e.GET("/employees", func(c echo.Context) error {
+		sqlStatement := "SELECT name, salary, age FROM employees order by id"
+		rows, err := db.Query(sqlStatement)
+		checkError(err)
+		defer rows.Close()
 
-/*  e.GET("/employee", func(c echo.Context) error {
-	sqlStatement := "SELECT id, name, salary, age FROM employees order by id"
-	rows, err := db.Query(sqlStatement)
-	if err != nil {
-		fmt.Println(err)
-		//return c.JSON(http.StatusCreated, u);
-	}
-	defer rows.Close()
-	result := Employees{}
-
-	for rows.Next() {
-		employee := Employees{}
-		err2 := rows.Scan(&employee.Id, &employee.Name, &employee.Salary, &employee.Age)
-		// Exit if we get an error
-		if err2 != nil {
-			return err2
+		result := Employees{}
+		for rows.Next() {
+			employee := Employee{}
+			err := rows.Scan(&employee.Name, &employee.Salary, &employee.Age)
+			checkError(err)
+			result.Employees = append(result.Employees, employee)
 		}
-		result.Employees = append(result.Employees, Employee)
-	}
-	return c.JSON(http.StatusCreated, result)
+		return c.JSON(http.StatusOK, result)
+	})
 
-	//return c.String(http.StatusOK, "ok")
-  })
-*/
-  e.Start(":8080")
+	e.PUT("/employees/:id", func(c echo.Context) error {
+		id := c.Param("id")
+		u := new(Employee)
+		err := c.Bind(u)
+		checkError(err)
+
+		sqlStatement := "UPDATE employees SET name=$1,salary=$2,age=$3 WHERE id=$4"
+		res, err := db.Query(sqlStatement, u.Name, u.Salary, u.Age, id)
+		checkError(err)
+		fmt.Println(res)
+		return c.JSON(http.StatusOK, id)
+	})
+
+	e.DELETE("/employees/:id", func(c echo.Context) error {
+		id := c.Param("id")
+		sqlStatement := "DELETE FROM employees WHERE id = $1"
+		db.Query(sqlStatement, id)
+		return c.NoContent(http.StatusNoContent)
+	})
+
+	// start Server
+	hstprt := getEnv("HOST_PORT", ":8080")
+	e.Logger.Fatal(e.Start(hstprt))
 }

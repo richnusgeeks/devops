@@ -44,7 +44,7 @@ Runbook (on GNU/Linux, macOS):
   details
 
 - Execute `./create_webapp_crudtest_stack.sh logs` to dump the logs for the
-  entire stack (grep for the desired component e.g. | grep )
+  entire stack (grep for the desired component e.g. ... | grep wacrudtstbnch)
 
 - Execute `./create_webapp_crudtest_stack.sh down` to bring down the running 
   stack

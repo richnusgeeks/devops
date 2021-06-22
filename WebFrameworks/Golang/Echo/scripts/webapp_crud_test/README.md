@@ -18,7 +18,7 @@ Components:
 
 - Postgres backend 
 
-- Adminer for GUI based db management (accessible on localhost:48080)
+- Adminer for GUI based db management (accessible on localhost:48080, user/pswrd/db postgres)
 
 - CRUD enpoints unit testing
 

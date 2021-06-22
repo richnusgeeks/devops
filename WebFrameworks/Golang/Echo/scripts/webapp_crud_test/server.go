@@ -66,6 +66,26 @@ func main() {
 		return c.JSON(http.StatusCreated, u)
 	})
 
+	e.GET("/employees/:id", func(c echo.Context) error {
+		id := c.Param("id")
+		u := new(Employee)
+		err := c.Bind(u)
+		checkError(err)
+
+		sqlStatement := "SELECT name, salary, age FROM employees WHERE id=$1"
+		res, err := db.Query(sqlStatement, id)
+		checkError(err)
+		fmt.Println(res)
+		defer res.Close()
+
+		result := Employee{}
+		for res.Next() {
+			err := res.Scan(&result.Name, &result.Salary, &result.Age)
+			checkError(err)
+		}
+		return c.JSON(http.StatusOK, result)
+	})
+
 	e.GET("/employees", func(c echo.Context) error {
 		sqlStatement := "SELECT name, salary, age FROM employees order by id"
 		rows, err := db.Query(sqlStatement)

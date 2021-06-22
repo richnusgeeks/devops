@@ -67,11 +67,11 @@ main() {
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
   elif [[ "${OPTN}" = "buildup" ]]
   then
-    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up wacrudtest --build -d
+    docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
-    docker image prune -f
+    docker system prune -f
   elif [[ "${OPTN}" = "exec" ]]
   then
     exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${SHELL}"

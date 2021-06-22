@@ -2,7 +2,7 @@ version: "2.4"
 
 services:
     postgres:
-      image: postgres:13.3-alpine
+      image: postgres:${PGSQLTAG:-13.3-alpine}
       container_name: postgres
       hostname: postgres
       mem_limit: 512m
@@ -22,7 +22,7 @@ services:
         POSTGRES_PASSWORD: postgres
 
     wacrudtest:
-      image: wacrudtest
+      image: wacrudtest:${WACDTAG:-latest}
       build:
         context: .
         dockerfile: Dockerfile_WappCRUDTst
@@ -31,11 +31,11 @@ services:
       ports:
         - "58080:8080"
       mem_limit: 512m
-      healthcheck:
-        test: ["CMD", "//dockerize", "-wait", "tcp:////localhost:8080"]
-        interval: 5s
-        timeout: 5s
-        retries: 60
+      #healthcheck:
+      #  test: ["CMD", "//dockerize", "-wait", "tcp:////localhost:8080"]
+      #  interval: 5s
+      #  timeout: 5s
+      #  retries: 60
       networks:
         - wacrud-test
       restart: unless-stopped
@@ -44,6 +44,19 @@ services:
       depends_on:
         postgres:
           condition: service_healthy
+
+    wacrudtstbnch:
+      image: wacrudtstbnch:${WACDBTAG:-latest}
+      build:
+        context: .
+        dockerfile: Dockerfile_WappCRUDTstBnch
+      container_name: wacrudtstbnch
+      hostname: wacrudtstbnch
+      mem_limit: 512m
+      networks:
+        - wacrud-test
+      depends_on:
+        - wacrudtest
 
     adminer:
       image: adminer
@@ -60,6 +73,23 @@ services:
       depends_on:
         postgres:
           condition: service_healthy
+
+    cadvisor:
+      image: gcr.io/cadvisor/cadvisor:${CDVSRTAG:-v0.39.2}
+      container_name: cadvisor
+      hostname: cadvisor
+      volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:ro
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        - /dev/disk/:/dev/disk:ro
+      ports:
+        - "38080:8080"
+      mem_limit: 512m
+      networks:
+        - wacrud-test
+      restart: unless-stopped
 
 volumes:
   postgres-test:

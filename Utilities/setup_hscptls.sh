@@ -51,7 +51,8 @@ HCTLS="serf \
        vault \
        nomad \
        packer \
-       terraform"
+       terraform \
+       waypoint"
 
 exitOnErr() {
 

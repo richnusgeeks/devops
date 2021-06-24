@@ -52,6 +52,10 @@ Runbook (on GNU/Linux, macOS):
 - Execute `./create_webapp_crudtest_stack.sh cleandown` to bringdown the stack
   and cleanup the resources
 
+- You could execute `./create_webapp_crudtest_stack.sh lint` for the
+  linting of Dockerfiles and Shellscripts we're using to impose their best
+  practices
+
 - You could execute `./create_webapp_crudtest_stack.sh` to see all options
   provided by the driver script
 

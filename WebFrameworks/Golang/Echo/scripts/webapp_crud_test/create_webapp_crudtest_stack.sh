@@ -59,7 +59,8 @@ parseArgs() {
 
 preLint() {
 
-  ls Dockerfile* | xargs -I % cat % | docker run --rm -i hadolint/hadolint 2>&1
+  find . -maxdepth 1 -name 'Dockerfile*' -exec cat {} \; | \
+    docker run --rm -i hadolint/hadolint 2>&1
   echo
   docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck -- *.sh 2>&1
 

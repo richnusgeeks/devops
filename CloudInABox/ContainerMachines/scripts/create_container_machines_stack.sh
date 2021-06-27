@@ -55,7 +55,7 @@ preReq() {
     if ! command -v "${c}" > /dev/null 2>&1
     then
       echo " Error: required command ${c} not found, exiting ..."
-      exit -1
+      exit 1
     fi
   done
 
@@ -64,7 +64,7 @@ preReq() {
     if ! docker network create "${FTLSNTWRK}"
     then
       echo " Error: docker network create ${FTLSNTWRK} failed, exiting ..."
-      exit -1
+      exit 1
     fi
   fi
 
@@ -82,7 +82,8 @@ exitOnErr() {
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0) < create|buildcreate|start|stop|show|
+ Usage: $(basename $0)
+                       < lint|create|buildcreate|start|stop|show|
                          test [ping|goss|consulserver|consulclient|
                                consulesm|hashiui|consultemplate|docker|
                                cassandra|elasticsearch|kafka|spark|
@@ -100,7 +101,8 @@ parseArgs() {
     printUsage
   fi
 
-  if [[ "${OPTN}" != "create" ]] && \
+  if [[ "${OPTN}" != "lint" ]] && \
+     [[ "${OPTN}" != "create" ]] && \
      [[ "${OPTN}" != "buildcreate" ]] && \
      [[ "${OPTN}" != "start" ]] && \
      [[ "${OPTN}" != "stop" ]] && \
@@ -113,6 +115,15 @@ parseArgs() {
   then
     printUsage
   fi
+
+}
+
+preLint() {
+
+  find . -maxdepth 1 -name 'Dockerfile*' -exec cat {} \; | \
+    docker run --rm -i hadolint/hadolint 2>&1
+  echo
+  docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck -- *.sh 2>&1
 
 }
 
@@ -405,6 +416,8 @@ main() {
   parseArgs
 
   preReq
+
+  preLint
 
   if [[ "${OPTN}" = "create" ]]
   then

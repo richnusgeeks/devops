@@ -4,14 +4,15 @@ LABEL "com.richnusgeeks.category"="utility"
 LABEL version="latest"
 LABEL description="docker based footloose test driver"
 
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
-  && curl -sSLk -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1) \
+  && curl -sSLk -o /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1)" \
   && cd /tmp \
   && tar zxf docker.tgz \
   && mv docker/docker /usr/local/bin \
   && rm -rf docker docker.tgz \
   && mkdir -p /var/lib/footloose \
-  && curl -sSLk https://github.com/$(curl -sSLk https://github.com/weaveworks/footloose/releases|grep download|grep linux-x86_64|awk -F '"' '{print $2}'|head -1) -o /usr/local/bin/footloose \
+  && curl -sSLk "https://github.com/$(curl -sSLk https://github.com/weaveworks/footloose/releases|grep download|grep linux-x86_64|awk -F '"' '{print $2}'|head -1)" -o /usr/local/bin/footloose \
   && chmod +x /usr/local/bin/footloose
 
 COPY footloose_run.sh /usr/local/bin/run.sh

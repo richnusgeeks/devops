@@ -3,14 +3,17 @@ LABEL "com.richnusgeeks.vendor"="richnusgeeks"
 LABEL version="latest"
 LABEL description="testinfra test driver docker image"
 
+ARG CRYPTOGRAPHY_DONT_BUILD_RUST=1
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache --virtual=build-deps \
     alpine-sdk libffi-dev openssl-dev curl \
-  && curl -sSLk -o /sbin/tini https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}') \
+  && curl -sSLk -o /sbin/tini "https://github.com$(curl -sSLk https://github.com/krallin/tini/releases|grep tini-static|grep amd64|grep '<a href='|grep -v .asc|head -1|awk -F'"' '{print $2}')" \
   && chmod +x /sbin/tini \
-  && pip install ansible \
+  && pip install ansible==3.4.0 \
                  paramiko \
                  pytest-xdist \
-                 testinfra[ansible] \
+                 pytest-testinfra[ansible] \
   && mkdir -p /etc/testinfra \
              /etc/ssl/certs/test_servers \
   && apk del build-deps

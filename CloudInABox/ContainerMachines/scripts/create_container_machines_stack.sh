@@ -59,7 +59,7 @@ preReq() {
     fi
   done
 
-  if ! docker network ls | grep "${FTLSNTWRK}" 2>&1 > /dev/null
+  if ! docker network ls | grep "${FTLSNTWRK}" > /dev/null 2>&1
   then
     if ! docker network create "${FTLSNTWRK}"
     then
@@ -82,7 +82,7 @@ exitOnErr() {
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0)
+ Usage: $(basename "${0}")
                        < lint|create|buildcreate|start|stop|show|
                          test [ping|goss|consulserver|consulclient|
                                consulesm|hashiui|consultemplate|docker|
@@ -130,7 +130,7 @@ preLint() {
 showFTLStack() {
 
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
-                           -v $(pwd)/footloose.cfg:/etc/footloose.cfg:ro \
+                           -v "$(pwd)/footloose.cfg:/etc/footloose.cfg:ro" \
             footloose show
   then
     exitOnErr 'docker run footloose show failed'
@@ -140,7 +140,8 @@ showFTLStack() {
 
 createASBLInv() {
 
-  local ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v $(pwd)/footloose.cfg:/etc/footloose.cfg:ro footloose show|grep '^cluster\-')
+  local ftlshw
+  ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v "$(pwd)/footloose.cfg:/etc/footloose.cfg:ro" footloose show|grep '^cluster\-')
 #       grep -v NAME | awk -F '  +' '{ if ( $4~"^ubuntu" ) {print $2,"ansible_python_interpreter=/usr/bin/python3"} else {print $2} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
   for h in $(echo "${ftlshw}" | grep -v NAME | awk -F '  +' '{print $2}'|sed 's/[0-9]\{1,\}//'|sort -u)
   do
@@ -235,7 +236,7 @@ copyPrivKey() {
   then
     exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/${FTLSCTRKY} ${ANSBLEDIR} failed"
   else
-    if uname | grep -i darwin 2>&1 > /dev/null
+    if uname | grep -i darwin > /dev/null 2>&1
     then
       PRMSN='0400'
     else
@@ -252,7 +253,7 @@ copyPrivKey() {
 
 testASBLRun() {
 
-  if [[ ! -z "${1}" ]] && \
+  if [[ -n "${1}" ]] && \
      [[ "${1}" != "ping" ]] && \
      [[ "${1}" != "consulserver" ]] && \
      [[ "${1}" != "consulclient" ]] && \
@@ -364,11 +365,12 @@ testASBLRun() {
       exitOnErr "docker-compose -f ${CMPSFLDIR}/${DCKRCMPTIR} up -d failed"
     else
 
-      if uname | grep -i darwin 2>&1 > /dev/null
+      local nload
+      if uname | grep -i darwin > /dev/null 2>&1
       then
-        local nload=$(sysctl -a 2>&1|grep machdep.cpu.core_count|awk '{print $NF}')
+        nload=$(sysctl -a 2>&1|grep machdep.cpu.core_count|awk '{print $NF}')
       else
-        local nload=$(grep -w core /proc/cpuinfo 2>&1|wc -l)
+        nload=$(grep -wc core /proc/cpuinfo 2>&1)
       fi
 
       if [[ -n ${nload} ]]
@@ -417,9 +419,10 @@ main() {
 
   preReq
 
-  preLint
-
-  if [[ "${OPTN}" = "create" ]]
+  if [[ "${OPTN}" = "lint" ]]
+  then
+    preLint
+  elif [[ "${OPTN}" = "create" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${FTLSCMPSCT}" up -d
     showAndTest "${OPTNTST}"
@@ -446,6 +449,7 @@ main() {
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${FTLSCNFGFL}" \
 	  "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
+    docker system prune -f
     showFTLStack
   elif [[ "${OPTN}" = "cleandelete" ]]
   then
@@ -458,6 +462,7 @@ main() {
     docker network rm "${FTLSNTWRK}"
     rm -f "${FTLSCTRKY}" "${FTLSCNFGFL}" \
 	  "${ANSBLEDIR}/${FTLSCTRKY}" "${ANSBLEDIR}/${ANSBLEHIN}"
+    docker system prune -f
     showFTLStack
   elif [[ "${OPTN}" = "test" ]]
   then

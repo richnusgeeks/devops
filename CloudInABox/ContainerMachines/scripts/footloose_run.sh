@@ -6,7 +6,7 @@ NUMOPTNMX=2
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0) <create|show|delete>
+ Usage: $(basename "${0}") <create|show|delete>
 EOF
   exit 0
 

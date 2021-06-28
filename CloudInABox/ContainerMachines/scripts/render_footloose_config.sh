@@ -8,7 +8,7 @@ FTLSCFGFLDS=(Name Count Image Networks Ports)
 if [[ ! -f "${FTLSCFGINFL}" ]]
 then
   echo " Error: required ${FTLSCFGINFL} not found, exiting ..."
-  exit -1
+  exit 1
 fi
 
 tee "${FTLSCFGOUFL}" <<EOF
@@ -18,9 +18,9 @@ cluster:
 machines:
 EOF
 
-while read Name Count Image Networks Ports
+while read -r Name Count Image Networks Ports
 do
-if echo ${Name}|grep '^ *#' > /dev/null 2>&1 || echo ${Name}|grep '^ *$' > /dev/null
+if echo "${Name}"|grep '^ *#' > /dev/null 2>&1 || echo "${Name}"|grep '^ *$' > /dev/null
 then
   continue
 fi
@@ -33,7 +33,7 @@ EOF
 tee -a "${FTLSCFGOUFL}" <<EOF
     networks:
 EOF
-for n in $(echo "${Networks}"|sed 's/,/ /g')
+for n in ${Networks//,/ }
 do
 tee -a "${FTLSCFGOUFL}" <<EOF
     - ${n}
@@ -42,7 +42,7 @@ done
 tee -a "${FTLSCFGOUFL}" <<EOF
     portMappings:
 EOF
-for p in $(echo "${Ports}"|sed 's/,/ /g')
+for p in ${Ports//,/ }
 do
 if echo "${p}" | grep ':' > /dev/null 2>&1
 then

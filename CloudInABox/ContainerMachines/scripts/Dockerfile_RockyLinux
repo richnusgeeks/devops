@@ -1,0 +1,9 @@
+FROM rockylinux/rockylinux:8
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="base"
+LABEL version="latest"
+LABEL description="docker image for RockyLinux to replace CentOS"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN dnf install -y openssh-server libnsl && \
+    dnf install -y 'dnf-command(config-manager)'

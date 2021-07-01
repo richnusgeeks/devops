@@ -33,7 +33,7 @@
         state=directory
 
 - name: render monit control file
-  template: src=monitrc_{{ monit_version }}.j2
+  template: src=monitrc.j2
             dest="{{ monit_properties["monit_configfl"] }}"
             owner=root
             group=root
@@ -42,13 +42,13 @@
     - reload monit configs
 
 - name: render additional monit system configs
-  template: src=spaceinode_{{ monit_version }}.j2
+  template: src=spaceinode.j2
             dest="{{ monit_properties["monit_configad"] }}/spaceinode"
   notify:
     - reload monit configs
 
 - name: render monit systemd service config
-  template: src=monit.service_{{ monit_version }}.j2
+  template: src=monit.service.j2
             dest={{ monit_properties["monit_srvcnfig"] }}
   notify:
     - reload services

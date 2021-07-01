@@ -26,32 +26,32 @@
         recurse=yes
 
 - name: render goss import config
-  template: src="goss_{{ goss_version }}.yaml.j2"
+  template: src="goss.yaml.j2"
             dest="{{ goss_binary['config_location'] }}/goss.yaml"
   notify:
     - restart goss service
 
 - name: render goss base test
-  template: src="goss_base_{{ goss_version }}.yaml.j2"
+  template: src="goss_base.yaml.j2"
             dest="{{ goss_binary['config_location'] }}/goss_base.yaml"
   notify:
     - restart goss service
 
 - name: render bare min goss additional test
-  template: src="goss_adtnl_{{ goss_version }}.yaml.j2"
+  template: src="goss_adtnl.yaml.j2"
             dest="{{ goss_binary['configad_location'] }}/goss_adtnl.yaml"
   notify:
     - restart goss service
 
 - name: render goss server script
-  template: src="gosserver_{{ goss_version }}.sh.j2"
+  template: src="gosserver.sh.j2"
             dest="{{ goss_binary['binary_location'] | dirname }}/gosserver"
             mode='0755'
   notify:
     - restart goss service
 
 - name: render goss systemd service config
-  template: src=goss.service_{{ goss_version }}.j2
+  template: src=goss.service.j2
             dest={{ goss_binary["goss_srvcnfig"] }}
   notify:
     - reload services
@@ -63,7 +63,7 @@
            enabled=true
 
 - name: render goss monit config
-  template: src="goss_{{ goss_version }}.j2"
+  template: src="goss.j2"
             dest="{{ monit_properties["monit_configad"] }}/goss"
   notify:
     - reload monit configs

@@ -1,6 +1,6 @@
 ---
 - name: render goss kafka test
-  template: src="goss_kafka_{{ kafka_scala_version }}-{{ kafka_version }}.yaml.j2"
+  template: src="goss_kafka.yaml.j2"
             dest="{{ goss_binary['configad_location'] }}/goss_kafka.yaml"
   notify:
     - restart goss service

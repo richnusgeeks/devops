@@ -3,7 +3,7 @@ monit_properties: {
   "monit_configad": "/opt/monit/conf/monit.d",
 }
 
-kafka_version: "2.7.0"
+kafka_version: "2.8.0"
 kafka_java_version: "java-1.8.0-openjdk-headless"
 kafka_scala_version: "2.13"
 kafka_properties: {
@@ -14,4 +14,5 @@ kafka_properties: {
   "zookeeper_data_dir": "/tmp/zookeeper",
   "zookeeper_port": 2181,
   "kafka_port": 9092,
+  "kowl_port": 8080,
 }

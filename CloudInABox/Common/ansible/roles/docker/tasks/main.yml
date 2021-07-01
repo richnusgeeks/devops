@@ -13,3 +13,6 @@
 - include: cadvisor.yml
 
 - include: dckrbnchscrty.yml
+
+- include: kafkaowl.yml
+  when: ansible_hostname | regex_search("^kafka")

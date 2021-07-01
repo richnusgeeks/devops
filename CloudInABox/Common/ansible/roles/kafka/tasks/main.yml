@@ -3,6 +3,7 @@
   yum: name="{{ kafka_java_version }}"
        state=present
   when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'rocky' or
         ansible_os_family|lower == 'amazon'
 
 - name: debian => update apt package index
@@ -52,25 +53,25 @@
         mode='0755'
 
 - name: create zookeeper myid file
-  template: src="myid_{{ kafka_scala_version }}-{{ kafka_version }}.j2"
+  template: src="myid.j2"
             dest="{{ kafka_properties['zookeeper_data_dir'] }}/myid"
 
 - name: render zookeeper config for kafka
-  template: src="zookeeper_{{ kafka_scala_version }}-{{ kafka_version }}.properties.j2"
+  template: src="zookeeper.properties.j2"
             dest="{{ kafka_properties['config_location'] }}/zookeeper.properties"
             mode='0644'
   notify:
     - restart zookeeper
 
 - name: render server config for kafka
-  template: src="server_{{ kafka_scala_version }}-{{ kafka_version }}.properties.j2"
+  template: src="server.properties.j2"
             dest="{{ kafka_properties['config_location'] }}/server.properties"
             mode='0644'
   notify:
     - restart kafka
 
 - name: render monit config for kafka
-  template: src="kafkazkpr_{{ kafka_scala_version }}-{{ kafka_version }}.j2"
+  template: src="kafkazkpr.j2"
             dest="{{ monit_properties['monit_configad'] }}/kafkazkpr"
   notify:
     - reload monit configs

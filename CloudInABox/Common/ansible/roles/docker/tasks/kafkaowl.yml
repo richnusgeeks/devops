@@ -1,0 +1,7 @@
+---
+- name: render kafkaowl compose file
+  template: src=kafkaowl.yml.j2
+            dest="{{ docker_packages['all']['docker_compose_dir'] }}/kafkaowl.yml"
+
+- name: kafkaowl docker compose up
+  shell: docker-compose -f {{ docker_packages['all']['docker_compose_dir'] }}/kafkaowl.yml up -d

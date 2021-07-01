@@ -1,0 +1,12 @@
+version: "2.4"
+
+services:
+  kafkawebui:
+    image: quay.io/cloudhut/kowl:{{ kafkaowl_properties["image_tag"] }}
+    container_name: kafkawebui
+    hostname: kafkawebui
+    mem_limit: 512m
+    network_mode: host
+    restart: unless-stopped
+    environment:
+     - KAFKA_BROKERS=localhost:9092

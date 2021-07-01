@@ -50,3 +50,8 @@ cadvisor_properties: {
 dckrbnchscrty_properties: {
   "image_tag": "latest",
 }
+
+kafkaowl_properties: {
+  "image_tag": "master",
+  "host_port": 8080
+}

@@ -2,6 +2,9 @@
 - include: redhat.yml
   when: ansible_os_family|lower == 'redhat'
 
+- include: rocky.yml
+  when: ansible_os_family|lower == 'rocky'
+
 - include: debian.yml
   when: ansible_os_family|lower == 'debian'
 

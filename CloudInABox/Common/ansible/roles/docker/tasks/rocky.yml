@@ -1,0 +1,13 @@
+---
+# https://github.com/ansible/ansible/issues/46963
+- name: rocky => add stable repository
+  shell: "dnf config-manager --add-repo={{docker_packages['redhat']['repo']}}"
+
+- name: rocky => install main packages
+  dnf: name="{{docker_packages['redhat']['main']}}"
+       state=latest
+
+- name: redhat => start and enable docker service
+  service: name=docker
+           state=started
+           enabled=true

@@ -3,7 +3,7 @@ monit_properties: {
   "monit_configad": "/opt/monit/conf/monit.d",
 }
 
-compose_version: "1.26.2"
+compose_version: "1.29.2"
 docker_packages: {
   "all": {
     "docker_compose_dwnldurl": "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}",

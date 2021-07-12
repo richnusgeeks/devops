@@ -1,9 +1,9 @@
-version: '3.2'
+version: '2.4'
 
 services:
 
   motoserver:
-    image: moto${MOTOTAG}
+    image: moto:${MOTOTAG:-latest}
     container_name: motoserver
     hostname: motoserver
     build:
@@ -11,17 +11,21 @@ services:
       dockerfile: Dockerfile_MTSRVR
     ports:
       - "15000:5000"
+    mem_limit: 512m
     networks:
       - terraform-demo
 
   localstack:
-    image: localstack/localstack${LSTKTAG}
+    image: localstack/localstack:${LSTKTAG:-latest}
     container_name: localstack
     hostname: localstack
     volumes:
       - "${TMPDIR:-/tmp/terraform}:/tmp/terraform"
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
+      - "14453:53"
+      - "14453:53/udp"
+      - "14443:443"
       - "14566:4566"
       - "14571:4571"
       - "${PORT_WEB_UI-18080}:${PORT_WEB_UI-18080}"
@@ -31,19 +35,23 @@ services:
       - DATA_DIR=${DATA_DIR- }
       - PORT_WEB_UI=${PORT_WEB_UI- }
       - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY- }
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
-      - DOCKER_HOST=unix:///var/run/docker.sock        
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOST_TMP_FOLDER=${TMPDIR}
+    mem_limit: 1g
     networks:
       - terraform-demo
 
   terraformws:
-    image: hashicorp/terraform${TFRMTAG}
+    image: hashicorp/terraform:${TFRMTAG:-latest}
     container_name: terraformws
     hostname: terraformws
     volumes:
       - ./config/terraform:/etc/terraform:ro
     entrypoint: ash
     command: "-c 'while true; do sleep 5; done'"
+    mem_limit: 512m
     networks:
       - terraform-demo
 

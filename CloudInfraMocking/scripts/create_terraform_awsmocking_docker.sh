@@ -6,8 +6,11 @@ CMND=${3}
 NUMOPTNMX=4
 CMPSFLDIR='.'
 CMPSEFILE='terraform_awsmocking.yml'
-RQRDCMNDS="docker
-           docker-compose"
+RQRDCMNDS="awk
+           cat
+           docker
+           docker-compose
+           xargs"
 
 preReq() {
 
@@ -16,7 +19,7 @@ preReq() {
     if ! command -v "${c}" > /dev/null 2>&1
     then
       echo " Error: required command ${c} not found, exiting ..."
-      exit -1
+      exit 1
     fi
   done
 
@@ -24,9 +27,21 @@ preReq() {
 
 }
 
+preLint() {
+
+  cat "$(grep Dockerfile "${CMPSEFILE}"|awk '{print $NF}'|xargs)" | \
+    exec docker run --rm -i hadolint/hadolint 2>&1
+  echo
+  docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck -- \
+	 "$(basename "${0}")" 2>&1
+
+}
+
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|test|cleandown >"
+  echo " Usage: $(basename "${0}") < lint|up|buildup|ps
+                                         |exec <name> <cmnd>
+                                         |logs|down|test|cleandown >"
   exit 0
 
 }
@@ -38,7 +53,8 @@ parseArgs() {
     printUsage
   fi
 
-  if [[ "${OPTN}" != "up" ]] && \
+  if [[ "${OPTN}" != "lint" ]] && \
+     [[ "${OPTN}" != "up" ]] && \
      [[ "${OPTN}" != "ps" ]] && \
      [[ "${OPTN}" != "logs" ]] && \
      [[ "${OPTN}" != "down" ]] && \
@@ -65,7 +81,10 @@ main() {
 
   preReq
 
-  if [[ "${OPTN}" = "up" ]]
+  if [[ "${OPTN}" = "lint" ]]
+  then
+    preLint
+  elif [[ "${OPTN}" = "up" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
     testAwsCli
@@ -79,6 +98,7 @@ main() {
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+    docker system prune -f
   elif [[ "${OPTN}" = "exec" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${CMND}"

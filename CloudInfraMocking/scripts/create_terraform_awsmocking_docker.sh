@@ -29,8 +29,8 @@ preReq() {
 
 preLint() {
 
-  cat "$(grep Dockerfile "${CMPSEFILE}"|awk '{print $NF}'|xargs)" | \
-    exec docker run --rm -i hadolint/hadolint 2>&1
+  < "$(grep Dockerfile "${CMPSEFILE}"|awk '{print $NF}'|xargs)" \
+    docker run --rm -i hadolint/hadolint 2>&1
   echo
   docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck -- \
 	 "$(basename "${0}")" 2>&1

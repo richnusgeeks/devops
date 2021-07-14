@@ -1,5 +1,4 @@
 #! /bin/sh
-set -u
 
 OPRN=${1}
 OPTN=${2}

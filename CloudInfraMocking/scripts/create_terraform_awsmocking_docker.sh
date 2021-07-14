@@ -24,7 +24,7 @@ preReq() {
   done
 
   export COMPOSE_IGNORE_ORPHANS=1
-  export TFRMTAG=0.14.11
+  export TFRMTAG=1.0.2
 
 }
 

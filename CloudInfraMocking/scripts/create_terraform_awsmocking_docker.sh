@@ -24,6 +24,7 @@ preReq() {
   done
 
   export COMPOSE_IGNORE_ORPHANS=1
+  export TFRMTAG=0.14.11
 
 }
 
@@ -39,9 +40,13 @@ preLint() {
 
 printUsage() {
 
-  echo " Usage: $(basename "${0}") < lint|up|buildup|ps
+  echo " Usage: $(basename "${0}") <
+                                     lint|up|buildup|ps
                                          |exec <name> <cmnd>
-                                         |logs|down|test|cleandown >"
+                                         |test <motoserver|localstack>
+                                               <awssg|awsasg|awsalb>
+                                         |logs|down|cleandown
+                                   >"
   exit 0
 
 }
@@ -70,8 +75,15 @@ parseArgs() {
 
 testAwsCli() {
 
-  docker-compose -f moto_server_stack.yml exec motoserver \
+  docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec motoserver \
     sh -c 'AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url=http://localhost:5000 --region=us-east-1 ec2 describe-instances'
+
+}
+
+testTrfrm() {
+
+  docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec terraformws \
+    sh -c "trfrmcktst ${SRVC} ${CMND}"
 
 }
 
@@ -91,6 +103,7 @@ main() {
   elif [[ "${OPTN}" = "test" ]]
   then
     testAwsCli
+    testTrfrm
   elif [[ "${OPTN}" = "buildup" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" up --build -d

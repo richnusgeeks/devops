@@ -5,7 +5,7 @@ LABEL "com.richnusgeeks.vendor"="richnusgeeks"
 LABEL version="latest"
 LABEL description="dgoss test driver docker image"
 
-ENV GOSS_VERSION 0.3.13
+ENV GOSS_VERSION 0.3.16
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 WORKDIR /tmp

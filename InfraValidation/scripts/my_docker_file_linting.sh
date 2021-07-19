@@ -7,4 +7,4 @@ DCKRFL="${DOCKER_FILE:-Dockerfile}"
 DCKRIMG="hadolint/hadolint$(grep HDLNTAG .env|awk -F"=" '{print $NF}')"
 
 docker run --rm -i "${DCKRIMG}" < "${DCKRFL}" 2>&1 | \
-  tee "${LOGF}"
+  tee "${LOGF}$(date +%s)"

@@ -1,3 +1,0 @@
----
-dependencies:
-  - { role: epelrepo, when: ansible_os_family|lower == 'redhat' and ansible_distribution|lower != "amazon"}

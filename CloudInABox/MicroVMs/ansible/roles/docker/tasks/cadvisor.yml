@@ -1,7 +1,0 @@
----
-- name: render cadvisor compose file
-  template: src=cadvisor.yml.j2
-            dest="{{ docker_packages['all']['docker_compose_dir'] }}/cadvisor.yml"
-
-- name: cadvisor docker compose up
-  shell: docker-compose -f {{ docker_packages['all']['docker_compose_dir'] }}/cadvisor.yml up -d

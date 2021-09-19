@@ -1,5 +1,0 @@
-#! /bin/bash
-set -o pipefail
-
-{{ goss_binary['binary_location'] }} -g {{ goss_binary['config_location'] }}/goss.yaml r | tee /tmp/goss_rendered.yaml
-{{ goss_binary['binary_location'] }} -g /tmp/goss_rendered.yaml s -l :{{ goss_binary['listen_port'] }} -f {{ goss_binary['output_format'] }} -e /status

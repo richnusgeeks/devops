@@ -1,6 +1,0 @@
-#! /bin/bash
-
-{{ docker_packages['all']['docker_compose_location'] }} --no-ansi -f \
-{{ docker_packages['all']['docker_compose_dir'] }}/dckrbnchscrty.yml up 2>&1| \
-tee /var/log/dckrbnchscrty.log
-

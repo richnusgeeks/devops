@@ -13,6 +13,12 @@
        state=present
   when: ansible_distribution|lower == "amazon"
 
+- name: install libnsl on centos8
+  dnf: name=libnsl
+       state=present
+  when: ansible_distribution|lower == "centos" and
+        ansible_distribution_major_version == "8"
+
 - name: untar monit tarball
   unarchive: src="/tmp/{{ monit_properties["monit_archive"] }}"
              dest="/tmp"

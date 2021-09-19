@@ -4,12 +4,15 @@ LABEL "com.richnusgeeks.category"="utility"
 LABEL version="latest"
 LABEL description="docker based ansible test driver"
 
+ARG CRYPTOGRAPHY_DONT_BUILD_RUST=1
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN adduser -D -S ansible && \
     pip install -U pip && \
     apk add --no-cache --virtual .build-deps \
       alpine-sdk libffi-dev openssl-dev && \
     apk add --no-cache openssh-client && \
-    pip install ansible suitable && \
+    pip install ansible==3.4.0 suitable && \
     apk del .build-deps
 
 USER ansible

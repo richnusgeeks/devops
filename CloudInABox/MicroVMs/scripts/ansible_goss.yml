@@ -8,7 +8,7 @@ services:
        context: .
        dockerfile: Dockerfile_Ansible
      volumes:
-       - ../ansible:/etc/ansible:ro
+       - ../../Common/ansible:/etc/ansible:ro
      command: main.yml -t apply_goss
      mem_limit: 500m
      network_mode: host

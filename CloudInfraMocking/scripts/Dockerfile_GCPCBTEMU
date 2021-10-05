@@ -1,0 +1,8 @@
+FROM google/cloud-sdk:alpine
+
+EXPOSE 8086
+
+RUN gcloud components install beta bigtable --quiet
+
+ENTRYPOINT ["gcloud","beta","emulators","bigtable","start","--quiet"]
+CMD ["--host-port=0.0.0.0:8086"]

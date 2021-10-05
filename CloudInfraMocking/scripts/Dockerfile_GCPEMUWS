@@ -1,0 +1,20 @@
+FROM alpine:3.12 AS dockerize
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget --no-check-certificate https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && echo "**** fix for host id mapping error ****" \
+    && chown root:root /usr/local/bin/dockerize
+
+FROM google/cloud-sdk:alpine
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+RUN gcloud components install cbt --quiet && \
+    printf "%s\n%s\n" "project=demo" "instance=demo"|tee ~/.cbtrc
+
+COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin/
+
+COPY gcpcbt_run.sh /usr/local/bin/run.sh
+
+ENTRYPOINT ["run.sh"]

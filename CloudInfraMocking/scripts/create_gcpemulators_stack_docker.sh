@@ -27,7 +27,7 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown|chefrun >"
+  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown >"
   exit 0
 
 }

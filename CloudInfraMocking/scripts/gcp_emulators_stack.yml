@@ -2,18 +2,29 @@ version: '3.2'
 
 services:
 
-  gcpemulators:
-    image: gcpemulators
+  gcpcbtemu:
+    image: gcpcbtemu
     build:
       context: .
-      dockerfile: Dockerfile_GCPEMU
-    container_name: gcpemulators
-    hostname: gcpemulators
+      dockerfile: Dockerfile_GCPCBTEMU
+    container_name: gcpcbtemu
+    hostname: gcpcbtemu
     ports:
-      - "28000:8000"
-      - "28081:8081"
-      - "28085:8085"
       - "28086:8086"
+    networks:
+      - gcpemulators-demo
+
+  gcpemuws:
+    image: gcpemuws
+    build:
+      context: .
+      dockerfile: Dockerfile_GCPEMUWS
+    container_name: gcpemuws
+    hostname: gcpemuws
+    environment:
+      - "BIGTABLE_EMULATOR_HOST=gcpcbtemu:8086"
+    depends_on:
+      - gcpcbtemu
     networks:
       - gcpemulators-demo
 

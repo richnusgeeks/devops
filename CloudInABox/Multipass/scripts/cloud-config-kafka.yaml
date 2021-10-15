@@ -98,11 +98,11 @@ write_files:
     owner: ubuntu:ubuntu
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.28.0/monit-5.28.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.29.0/monit-5.29.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.28.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.28.0 ]
+  - [ cp, monit-5.29.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.29.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh
@@ -110,9 +110,9 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://apache.claz.org/kafka/2.8.0/kafka_2.13-2.8.0.tgz" -O kafka.tgz
+  - wget "https://apache.claz.org/kafka/3.0.0/kafka_2.13-3.0.0.tgz" -O kafka.tgz
   - tar zxvf kafka.tgz
-  - mv kafka_2.13-2.8.0 /opt/kafka
+  - mv kafka_2.13-3.0.0 /opt/kafka
   - rm -rfv kafka.tgz
   - systemctl start monit
   - mkdir -p /opt/docker/compose

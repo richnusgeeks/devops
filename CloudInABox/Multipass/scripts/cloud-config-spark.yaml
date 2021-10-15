@@ -73,11 +73,11 @@ write_files:
     owner: root:root
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.28.0/monit-5.28.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.29.0/monit-5.29.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.28.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.28.0 ]
+  - [ cp, monit-5.29.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.29.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh
@@ -85,9 +85,9 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
   - chmod 0755 /usr/local/bin/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://apache.osuosl.org/spark/spark-3.1.1/spark-3.1.1-bin-hadoop2.7.tgz" -O spark.tgz
+  - wget "https://apache.osuosl.org/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz" -O spark.tgz
   - tar zxvf spark.tgz
-  - mv spark-3.1.1-bin-hadoop2.7 /opt/spark
+  - mv spark-3.1.2-bin-hadoop3.2 /opt/spark
   - rm -rfv spark.tgz
   - systemctl start monit
 output:

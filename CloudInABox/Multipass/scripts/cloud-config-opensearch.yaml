@@ -1,0 +1,135 @@
+# cat cloud-config-opensearch.yaml|multipass launch -m 2G -n opensearch --cloud-init -
+# ssh -oStrictHostKeyChecking=no ubuntu@opensearch.local
+# multipass delete opensearch && multipass purge && ssh-keygen -R opensearch.local
+#cloud-config
+users:
+  - default
+  - name: ubuntu
+    gecos: Ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    ssh_import_id: None
+    lock_passwd: true
+    ssh_authorized_keys:
+      - PUBLICKEY
+package_update: true
+package_upgrade: true
+packages:
+  - avahi-daemon
+write_files:
+  - content: |
+      CHECK SYSTEM opensearch
+      set daemon 10
+      set log /var/log/monit.log
+
+      set mail-format { from: monit@richnusgeeks.demo }
+
+      set httpd port 2812 and
+        use address 0.0.0.0
+        allow localhost
+        allow 0.0.0.0/0
+        allow admin:monit
+        allow guest:guest readonly
+
+      include /opt/monit/monit.d/*
+    path: /opt/monit/conf/monitrc
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      check filesystem rootfs with path /
+        if space usage > 90% then alert
+        if inode usage > 90% then alert
+    path: /opt/monit/monit.d/spaceinode
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      [Unit]
+      Description=Pro-active monitoring utility for unix systems
+      After=network.target
+      Documentation=man:monit(1) https://mmonit.com/wiki/Monit/HowTo
+
+      [Service]
+      Type=simple
+      KillMode=process
+      ExecStart=/opt/monit/bin/monit -I -c /opt/monit/conf/monitrc
+      ExecStop=/opt/monit/bin/monit -c /opt/monit/conf/monitrc quit
+      ExecReload=/opt/monit/bin/monit -c /opt/monit/conf/monitrc reload
+      Restart = on-abnormal
+      StandardOutput=journal
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+    path: /lib/systemd/system/monit.service
+    owner: root:root
+    permissions: '0600'
+  - content: |
+      version: "2.4"
+      services:
+        opensearch:
+          image: opensearchproject/opensearch:1.1.0
+          container_name: opensearch
+          hostname: opensearch
+          mem_limit: 1.2g
+          healthcheck:
+            test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:admin'", "--insecure"]
+            interval: 5s
+            timeout: 5s
+            retries: 60
+          network_mode: host
+          volumes:
+            - opensearch-data:/usr/share/opensearch/data
+          restart: unless-stopped
+          environment:
+            - cluster.name=opensearch
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+            - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+          ulimits:
+            memlock:
+              soft: -1
+              hard: -1
+            nofile:
+              soft: 65536
+              hard: 65536
+        opensearchdshbrds:
+          image: opensearchproject/opensearch-dashboards:1.1.0
+          container_name: opensearchdshbrds
+          hostname: opensearchdshbrds
+          mem_limit: 512m
+          network_mode: host
+          restart: unless-stopped
+          environment:
+            - 'OPENSEARCH_HOSTS=["https://localhost:9200"]'
+          depends_on:
+            opensearch:
+              condition: service_healthy
+      volumes:
+        opensearch-data:
+    path: /opt/docker/compose/opensearch.yml
+    owner: ubuntu:ubuntu
+    permissions: '0600'
+runcmd:
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.29.0/monit-5.29.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ tar, zxvf, monit.tgz ]
+  - [ mkdir, /opt/monit/bin ]
+  - [ cp, monit-5.29.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.29.0 ]
+  - wget "https://get.docker.com" -O get-docker.sh
+  - sh get-docker.sh
+  - rm -fv get-docker.sh
+  - usermod -aG docker ubuntu
+  - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
+  - chmod 0755 /usr/local/bin/docker-compose
+  - mkdir -p /opt/docker/compose
+  - systemctl start monit
+  - docker-compose -f /opt/docker/compose/opensearch.yml up -d
+output:
+  init:
+    output: "> /var/log/cloud-init.out"
+    error: "> /var/log/cloud-init.err"
+  config: "tee -a /var/log/cloud-config.log"
+  final:
+    - ">> /var/log/cloud-final.out"
+    - "/var/log/cloud-final.err"

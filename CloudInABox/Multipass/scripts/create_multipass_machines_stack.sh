@@ -45,7 +45,7 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename $0) < ping|start|stop|show|
-                         [create|ssh] [cassandra|consuldev|elasticsearchod|
+                         [create|ssh] [cassandra|consuldev|opensearch|
                                        kafka|nomadev|spark|vaultdev]
                         |delete|cleandelete >"
 EOF
@@ -74,12 +74,12 @@ parseArgs() {
 
   if [[ "${OPTN}" = "create" ]] || [[ "${OPTN}" = "ssh" ]]
   then
-    if [[ "${OPTNTST}" != "cassandra" ]]     && \
-       [[ "${OPTNTST}" != "consuldev" ]]     && \
-       [[ "${OPTNTST}" != "elasticsearchod" ]] && \
-       [[ "${OPTNTST}" != "kafka" ]]         && \
-       [[ "${OPTNTST}" != "nomadev" ]]       && \
-       [[ "${OPTNTST}" != "spark" ]]         && \
+    if [[ "${OPTNTST}" != "cassandra" ]]  && \
+       [[ "${OPTNTST}" != "consuldev" ]]  && \
+       [[ "${OPTNTST}" != "opensearch" ]] && \
+       [[ "${OPTNTST}" != "kafka" ]]      && \
+       [[ "${OPTNTST}" != "nomadev" ]]    && \
+       [[ "${OPTNTST}" != "spark" ]]      && \
        [[ "${OPTNTST}" != "vaultdev" ]]
     then
       printUsage

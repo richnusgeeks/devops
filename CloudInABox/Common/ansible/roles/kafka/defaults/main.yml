@@ -3,12 +3,12 @@ monit_properties: {
   "monit_configad": "/opt/monit/conf/monit.d",
 }
 
-kafka_version: "2.8.0"
+kafka_version: "3.0.0"
 kafka_java_version: "java-1.8.0-openjdk-headless"
 kafka_scala_version: "2.13"
 kafka_properties: {
   "kafka_archive": "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",
-  "download_url": "https://apache.claz.org/kafka/{{ kafka_version }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",
+  "download_url": "https://dlcdn.apache.org/kafka/{{ kafka_version }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz",
   "binary_location": "/opt/kafka/bin",
   "config_location": "/opt/kafka/config",
   "zookeeper_data_dir": "/tmp/zookeeper",

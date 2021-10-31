@@ -6,4 +6,10 @@ LABEL description="docker image for RockyLinux to replace CentOS"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN dnf install -y openssh-server libnsl && \
-    dnf install -y 'dnf-command(config-manager)'
+    dnf install -y 'dnf-command(config-manager)' && \
+    dnf clean all
+
+# https://www.freedesktop.org/wiki/Software/systemd/ContainerInterface/
+STOPSIGNAL SIGRTMIN+3
+
+CMD ["/bin/bash"]

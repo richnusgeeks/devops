@@ -83,12 +83,21 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename "${0}")
-                       < lint|create|buildcreate|start|stop|show|
-                         test [ping|goss|consulserver|consulclient|
-                               consulesm|hashiui|consultemplate|docker|
-                               cassandra|elasticsearch|kafka|spark|
-                               monitoror|testinfra|vigil]
-                        |delete|cleandelete|config >"
+   < lint   - run static analysis on Dockerfiles and Shellscripts |
+     create - create containers machine stack as per footloose.cfg |
+     buildcreate - like create but builds the necessary container images first |
+     start - start container machines |
+     stop - stop container machines |
+     show - dumps info about thr created container machines |
+     test - run specified ansible role to configure the stack,
+	    valid roles are (ping is default if nothing mentioned):
+            [[ping]|goss|consulserver|consulclient|
+             consulesm|hashiui|consultemplate|docker|
+             cassandra|elasticsearch|kafka|spark|
+             monitoror|testinfra|vigil] |
+     delete - deletes everything created |
+     cleandelete - like delete but additionally cleaning up docker volumes |
+     config - dumps auto-generated footloose configuration >
 EOF
   exit 0
 

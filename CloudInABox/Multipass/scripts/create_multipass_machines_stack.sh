@@ -158,7 +158,7 @@ setupStack() {
   fi
 
   if [[ "${1}" = "cassandra" ]] || \
-     [[ "${1}" = "elasticsearchod" ]] || \
+     [[ "${1}" = "opensearch" ]] || \
      [[ "${1}" = "kafka" ]] || \
      [[ "${1}" = "spark" ]]
   then

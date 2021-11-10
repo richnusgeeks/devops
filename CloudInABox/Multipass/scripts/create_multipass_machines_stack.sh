@@ -44,10 +44,16 @@ exitOnErr() {
 printUsage() {
 
   cat <<EOF
- Usage: $(basename $0) < ping|start|stop|show|
-                         [create|ssh] [cassandra|consuldev|opensearch|
-                                       kafka|nomadev|spark|vaultdev]
-                        |delete|cleandelete >"
+ Usage: $(basename "${0}")
+   < ping - test ssh connectivity to created local cloudvms |
+     start - start all local cloudvms |
+     stop - stop all local cloudvms |
+     show - dumps info about all local cloudvms |
+     create - bringup fully configured localvm for,
+              [cassandra|consuldev|opensearch|
+               kafka|nomadev|spark|vaultdev] |
+     delete - deletes all local cloudvms |
+     cleandelete - cleanup everything for all local cloudvms >
 EOF
   exit 0
 

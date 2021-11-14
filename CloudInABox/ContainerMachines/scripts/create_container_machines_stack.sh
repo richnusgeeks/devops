@@ -88,14 +88,14 @@ printUsage() {
      buildcreate - like create but builds the necessary container images first |
      start - start container machines |
      stop - stop container machines |
-     show - dumps info about thr created container machines |
+     show - dump info about the created container machines |
      test - run specified ansible role to configure the stack,
 	    valid roles are (ping is default if nothing mentioned):
             [[ping]|goss|consulserver|consulclient|
              consulesm|hashiui|consultemplate|docker|
              cassandra|elasticsearch|kafka|spark|
              monitoror|testinfra|vigil] |
-     delete - deletes everything created |
+     delete - delete everything created |
      cleandelete - like delete but additionally cleaning up docker volumes |
      config - dumps auto-generated footloose configuration >
 EOF

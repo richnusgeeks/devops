@@ -17,6 +17,19 @@
 - name: install unzip for unarchival 
   yum: name=unzip
        state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'rocky' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install unzip for unarchival
+  apt: name=unzip
+       state=present
+  when: ansible_os_family|lower == 'debian'
 
 - name: unarchive consul archive
   unarchive: src="/tmp/{{ consul_binary['download_url'] | basename }}"
@@ -49,7 +62,7 @@
         recurse=yes
 
 - name: generate gossip encryption key
-  shell: "if [[ -z $(grep encrypt {{ consul_binary['config_location'] }} | awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ]];then {{ consul_binary['binary_location'] }} keygen;fi"
+  shell: "if [ -z $(grep encrypt {{ consul_binary['config_location'] }} 2>/dev/null| awk -F': *' '{print $NF}'|sed 's/\"//g'|sed 's/,//') ];then {{ consul_binary['binary_location'] }} keygen;fi"
   register: gosenckey
   run_once: true
 

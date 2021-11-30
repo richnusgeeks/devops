@@ -133,7 +133,7 @@ cluster:
 machines:
 EOF
 
-  while read -r Name Count Image Kernel Cpu Memory Disk Networks Ports
+  while read -r Name Count Image Kernel Cpu Memory Disk Ports
   do
     if echo "${Name}"|grep '^ *#' > /dev/null 2>&1 || echo "${Name}"|grep '^ *$' > /dev/null
     then
@@ -152,25 +152,25 @@ EOF
       diskSize: ${Disk}
       kernel: "${Kernel}"
 EOF
-    tee -a "${FTLSCFGOUFL}" <<EOF
-    portMappings:
-EOF
-    for p in ${Ports//,/ }
-    do
-      if echo "${p}" | grep ':' > /dev/null 2>&1
-      then
-        hstprt="$(echo "${p}" | awk -F':' '{print $1}')"
-        ctrprt="$(echo "${p}" | awk -F':' '{print $2}')"
-        tee -a "${FTLSCFGOUFL}" <<EOF
-    - containerPort: ${ctrprt}
-      hostPort: ${hstprt}
-EOF
-      else
-        tee -a "${FTLSCFGOUFL}" <<EOF
-    - containerPort: ${p}
-EOF
-      fi
-      done
+#    tee -a "${FTLSCFGOUFL}" <<EOF
+#    portMappings:
+#EOF
+#    for p in ${Ports//,/ }
+#    do
+#      if echo "${p}" | grep ':' > /dev/null 2>&1
+#      then
+#        hstprt="$(echo "${p}" | awk -F':' '{print $1}')"
+#        ctrprt="$(echo "${p}" | awk -F':' '{print $2}')"
+#        tee -a "${FTLSCFGOUFL}" <<EOF
+#    - containerPort: ${ctrprt}
+#      hostPort: ${hstprt}
+#EOF
+#      else
+#        tee -a "${FTLSCFGOUFL}" <<EOF
+#    - containerPort: ${p}
+#EOF
+#      fi
+#      done
   done < "${FTLSCFGINFL}"
 
 }

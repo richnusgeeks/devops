@@ -45,7 +45,6 @@ parseArgs() {
      [[ "${OPTN}" != "down" ]] && \
      [[ "${OPTN}" != "cleandown" ]] && \
      [[ "${OPTN}" != "buildup" ]] &&
-     [[ "${OPTN}" != "chefrun" ]] &&
      [[ "${OPTN}" != "exec" ]]
   then
     printUsage
@@ -68,6 +67,7 @@ main() {
   elif [[ "${OPTN}" = "cleandown" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" down -v
+    docker image prune -f
   elif [[ "${OPTN}" = "exec" ]]
   then
     exec docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" exec "${SRVC}" "${SHELL}"

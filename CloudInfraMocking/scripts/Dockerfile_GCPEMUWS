@@ -11,10 +11,11 @@ FROM google/cloud-sdk:alpine
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN gcloud components install cbt --quiet && \
-    printf "%s\n%s\n" "project=demo" "instance=demo"|tee ~/.cbtrc
+    printf "%s\n%s\n" "project=demo" "instance=demo"|tee ~/.cbtrc && \
+    gcloud config configurations create emulator --quiet
 
 COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin/
 
-COPY gcpcbt_run.sh /usr/local/bin/run.sh
+COPY gcpemu_run.sh /usr/local/bin/run.sh
 
 ENTRYPOINT ["run.sh"]

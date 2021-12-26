@@ -1,0 +1,9 @@
+FROM google/cloud-sdk:alpine
+
+EXPOSE 8085
+
+RUN apk add --no-cache openjdk8-jre \
+  && gcloud components install beta pubsub-emulator --quiet
+
+ENTRYPOINT ["gcloud","beta","emulators","pubsub","start","--project=demo"]
+CMD ["--host-port=0.0.0.0:8085"]

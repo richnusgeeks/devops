@@ -1,4 +1,17 @@
 #! /bin/sh
+
+echo
+echo ' <Start of Cloud PubSub Quick Test>'
+dockerize -wait tcp://gcpcpsemu:8085
+
+cd python-pubsub/samples/snippets
+python3 publisher.py demo create demo
+python3 subscriber.py demo create demo demo
+python3 publisher.py demo publish demo
+python3 subscriber.py demo receive demo 20
+echo ' <End of Cloud PubSub Quick Test>'
+echo
+
 (
 echo ' <Start of Cloud Big Table Quick Test>'
 dockerize -wait tcp://gcpcbtemu:8086
@@ -26,4 +39,5 @@ gcloud spanner instances list \
 gcloud spanner instances delete test-instance \
   --configuration=emulator-config --quiet
 echo ' <End of Cloud Spanner Quick Test>'
+echo
 )

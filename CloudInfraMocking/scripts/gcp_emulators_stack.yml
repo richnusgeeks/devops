@@ -2,6 +2,18 @@ version: '3.2'
 
 services:
 
+  gcpcpsemu:
+    image: gcpcpsemu
+    build:
+      context: .
+      dockerfile: Dockerfile_GCPCPSEMU
+    container_name: gcpcpsemu
+    hostname: gcpcpsemu
+    ports:
+      - "28085:8085"
+    networks:
+      - gcpemulators-demo
+
   gcpcbtemu:
     image: gcpcbtemu
     build:
@@ -32,12 +44,15 @@ services:
     container_name: gcpemuws
     hostname: gcpemuws
     environment:
+      - "PUBSUB_EMULATOR_HOST=gcpcpsemu:8085"
+      - "PUBSUB_PROJECT_ID=demo"
       - "BIGTABLE_EMULATOR_HOST=gcpcbtemu:8086"
       - "SPANNER_EMULATOR_HOST=gcpcspemu:9020"
       - "CLOUDSDK_AUTH_DISABLE_CREDENTIALS=true"
       - "CLOUDSDK_CORE_PROJECT=demo"
       - "CLOUDSDK_API_ENDPOINT_OVERRIDES_SPANNER=http://gcpcspemu:9020/"
     depends_on:
+      - gcpcpsemu
       - gcpcbtemu
       - gcpcspemu
     networks:

@@ -48,7 +48,7 @@ services:
     container_name: terraformws
     hostname: terraformws
     volumes:
-      - ./config/terraform:/etc/terraform:ro
+      - ../../../Common/Terraform:/etc/terraform:ro
       - ./terraform_mock_test.sh:/usr/local/bin/trfrmcktst:ro
     entrypoint: ash
     command: "-c 'while true; do sleep 5; done'"

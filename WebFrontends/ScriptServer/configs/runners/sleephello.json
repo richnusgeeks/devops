@@ -1,0 +1,5 @@
+{
+  "name": "sleep hello",
+  "description": "sleep first then hello",
+  "script_path": "/app/scripts/sleephello.sh"
+}

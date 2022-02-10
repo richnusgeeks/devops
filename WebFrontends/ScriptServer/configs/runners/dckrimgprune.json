@@ -1,0 +1,5 @@
+{
+  "name": "docker image prune",
+  "description": "cleanup dangling docker images",
+  "script_path": "/app/scripts/dckimgprune.sh"
+}

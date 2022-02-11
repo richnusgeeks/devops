@@ -16,7 +16,7 @@ preReq() {
     if ! command -v "${c}" > /dev/null 2>&1
     then
       echo " Error: required command ${c} not found, exiting ..."
-      exit -1
+      exit 1
     fi
   done
 
@@ -28,7 +28,8 @@ printUsage() {
 
   cat <<EOF
  Usage: $(basename "${0}")
-   < up      - bring up olivetin stack |
+   < lint    - run static analysis on Dockerfiles and Shellscripts |
+     up      - bring up olivetin stack |
      buildup - like up but builds the necessary container image(s) first |
      ps      - list olivetin container(s) |
      logs    - view olivetin container(s) output |
@@ -46,7 +47,8 @@ parseArgs() {
     printUsage
   fi
 
-  if [[ "${OPTN}" != "up" ]] && \
+  if [[ "${OPTN}" != "lint" ]] && \
+     [[ "${OPTN}" != "up" ]] && \
      [[ "${OPTN}" != "ps" ]] && \
      [[ "${OPTN}" != "logs" ]] && \
      [[ "${OPTN}" != "down" ]] && \
@@ -57,13 +59,25 @@ parseArgs() {
 
 }
 
+preLint() {
+
+  find . -maxdepth 1 -name 'Dockerfile*' -exec cat {} \; | \
+    docker run --rm -i hadolint/hadolint 2>&1
+  echo
+  docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck -- *.sh 2>&1
+
+}
+
 main() {
 
   parseArgs
 
   preReq
 
-  if [[ "${OPTN}" = "up" ]]
+  if [[ "${OPTN}" = "lint" ]]
+  then
+    preLint
+  elif [[ "${OPTN}" = "up" ]]
   then
     docker-compose -f "${CMPSFLDIR}/${CMPSEFILE}" "${OPTN}" -d
   elif [[ "${OPTN}" = "buildup" ]]

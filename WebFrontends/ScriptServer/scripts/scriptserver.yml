@@ -19,6 +19,7 @@ services:
     mem_limit: 512m
     networks:
       - scriptserver-demo
+    restart: unless-stopped
 
 networks:
   scriptserver-demo:

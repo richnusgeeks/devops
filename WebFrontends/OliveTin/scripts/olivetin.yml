@@ -1,0 +1,20 @@
+version: '2.4'
+
+services:
+
+  olivetin:
+    image: jamesread/olivetin:${SCPTSRVR:-latest}
+    container_name: olivetin
+    hostname: olivetin
+    ports:
+      - "51337:1337"
+    volumes:
+      - ../configs/config.yaml:/etc/OliveTin/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 512m
+    networks:
+      - olivetin-demo
+    restart: unless-stopped    
+
+networks:
+  olivetin-demo:

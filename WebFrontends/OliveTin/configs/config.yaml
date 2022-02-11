@@ -1,0 +1,33 @@
+logLevel: "DEBUG"
+hideNavigation: true
+
+actions:
+  - title: "Hello FLOSS Rockstar!!!"
+    icon: '<img src =
+"https://www.popiconsblog.com/uploads/9/9/4/4/9944728/pink-floyd-wish-you-were-here-pop-icons-behind-the-song_orig.jpg" width = "100px"/>'
+    shell: sleep "{{delay}}" && echo 'Hello FLOSS!!!'
+    arguments:
+      - name: delay
+        choices:
+          - title: 1 sec
+            value: 1
+          - title: 5 sec
+            value: 5
+          - title: 10 sec
+            value: 10
+    timeout: 6
+
+  - title: "Nuke Dangling Docker Images"
+    shell: docker image prune -f
+    icon: "&#129512;"
+    timeout: 10
+
+  - title: Ping An Address
+    shell: ping {{address}} -c {{count}}
+    icon: ping
+    timeout: 3
+    arguments:
+      - name: count
+        type: int
+      - name: address
+        type: ascii_identifier

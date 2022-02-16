@@ -12,7 +12,7 @@ services:
     ports:
       - "55000:5000"
     volumes:
-#      - ../configs/conf.json:/app/conf/conf.json:ro
+      - ../configs/conf.json:/app/conf/conf.json:ro
       - ../configs/runners/:/app/conf/runners/:ro
       - ../configs/scripts/:/app/scripts:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

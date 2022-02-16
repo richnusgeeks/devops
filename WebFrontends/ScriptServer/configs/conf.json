@@ -1,0 +1,9 @@
+{
+  "title": "Test Script Server",
+  "access": {
+    "admin_users": [ "*" ]
+  },
+  "security": {
+    "xsrf_protection": "token"
+  }
+}

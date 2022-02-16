@@ -49,6 +49,7 @@ parseArgs() {
 
   if [[ "${OPTN}" != "lint" ]] && \
      [[ "${OPTN}" != "up" ]] && \
+     [[ "${OPTN}" != "buildup" ]] && \
      [[ "${OPTN}" != "ps" ]] && \
      [[ "${OPTN}" != "logs" ]] && \
      [[ "${OPTN}" != "down" ]] && \

@@ -1,7 +1,11 @@
 {
   "title": "Test Script Server",
   "access": {
-    "admin_users": [ "*" ]
+    "admin_users": [ "admin" ]
+  },
+  "auth": {
+    "type": "htpasswd",
+    "htpasswd_path": "/etc/.htpasswd"
   },
   "security": {
     "xsrf_protection": "token"

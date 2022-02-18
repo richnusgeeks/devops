@@ -13,4 +13,5 @@ RUN apt-get update \
   && mv docker/docker /usr/local/bin \
   && rm -rf docker docker.tgz \
   && apt-get remove curl -y \
-  && apt-get clean
+  && apt-get clean \
+  && echo -e 'test:{SHA}qUqP5cyxm6YcTAhz05Hph5gvu9M=\nadmin:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc=' > /etc/.htpasswd

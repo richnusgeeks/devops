@@ -1,5 +1,12 @@
 {
   "name": "docker image prune",
   "description": "cleanup dangling docker images",
-  "script_path": "/app/scripts/dckimgprune.sh"
+  "script_path": "/app/scripts/dckimgprune.sh",
+  "parameters": [
+    {
+      "name": "unused images",
+      "description": "all unused images cleanup",
+      "no_value": true
+    }
+  ]
 }

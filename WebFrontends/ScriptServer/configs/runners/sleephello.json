@@ -1,5 +1,15 @@
 {
   "name": "sleep hello",
   "description": "sleep first then hello",
-  "script_path": "/app/scripts/sleephello.sh"
+  "script_path": "/app/scripts/sleephello.sh",
+  "parameters": [
+    {
+      "name": "delay",
+      "type": "list",
+      "required": true,
+      "description": "sec to sleep before printing greeting",
+      "default": "3",
+      "values": [ "1", "3", "5", "10" ]
+    }
+  ]
 }

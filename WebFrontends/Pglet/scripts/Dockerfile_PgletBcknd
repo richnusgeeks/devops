@@ -1,0 +1,31 @@
+FROM debian:stable-slim
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="latest"
+LABEL description="pglet backend image for bash scripts"
+
+ENV PGLET_VERSION 0.7.0
+ENV DOCKERIZE_VERSION v0.6.1
+
+WORKDIR /tmp
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN apt-get update \
+  && apt-get install --no-install-recommends curl ca-certificates -y \
+  && curl -sSLk -o docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1)" \
+  && curl -sSLk -o dockerize.tgz "https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz" \
+  && curl -sSLk -o pglet.tgz "https://github.com/pglet/pglet/releases/download/v$PGLET_VERSION/pglet-$PGLET_VERSION-linux-amd64.tar.gz" \
+  && tar -zxf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rf docker docker.tgz \
+  && curl -O https://pglet.io/pglet.sh \
+  && mv pglet.sh /usr/local/lib \
+  && tar -C /usr/local/bin -zxf dockerize.tgz \
+  && rm -f dockerize.tgz \
+  && echo "**** fix for host id mapping error ****" \
+  && chown root:root /usr/local/bin/dockerize \
+  && tar -C /usr/local/bin -zxf pglet.tgz \
+  && rm -f pglet.tgz \
+  && apt-get remove curl ca-certificates -y \
+  && apt-get clean
+
+WORKDIR /pglet/backend

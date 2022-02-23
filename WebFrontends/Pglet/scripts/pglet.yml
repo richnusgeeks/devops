@@ -1,0 +1,41 @@
+version: '2.4'
+
+services:
+
+  pgletserver:
+    image: pglet/server:${PGLTSRVR:-latest}
+    container_name: pgletserver
+    hostname: pgletserver
+    ports:
+      - "58080:8080"
+    mem_limit: 512m
+    networks:
+      - pglet-demo
+    restart: unless-stopped
+
+  pgletbcknd:
+    image: pgletbcknd:${PGLTBKND:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile_PgletBcknd
+    container_name: pgletbcknd
+    hostname: pgletbcknd
+    volumes:
+      - ../configs/:/pglet/backend/:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: "bash/greeter.sh"
+    environment:
+      - "PGLET_SERVER=pgletserver:8080"
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "dockerize", "-wait", "tcp:////pgletserver:8080"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    depends_on:
+      - pgletserver
+    networks:
+      - pglet-demo
+
+networks:
+  pglet-demo:

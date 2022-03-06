@@ -26,6 +26,30 @@ services:
     networks:
       - gcpemulators-demo
 
+  gcpcdsemu:
+    image: gcpcdsemu
+    build:
+      context: .
+      dockerfile: Dockerfile_GCPCDSEMU
+    container_name: gcpcdsemu
+    hostname: gcpcdsemu
+    ports:
+      - "28081:8081"
+    networks:
+      - gcpemulators-demo
+
+  gcpcfsemu:
+    image: gcpcfsemu
+    build:
+      context: .
+      dockerfile: Dockerfile_GCPCFSEMU
+    container_name: gcpcfsemu
+    hostname: gcpcfsemu
+    ports:
+      - "28721:8721"
+    networks:
+      - gcpemulators-demo
+
   gcpcspemu:
     image: gcr.io/cloud-spanner-emulator/emulator
     container_name: gcpcspemu

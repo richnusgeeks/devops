@@ -14,9 +14,22 @@
            validate_certs=no
   when: consulesm_version != consulesm_version_current.stdout
 
-- name: install unzip for unarchival 
+- name: install unzip for unarchival
   yum: name=unzip
        state=present
+  when: ansible_os_family|lower == 'redhat' or
+        ansible_os_family|lower == 'rocky' or
+        ansible_os_family|lower == 'amazon'
+
+- name: debian => update apt package index
+  shell: apt-get update
+  ignore_errors: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: debian => install unzip for unarchival
+  apt: name=unzip
+       state=present
+  when: ansible_os_family|lower == 'debian'
 
 - name: unarchive consulesm archive
   unarchive: src="/tmp/{{ consulesm_binary['download_url'] | basename }}"

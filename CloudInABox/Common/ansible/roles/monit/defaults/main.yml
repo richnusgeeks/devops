@@ -1,5 +1,5 @@
 ---
-monit_version: "5.29.0"
+monit_version: "5.32.0"
 monit_properties: {
   "monit_archive": "monit-{{ monit_version }}-linux-x64.tar.gz",
   "monit_dwnldurl": "https://mmonit.com/monit/dist/binary/{{ monit_version }}/monit-{{ monit_version }}-linux-x64.tar.gz",

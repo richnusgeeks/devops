@@ -3,7 +3,7 @@ monit_properties: {
   "monit_configad": "/opt/monit/conf/monit.d",
 }
 
-consul_version: "1.10.3"
+consul_version: "1.12.2"
 consul_binary: {
   "download_url": "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip",
   "binary_location": "/opt/consul/bin/consul",

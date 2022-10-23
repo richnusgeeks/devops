@@ -1,0 +1,13 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntu2204wgossrvc
+    name: node%d
+    privileged: true
+    portMappings:
+    - containerPort: 22
+    - containerPort: 58080

@@ -5,7 +5,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntu2204wgossrvc
+    image: ubuntu2204wgoss0320srvc
     name: node%d
     privileged: true
     portMappings:

@@ -1,7 +1,7 @@
 #! /bin/bash
 set -uo pipefail
 
-GOSSVER='0.3.18'
+GOSSVER='0.3.20'
 GOSSCDIR='/etc/goss'
 GOSSVFLE='/lib/systemd/system/goss.service'
 MONITVER=''

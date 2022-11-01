@@ -17,7 +17,7 @@ preReq() {
     if ! command -v "${c}" > /dev/null 2>&1
     then
       echo " Error: required command ${c} not found, exiting ..."
-      exit -1
+      exit 1
     fi
   done
 
@@ -27,7 +27,7 @@ preReq() {
 
 printUsage() {
 
-  echo " Usage: $(basename $0) < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown >"
+  echo " Usage: $(basename "${0}") < up|buildup|ps|exec <name> <cmnd>|logs|down|cleandown >"
   exit 0
 
 }

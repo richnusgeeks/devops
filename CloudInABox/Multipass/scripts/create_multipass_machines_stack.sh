@@ -51,7 +51,7 @@ printUsage() {
      show - dumps info about all local cloudvms |
      create - bringup fully configured localvm for,
               [cassandra|consuldev|opensearch|
-               kafka|nomadev|spark|vaultdev] |
+               kafka|kafka-kraft|nomadev|spark|vaultdev] |
      delete - deletes all local cloudvms |
      cleandelete - cleanup everything for all local cloudvms >
 EOF
@@ -84,6 +84,7 @@ parseArgs() {
        [[ "${OPTNTST}" != "consuldev" ]]  && \
        [[ "${OPTNTST}" != "opensearch" ]] && \
        [[ "${OPTNTST}" != "kafka" ]]      && \
+       [[ "${OPTNTST}" != "kafka-kraft" ]]  && \
        [[ "${OPTNTST}" != "nomadev" ]]    && \
        [[ "${OPTNTST}" != "spark" ]]      && \
        [[ "${OPTNTST}" != "vaultdev" ]]
@@ -166,6 +167,7 @@ setupStack() {
   if [[ "${1}" = "cassandra" ]] || \
      [[ "${1}" = "opensearch" ]] || \
      [[ "${1}" = "kafka" ]] || \
+     [[ "${1}" = "kafka-kraft" ]] || \
      [[ "${1}" = "spark" ]]
   then
     NUMCPUALC=2

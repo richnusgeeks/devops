@@ -124,11 +124,11 @@ write_files:
     owner: ubuntu:ubuntu
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.29.0/monit-5.29.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.32.0/monit-5.32.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.29.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.29.0 ]
+  - [ cp, monit-5.32.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.32.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh

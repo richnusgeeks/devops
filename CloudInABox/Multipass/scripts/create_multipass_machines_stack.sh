@@ -176,7 +176,7 @@ setupStack() {
   if ! cat "cloud-config-${1}.yaml"|multipass launch -c "${NUMCPUALC}" \
 	                                             -m "${MEMAMOUNT}" \
                                                      -d "${DSKAMOUNT}" \
-                                                     -n "${1}" --cloud-init -
+                                                     -n "${1}" --timeout 600 --cloud-init -
   then
     mv -f cloud-config-${1}.yaml{.orig,}
     exitOnErr "multipass launch -c ${NUMCPUALC} -m ${MEMAMOUNT} -n "${1}" --cloud-init cloud-config-${1}.yaml failed"

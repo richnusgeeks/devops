@@ -101,17 +101,18 @@ runcmd:
   - sh get-docker.sh
   - rm -fv get-docker.sh
   - usermod -aG docker ubuntu
-  - wget "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -O /usr/local/bin/docker-compose
-  - chmod 0755 /usr/local/bin/docker-compose
+  - mkdir -p /usr/local/lib/docker/cli-plugins
+  - wget "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64" -O /usr/local/lib/docker/cli-plugins/docker-compose
+  - chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://dlcdn.apache.org/kafka/3.3.1/kafka_2.13-3.3.1.tgz" -O kafka.tgz
+  - wget "https://dlcdn.apache.org/kafka/3.4.0/kafka_2.13-3.4.0.tgz" -O kafka.tgz
   - tar zxvf kafka.tgz
-  - mv kafka_2.13-3.3.1 /opt/kafka
+  - mv kafka_2.13-3.4.0 /opt/kafka
   - rm -rfv kafka.tgz
   - /opt/kafka/bin/kafka-storage.sh format -t "$(/opt/kafka/bin/kafka-storage.sh random-uuid)" -c /opt/kafka/config/kraft/server.properties
   - systemctl start monit
   - mkdir -p /opt/docker/compose
-  - docker-compose -f /opt/docker/compose/kafkawebui.yml up -d
+  - docker compose -f /opt/docker/compose/kafkawebui.yml up -d
 output:
   init:
     output: "> /var/log/cloud-init.out"

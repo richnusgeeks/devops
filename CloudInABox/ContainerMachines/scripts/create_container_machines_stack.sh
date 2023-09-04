@@ -2,6 +2,7 @@
 
 OPTN=${1}
 OPTNTST=${2}
+TRACE="${TRACE_FLAG:-0}"
 NUMOPTNMX=3
 DLYTOMSTL=5
 CMPSFLDIR='.'
@@ -50,6 +51,11 @@ RQRDCMNDS="awk
 
 preReq() {
 
+  if [[ ${TRACE} -eq 1 ]]
+  then
+    set -x
+  fi
+
   for c in ${RQRDCMNDS}
   do
     if ! command -v "${c}" > /dev/null 2>&1
@@ -91,10 +97,7 @@ printUsage() {
      show - dump info about the created container machines |
      test - run specified ansible role to configure the stack,
 	    valid roles are (ping is default if nothing mentioned):
-            [[ping]|goss|consulserver|consulclient|
-             consulesm|hashiui|consultemplate|docker|
-             cassandra|elasticsearch|kafka|spark|
-             monitoror|testinfra|vigil] |
+            [[ping]|$(find ./ansible_*.yml|awk -F'.' '{print $2}'|sed 's/\/ansible_//'|xargs|sed 's/ /\|/g'|sed -e 's/cnsl/consul/g' -e 's/clnt/client/' -e 's/srvr/server/' -e 's/tmplt/template/')] |
      delete - delete everything created |
      cleandelete - like delete but additionally cleaning up docker volumes |
      config - dumps auto-generated footloose configuration >

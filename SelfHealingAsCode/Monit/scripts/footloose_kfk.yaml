@@ -1,0 +1,14 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmntkfk:3.4.0
+    name: monitkfk%d
+    privileged: true
+    portMappings:
+    - containerPort: 22
+    - containerPort: 2812
+    - containerPort: 8080

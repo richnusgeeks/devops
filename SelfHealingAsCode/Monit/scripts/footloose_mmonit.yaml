@@ -1,0 +1,15 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmmnt:3.7.14
+    name: mmonit%d
+    privileged: true
+    networks:
+    - mmonit-demo
+    portMappings:
+    - containerPort: 22
+    - containerPort: 8080

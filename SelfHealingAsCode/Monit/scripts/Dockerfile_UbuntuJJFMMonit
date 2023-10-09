@@ -1,0 +1,5 @@
+FROM ubuntujjf
+
+COPY setup_mmonit_srvc.sh /usr/local/bin/setup.sh
+RUN setup.sh && \
+    rm /usr/local/bin/setup.sh

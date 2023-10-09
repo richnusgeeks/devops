@@ -1,0 +1,46 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmmnt:3.7.14
+    name: mmonit%d
+    privileged: true
+    networks:
+    - mmonit-demo
+    portMappings:
+    - containerPort: 22
+    - containerPort: 8080
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmntmmnt:5.33.0
+    name: mmonitmnt%d
+    privileged: true
+    networks:
+    - mmonit-demo
+    portMappings:
+    - containerPort: 22
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmntfscmmnt:5.33.0
+    name: mmonitfsc%d
+    privileged: true
+    networks:
+    - mmonit-demo
+    portMappings:
+    - containerPort: 22
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmntkfkmmnt:3.4.0
+    name: mmonitkfk%d
+    privileged: true
+    networks:
+    - mmonit-demo
+    portMappings:
+    - containerPort: 22
+    - containerPort: 8080

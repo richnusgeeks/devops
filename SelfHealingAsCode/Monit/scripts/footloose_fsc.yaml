@@ -1,0 +1,13 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 1
+  spec:
+    backend: docker
+    image: ubuntujjfmntfsc:5.33.0
+    name: monitfsc%d
+    privileged: true
+    portMappings:
+    - containerPort: 22
+    - containerPort: 2812

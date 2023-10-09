@@ -1,0 +1,5 @@
+FROM ubuntujjfmntmmnt:5.33.0
+
+COPY setup_monit_srvc_fscheck_mmnt.sh /usr/local/bin/setup.sh
+RUN setup.sh && \
+    rm /usr/local/bin/setup.sh

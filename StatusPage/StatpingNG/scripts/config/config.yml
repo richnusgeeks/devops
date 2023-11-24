@@ -1,0 +1,12 @@
+connection: sqlite3
+language: en
+allow_reports: true
+location: /app
+sqlfile: /app/statping.db
+disable_http: false
+demo_mode: false
+disable_logs: false
+use_assets: false
+sample_data: false
+use_cdn: false
+disable_colors: false

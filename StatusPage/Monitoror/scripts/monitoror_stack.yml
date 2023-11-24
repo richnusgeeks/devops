@@ -4,15 +4,33 @@ services:
 
   monitoror:
     image: monitoror/monitoror:${MTRRTAG:-latest}
-    volumes:
-      - ./configs/:/etc/monitoror/
     ports:
-     - "38080:8080"
+      - "38080:8080"
     environment:
-      - "MO_CONFIG=/etc/monitoror/config.json"
+      - "MO_CONFIG=/etc/config.json"
+      - "MO_MONITORABLE_HTTP_SSLVERIFY=false"
     restart: unless-stopped
-    networks:
-      - monitoror-demo
+
+  opensearch:
+    image: opensearchproject/opensearch:${OSRHTAG:-latest}
+    environment:
+      - "discovery.type=single-node"
+    restart: unless-stopped
+
+  kafka:
+    image: bitnami/kafka:${KFKATAG:-3.2.3}
+    environment:
+      - "ALLOW_PLAINTEXT_LISTENER=yes"
+      - "KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://:9093"
+      - "KAFKA_ENABLE_KRAFT=yes"
+    restart: unless-stopped
+
+  redis:
+    image: redis:${RDSSTAG:-latest}
+    command: "redis-server --save 60 1 --loglevel warning"
+    restart: unless-stopped
 
 networks:
-  monitoror-demo:
+  default:
+    name: statuspage-demo
+    external: true

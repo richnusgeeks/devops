@@ -1,0 +1,68 @@
+x-tcpservice: &tcpservice
+  type: tcp
+  check_interval: 60
+  timeout: 15
+  allow_notifications: true
+  notify_after: 0
+  notify_all_changes: true
+  public: true
+  redirect: true
+
+x-httpservice: &httpservice
+  type: http
+  method: GET
+  check_interval: 45
+  timeout: 10
+  expected_status: 200
+  allow_notifications: true
+  notify_after: 2
+  notify_all_changes: true
+  public: true
+  redirect: true
+
+x-icmping: &icmping
+  type: icmp
+  check_interval: 60
+  timeout: 15
+  allow_notifications: true
+  notify_after: 0
+  notify_all_changes: true
+  public: true
+
+services:
+        
+  - name: ICMP Kafka
+    domain: kafka
+    <<: *icmping
+
+  - name: TCP Kafka 9092
+    domain: kafka
+    port: 9092
+    <<: *tcpservice
+
+  - name: ICMP opensearch
+    domain: opensearch
+    <<: *icmping
+
+  - name: TCP opensearch 9200
+    domain: opensearch
+    port: 9200
+    <<: *tcpservice
+
+  - name: TCP opensearch 9600
+    domain: opensearch
+    port: 9600
+    <<: *tcpservice
+
+  - name: HTTP opensearch
+    domain: https://admin:admin@opensearch:9200
+    <<: *httpservice
+
+  - name: ICMP redis
+    domain: redis
+    <<: *icmping
+
+  - name: TCP redis 6379
+    domain: redis
+    port: 6379
+    <<: *tcpservice

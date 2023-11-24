@@ -1,0 +1,3 @@
+FROM adamboutcher/statping-ng
+
+CMD statping --port $PORT -c /app/config.yml

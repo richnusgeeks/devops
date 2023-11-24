@@ -1,0 +1,5 @@
+FROM monitoror/monitoror
+
+RUN mkdir /etc/monitoror
+
+COPY config.json /etc/monitoror

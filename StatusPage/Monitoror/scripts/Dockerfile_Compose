@@ -1,0 +1,24 @@
+FROM alpine:3.18
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL "com.richnusgeeks.category"="utility"
+LABEL version="2.18.1"
+LABEL description="docker based testing driver for container structure test"
+
+ENV CMPS_VERSION 2.18.1
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN apk add --no-cache --virtual .dwnld-deps ca-certificates curl \
+  && curl -sSL -o /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '\"' '{print $2}'|sort -nr|head -1)" \
+  && tar zxvf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rfv docker docker.tgz \
+  && mkdir -p /usr/local/lib/docker/cli-plugins /etc/compose /etc/monitoror \
+  && curl -sSL -o /usr/local/lib/docker/cli-plugins/docker-compose "https://github.com/docker/compose/releases/download/v${CMPS_VERSION}/docker-compose-linux-x86_64" \
+  && chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose \
+  && apk del .dwnld-deps
+
+WORKDIR /etc/compose
+
+ENTRYPOINT ["docker","compose"]
+CMD ["-h"]

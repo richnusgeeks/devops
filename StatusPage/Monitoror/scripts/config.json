@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "columns": 3,
+  "tiles": [
+  {
+    "type": "GROUP",
+    "label": "opensearch PING/PORT/HTTP Tests",
+    "tiles": [
+    {"type": "PING", "params": {"hostname": "opensearch"}},
+    {"type": "PORT", "params": {"hostname": "opensearch", "port": 9200}},
+    {"type": "PORT", "params": {"hostname": "opensearch", "port": 9600}},
+    {"type": "HTTP-STATUS", "params": {"url": "https://admin:admin@opensearch:9200"}}
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "kafka PING/PORT Tests",
+    "tiles": [
+    {"type": "PING", "params": {"hostname": "kafka"}},
+    {"type": "PORT", "params": {"hostname": "kafka", "port": 9092}}
+  ]
+  },
+  {
+    "type": "GROUP",
+    "label": "redis PING/PORT Tests",
+    "tiles": [
+    {"type": "PING", "params": {"hostname": "redis"}},
+    {"type": "PORT", "params": {"hostname": "redis", "port": 6379}}
+  ]
+  }
+
+  ]
+}

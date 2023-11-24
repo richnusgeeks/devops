@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+
+  statping:
+    container_name: statpingng
+    image: adamboutcher/statping-ng:${SPNGTAG:-latest}
+    ports:
+      - 58080:8080
+    restart: unless-stopped
+
+networks:
+  default:
+    name: statuspage-demo
+    external: true

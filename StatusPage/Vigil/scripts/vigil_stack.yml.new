@@ -3,7 +3,7 @@ version: '3.5'
 services:
 
   vigil:
-    image: vigilsci:${VGILTAG:-v1.26.0}
+    image: valeriansaliou/vigil:${VGILTAG:-v1.26.0}
     ports:
       - "48080:8080"
 #    cap_add:

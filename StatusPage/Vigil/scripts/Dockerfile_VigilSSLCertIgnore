@@ -1,0 +1,3 @@
+FROM  valeriansaliou/vigil:v1.26.0
+
+RUN apk --no-cache add curl

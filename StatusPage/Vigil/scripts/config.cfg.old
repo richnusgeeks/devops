@@ -1,0 +1,69 @@
+[server]
+log_level = "debug"
+inet = "0.0.0.0:8080"
+workers = 4
+manager_token = "REPLACE_THIS_WITH_A_VERY_SECRET_KEY"
+reporter_token = "REPLACE_THIS_WITH_A_SECRET_KEY"
+
+[assets]
+path = "./res/assets/"
+
+[branding]
+page_title = "Vigil Localhost Test Status Page"
+page_url = "https://teststatus.page/status"
+company_name = "RNG"
+icon_color = "#1972F5"
+icon_url = "https://avatars.githubusercontent.com/u/226598?v=4"
+logo_color = "#1972F5"
+logo_url = "https://avatars.githubusercontent.com/u/226598?v=4"
+website_url = "https://teststatus.page/"
+support_url = "mailto:help@teststatus.page"
+custom_html = ""
+
+[metrics]
+poll_interval = 60
+poll_retry = 2
+poll_http_status_healthy_above = 200
+poll_http_status_healthy_below = 400
+poll_delay_dead = 30
+poll_delay_sick = 10
+push_delay_dead = 20
+push_system_cpu_sick_above = 0.90
+push_system_ram_sick_above = 0.90
+script_interval = 300
+local_delay_dead = 40
+
+[notify]
+startup_notification = true
+reminder_interval = 300
+
+[notify.webhook]
+hook_url = "https://webhook.site/4406e2a4-13cd-4c99-975c-d3456a148b26"
+
+[probe]
+[[probe.service]]
+id = "ping"
+label = "PING"
+[[probe.service.node]]
+id = "invalidiping"
+label = "Invalid IP Ping"
+mode = "poll"
+replicas = ["icmp://129.0.0.1"]
+
+[[probe.service]]
+id = "port"
+label = "PORT"
+[[probe.service.node]]
+id = "localhostport"
+label = "Localhost Port 8080 Probe"
+mode = "poll"
+replicas = ["tcp://localhost:8080"]
+
+[[probe.service]]
+id = "http"
+label = "HTTP"
+[[probe.service.node]]
+id = "googlehttp"
+label = "Google Http Probe"
+mode = "poll"
+replicas = ["https://google.com"]

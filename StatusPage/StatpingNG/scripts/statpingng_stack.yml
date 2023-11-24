@@ -2,12 +2,20 @@ version: '3.5'
 
 services:
 
-  vigil:
-    image: vigilsci:${VGILTAG:-v1.26.0}
+  statping:
+    container_name: statpingng
+    image: mystatpingng:${SPNGTAG:-latest}
     ports:
-      - "48080:8080"
-#    cap_add:
-#      - CAP_NET_RAW
+      - 58080:8080
+    volumes:
+      - ./config:/app
+    environment:
+      - "DB_CONN=sqlite"
+      - "STATPING_DIR=/app"
+      - "SAMPLE_DATA=false"
+      - "GO_ENV=test"
+      - "NAME=StatpingNG Probes Demo"
+      - "DESCRIPTION=StatpingNG Probes Configuration Demo"
     restart: unless-stopped
 
   opensearch:

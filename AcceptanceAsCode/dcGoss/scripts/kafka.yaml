@@ -1,0 +1,13 @@
+port:
+  tcp:2181:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp:9092:
+    listening: true
+    ip:
+    - 0.0.0.0
+
+process:
+  java:
+    running: true

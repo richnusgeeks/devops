@@ -1,0 +1,25 @@
+FROM alpine:3.16
+LABEL "com.richnusgeeks.vendor"="richnusgeeks"
+LABEL version="latest"
+LABEL description="dgoss test driver docker image"
+
+ENV GOSS_VERSION 0.3.20
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN apk add --no-cache --virtual=goss-deps ca-certificates curl \
+  && apk add --no-cache bash tini \
+  && curl -sSLk -o /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '\"' '{print $2}'|sort -nr|head -1)" \
+  && tar zxf docker.tgz \
+  && mv docker/docker /usr/local/bin \
+  && rm -rf docker docker.tgz \
+  && curl -sSLk "https://github.com/aelsabbahy/goss/releases/download/v${GOSS_VERSION}/goss-linux-amd64" -o /usr/local/bin/goss \
+  && curl -sSLk "https://github.com/aelsabbahy/goss/releases/download/v${GOSS_VERSION}/dgoss" -o /usr/local/bin/dgoss \
+  && chmod +x /usr/local/bin/*goss \
+  && mkdir -p /etc/goss \
+  && apk del goss-deps
+
+WORKDIR /etc/goss/
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["dgoss", "-h"]

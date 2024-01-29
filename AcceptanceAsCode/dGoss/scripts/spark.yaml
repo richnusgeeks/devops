@@ -1,0 +1,20 @@
+port:
+  tcp:7077:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp6:7077:
+    listening: true
+    ip:
+    - ::
+  tcp:8080:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp6:8080:
+    listening: true
+    ip:
+    - ::
+process:
+  java:
+    running: true

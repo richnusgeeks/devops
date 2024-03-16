@@ -80,6 +80,8 @@ write_files:
       Documentation=https://www.consul.io/docs
 
       [Service]
+      User=ubuntu
+      Group=ubuntu
       ExecStart=/usr/local/bin/consul agent -dev -client '0.0.0.0'
       ExecStop=/bin/kill -s QUIT ${MAINPID}
       Restart = on-abnormal
@@ -92,11 +94,11 @@ write_files:
     owner: root:root
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.32.0/monit-5.32.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.33.0/monit-5.33.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.32.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.32.0 ]
+  - [ cp, monit-5.33.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.33.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh
@@ -105,7 +107,7 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64" -O /usr/local/lib/docker/cli-plugins/docker-compose
   - chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://releases.hashicorp.com/consul/1.14.4/consul_1.14.4_linux_amd64.zip" -O consul.zip
+  - wget "https://releases.hashicorp.com/consul/1.18.0/consul_1.18.0_linux_amd64.zip" -O consul.zip
   - unzip -o consul.zip -d /usr/local/bin
   - rm -fv consul.zip
   - systemctl start monit

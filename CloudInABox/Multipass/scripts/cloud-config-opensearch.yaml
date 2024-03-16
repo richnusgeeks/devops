@@ -68,12 +68,12 @@ write_files:
       version: "2.4"
       services:
         opensearch:
-          image: opensearchproject/opensearch:2.5.0
+          image: opensearchproject/opensearch:2
           container_name: opensearch
           hostname: opensearch
           mem_limit: 1.2g
           healthcheck:
-            test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:admin'", "--insecure"]
+            test: ["CMD", "curl", "-XGET", "https://localhost:9200", "-u", "'admin:8a4d9m3i0N!'", "--insecure"]
             interval: 5s
             timeout: 5s
             retries: 60
@@ -86,6 +86,7 @@ write_files:
             - discovery.type=single-node
             - bootstrap.memory_lock=true
             - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+            - OPENSEARCH_INITIAL_ADMIN_PASSWORD=8a4d9m3i0N!
           ulimits:
             memlock:
               soft: -1
@@ -108,14 +109,14 @@ write_files:
       volumes:
         opensearch-data:
     path: /opt/docker/compose/opensearch.yml
-    owner: ubuntu:ubuntu
+    owner: root:root
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.32.0/monit-5.32.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.33.0/monit-5.33.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.32.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.32.0 ]
+  - [ cp, monit-5.33.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.33.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh

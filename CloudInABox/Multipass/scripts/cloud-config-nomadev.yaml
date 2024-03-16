@@ -92,11 +92,11 @@ write_files:
     owner: root:root
     permissions: '0600'
 runcmd:
-  - [ wget, "https://mmonit.com/monit/dist/binary/5.32.0/monit-5.32.0-linux-x64.tar.gz", -O, monit.tgz ]
+  - [ wget, "https://mmonit.com/monit/dist/binary/5.33.0/monit-5.33.0-linux-x64.tar.gz", -O, monit.tgz ]
   - [ tar, zxvf, monit.tgz ]
   - [ mkdir, /opt/monit/bin ]
-  - [ cp, monit-5.32.0/bin/monit, /opt/monit/bin/monit ]
-  - [ rm, -rfv, monit.tgz, monit-5.32.0 ]
+  - [ cp, monit-5.33.0/bin/monit, /opt/monit/bin/monit ]
+  - [ rm, -rfv, monit.tgz, monit-5.33.0 ]
   - wget "https://get.docker.com" -O get-docker.sh
   - sh get-docker.sh
   - rm -fv get-docker.sh
@@ -104,7 +104,7 @@ runcmd:
   - wget "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64" -O /usr/local/lib/docker/cli-plugins/docker-compose
   - chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose
   - mkdir -p /opt/docker/compose
-  - wget "https://releases.hashicorp.com/nomad/1.4.3/nomad_1.4.3_linux_amd64.zip" -O nomad.zip
+  - wget "https://releases.hashicorp.com/nomad/1.7.6/nomad_1.7.6_linux_amd64.zip" -O nomad.zip
   - unzip -o nomad.zip -d /usr/local/bin
   - rm -fv nomad.zip
   - systemctl start monit

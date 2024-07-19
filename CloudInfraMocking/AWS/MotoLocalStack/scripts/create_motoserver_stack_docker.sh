@@ -54,8 +54,8 @@ parseArgs() {
 
 testAwsCli() {
 
-  docker-compose -f moto_server_stack.yml exec motoserver \
-    sh -c 'AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url=http://localhost:5000 --region=us-east-1 ec2 describe-instances'
+  docker-compose -f moto_server_stack.yml exec awsclitest \
+    sh -c 'aws ec2 describe-instances'
 
 }
 

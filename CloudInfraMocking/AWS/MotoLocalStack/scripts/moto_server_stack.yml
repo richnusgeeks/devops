@@ -1,18 +1,36 @@
-version: '3.2'
-
 services:
 
   motoserver:
-    image: motoserver
-    build:
-      context: .
-      dockerfile: Dockerfile_MTSRVR
+    image: motoserver/moto:latest
     container_name: motoserver
     hostname: motoserver
     ports:
       - "9500:5000"
-    networks:
-      - motoserver-demo
+    environment:
+      - MOTO_PORT=5000
+    healthcheck:
+      test: ["CMD", "curl", "-I", "localhost:5000"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  awsclitest:
+    image: amazon/aws-cli
+    container_name: awsclitest
+    hostname: awsclitest
+    environment:
+      - AWS_ACCESS_KEY_ID=foo
+      - AWS_SECRET_ACCESS_KEY=foo
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ENDPOINT_URL=http://motoserver:5000
+    entrypoint: "sh"
+    command: "-c 'while true; do sleep 5; done'"
+    depends_on:
+      motoserver:
+        condition: service_healthy
 
 networks:
-  motoserver-demo:
+  default:
+    name: awsmockemu-demo
+    external: true

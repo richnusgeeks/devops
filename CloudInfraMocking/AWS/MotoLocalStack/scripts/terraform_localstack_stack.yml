@@ -1,19 +1,4 @@
-version: '2.4'
-
 services:
-
-  motoserver:
-    image: moto:${MOTOTAG:-latest}
-    container_name: motoserver
-    hostname: motoserver
-    build:
-      context: .
-      dockerfile: Dockerfile_MTSRVR
-    ports:
-      - "15000:5000"
-    mem_limit: 512m
-    networks:
-      - terraform-demo
 
   localstack:
     image: localstack/localstack:${LSTKTAG:-latest}
@@ -23,38 +8,28 @@ services:
       - "${TMPDIR:-/tmp/terraform}:/tmp/terraform"
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - "14453:53"
-      - "14453:53/udp"
-      - "14443:443"
       - "14566:4566"
-      - "14571:4571"
-      - "${PORT_WEB_UI-18080}:${PORT_WEB_UI-18080}"
+      - "14510-14559:4510-4559"
     environment:
-      - SERVICES=${SERVICES- }
-      - DEBUG=${DEBUG- }
-      - DATA_DIR=${DATA_DIR- }
-      - PORT_WEB_UI=${PORT_WEB_UI- }
-      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
-      - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY- }
-      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - HOST_TMP_FOLDER=${TMPDIR}
-    mem_limit: 1g
-    networks:
-      - terraform-demo
+      - DEBUG=${DEBUG:-0}
+    healthcheck:
+      test: ["CMD", "curl", "-I", "localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
 
   terraformws:
-    image: hashicorp/terraform:${TFRMTAG:-latest}
+    image: terraformws:${TFWSTAG:-latest}
     container_name: terraformws
     hostname: terraformws
-    volumes:
-      - ../../../Common/Terraform:/etc/terraform:ro
-      - ./terraform_mock_test.sh:/usr/local/bin/trfrmcktst:ro
     entrypoint: ash
     command: "-c 'while true; do sleep 5; done'"
-    mem_limit: 512m
-    networks:
-      - terraform-demo
+    depends_on:
+      localstack:
+        condition: service_healthy
 
 networks:
-  terraform-demo:
+  default:
+    name: awsmockemu-demo
+    external: true

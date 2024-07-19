@@ -1,0 +1,5 @@
+FROM hashicorp/terraform
+
+COPY aws_override.tf /etc/terraform/
+
+COPY terraform_awsemu_test.sh /usr/local/bin/tfrmawstst

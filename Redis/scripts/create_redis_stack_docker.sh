@@ -22,6 +22,8 @@ preReq() {
     fi
   done
 
+  export COMPOSE_IGNORE_ORPHANS=True
+
 }
 
 printUsage() {

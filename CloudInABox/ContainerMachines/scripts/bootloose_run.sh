@@ -36,23 +36,23 @@ main() {
 
   if [[ "${OPTN}" = "create" ]]
   then
-    footloose create -c /tmp/footloose.yaml
+    bootloose create -c /tmp/bootloose.yaml
     while true
     do
       sleep 10
     done
   elif [[ "${OPTN}" = "start" ]]
   then
-    footloose start -c /tmp/footloose.yaml
+    bootloose start -c /tmp/bootloose.yaml
   elif [[ "${OPTN}" = "stop" ]]
   then
-    footloose stop -c /tmp/footloose.yaml
+    bootloose stop -c /tmp/bootloose.yaml
   elif [[ "${OPTN}" = "show" ]]
   then
-    footloose show -c /tmp/footloose.yaml
+    bootloose show -c /tmp/bootloose.yaml
   elif [[ "${OPTN}" = "delete" ]]
   then
-    footloose delete -c /tmp/footloose.yaml
+    bootloose delete -c /tmp/bootloose.yaml
   fi
 
 }

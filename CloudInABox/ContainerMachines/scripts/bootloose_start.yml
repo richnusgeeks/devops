@@ -2,22 +2,22 @@ version: '2.4'
 
 services:
 
-  footlose:
-    image: footloose${FTLSTAG}
-    container_name: footloosecreate
+  bootlose:
+    image: bootloose${FTLSTAG}
+    container_name: bootloosestart
     build:
       context: .
       dockerfile: Dockerfile_Footloose
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./footloose.cfg:/etc/footloose.cfg:ro
-    command: create
+      - ./bootloose.cfg:/etc/bootloose.cfg:ro
+    command: start
     mem_limit: 500m
 #    networks:
-#      - footloose-demo
+#      - bootloose-demo
 
 #networks:
-#  footloose-demo:
+#  bootloose-demo:
 networks:
   default:
     external:

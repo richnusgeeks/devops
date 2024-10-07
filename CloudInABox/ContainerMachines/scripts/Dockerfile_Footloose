@@ -1,8 +1,8 @@
-FROM alpine:3.10
+FROM alpine:3.20
 LABEL "com.richnusgeeks.vendor"="richnusgeeks"
 LABEL "com.richnusgeeks.category"="utility"
 LABEL version="latest"
-LABEL description="docker based footloose test driver"
+LABEL description="docker based bootloose test driver"
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
@@ -11,13 +11,13 @@ RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
   && tar zxf docker.tgz \
   && mv docker/docker /usr/local/bin \
   && rm -rf docker docker.tgz \
-  && mkdir -p /var/lib/footloose \
-  && curl -sSLk "https://github.com/weaveworks/footloose/releases/tag/$(curl -sSLk https://github.com/weaveworks/footloose/releases 2>&1|grep releases|grep tag/|awk '{print $7}'|awk -F '"' '{print $2}'|awk -F'/' '{print $NF}'|head -1)/footloose-$(curl -sSLk https://github.com/weaveworks/footloose/releases 2>&1|grep releases|grep tag/|awk '{print $7}'|awk -F '"' '{print $2}'|awk -F'/' '{print $NF}'|head -1)-linux-x86_64" -o /usr/local/bin/footloose \
-  && chmod +x /usr/local/bin/footloose
+  && mkdir -p /var/lib/bootloose \
+  && curl -sSLk "https://github.com/k0sproject/bootloose/releases/download/$(curl -sSLk https://github.com/k0sproject/bootloose/releases 2>&1|grep releases|grep tag/|awk '{print $7}'|awk -F '"' '{print $2}'|awk -F'/' '{print $NF}'|head -1)/bootloose-linux-amd64" -o /usr/local/bin/bootloose \
+  && chmod +x /usr/local/bin/bootloose
 
-COPY footloose_run.sh /usr/local/bin/run.sh
-COPY render_footloose_config.sh /usr/local/bin/rndrftlscnfg
-WORKDIR /var/lib/footloose
+COPY bootloose_run.sh /usr/local/bin/run.sh
+COPY render_bootloose_config.sh /usr/local/bin/rndrftlscnfg
+WORKDIR /var/lib/bootloose
 
 ENTRYPOINT ["run.sh"]
 CMD ["-h"]

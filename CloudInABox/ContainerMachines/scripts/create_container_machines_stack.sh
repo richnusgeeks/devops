@@ -8,7 +8,7 @@ DLYTOMSTL=5
 CMPSFLDIR='.'
 ANSBLEDIR='../../Common/ansible'
 ANSBLEHIN='hosts'
-FTLSCTDIR='/var/lib/footloose'
+FTLSCTDIR='/var/lib/bootloose'
 FTLSCTRKY='cluster-key'
 FTLSNTWRK='cldinabox-demo'
 ASBLCMTEST='ansible_test.yml'
@@ -30,11 +30,11 @@ DCKRCMPTIR='testinfra.yml'
 SRVCNFGMTR='../configs/monitoror/config.json'
 SRVCNFGVGL='../configs/vigil/config.cfg'
 DCKRCMPVGL='vigil.yml'
-FTLSCMPSCT='footloose_create.yml'
-FTLSCMPSST='footloose_start.yml'
-FTLSCMPSSP='footloose_stop.yml'
-FTLSCMPSDL='footloose_delete.yml'
-FTLSCNFGFL='footloose.yaml'
+FTLSCMPSCT='bootloose_create.yml'
+FTLSCMPSST='bootloose_start.yml'
+FTLSCMPSSP='bootloose_stop.yml'
+FTLSCMPSDL='bootloose_delete.yml'
+FTLSCNFGFL='bootloose.yaml'
 RQRDCMNDS="awk
            cat
            chmod
@@ -90,7 +90,7 @@ printUsage() {
   cat <<EOF
  Usage: $(basename "${0}")
    < lint   - run static analysis on Dockerfiles and Shellscripts |
-     create - create containers machine stack as per footloose.cfg |
+     create - create containers machine stack as per bootloose.cfg |
      buildcreate - like create but builds the necessary container images first |
      start - start container machines |
      stop - stop container machines |
@@ -100,7 +100,7 @@ printUsage() {
             [[ping]|$(find ./ansible_*.yml|awk -F'.' '{print $2}'|sed 's/\/ansible_//'|xargs|sed 's/ /\|/g'|sed -e 's/cnsl/consul/g' -e 's/clnt/client/' -e 's/srvr/server/' -e 's/tmplt/template/')] |
      delete - delete everything created |
      cleandelete - like delete but additionally cleaning up docker volumes |
-     config - dumps auto-generated footloose configuration >
+     config - dumps auto-generated bootloose configuration >
 EOF
   exit 0
 
@@ -142,10 +142,10 @@ preLint() {
 showFTLStack() {
 
   if ! docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
-                           -v "$(pwd)/footloose.cfg:/etc/footloose.cfg:ro" \
-            footloose show
+                           -v "$(pwd)/bootloose.cfg:/etc/bootloose.cfg:ro" \
+            bootloose show
   then
-    exitOnErr 'docker run footloose show failed'
+    exitOnErr 'docker run bootloose show failed'
   fi
 
 }
@@ -153,7 +153,7 @@ showFTLStack() {
 createASBLInv() {
 
   local ftlshw
-  ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v "$(pwd)/footloose.cfg:/etc/footloose.cfg:ro" footloose show|grep '^cluster\-')
+  ftlshw=$(docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v "$(pwd)/bootloose.cfg:/etc/bootloose.cfg:ro" bootloose show|grep '^cluster\-')
 #       grep -v NAME | awk -F '  +' '{ if ( $4~"^ubuntu" ) {print $2,"ansible_python_interpreter=/usr/bin/python3"} else {print $2} }'> "${ANSBLEDIR}/${ANSBLEHIN}"
   for h in $(echo "${ftlshw}" | grep -v NAME | awk -F '  +' '{print $2}'|sed 's/[0-9]\{1,\}//'|sort -u)
   do
@@ -244,9 +244,9 @@ renderMTRCnfg() {
 
 copyPrivKey() {
 
-  if ! docker cp "footloosecreate:${FTLSCTDIR}/${FTLSCTRKY}" "${ANSBLEDIR}"
+  if ! docker cp "bootloosecreate:${FTLSCTDIR}/${FTLSCTRKY}" "${ANSBLEDIR}"
   then
-    exitOnErr "docker cp footloosecreate:${FTLSCTDIR}/${FTLSCTRKY} ${ANSBLEDIR} failed"
+    exitOnErr "docker cp bootloosecreate:${FTLSCTDIR}/${FTLSCTRKY} ${ANSBLEDIR} failed"
   else
     if uname | grep -i darwin > /dev/null 2>&1
     then

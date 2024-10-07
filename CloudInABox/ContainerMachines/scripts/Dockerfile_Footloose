@@ -12,7 +12,7 @@ RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
   && mv docker/docker /usr/local/bin \
   && rm -rf docker docker.tgz \
   && mkdir -p /var/lib/footloose \
-  && curl -sSLk "https://github.com/$(curl -sSLk https://github.com/weaveworks/footloose/releases|grep download|grep linux-x86_64|awk -F '"' '{print $2}'|head -1)" -o /usr/local/bin/footloose \
+  && curl -sSLk "https://github.com/weaveworks/footloose/releases/tag/$(curl -sSLk https://github.com/weaveworks/footloose/releases 2>&1|grep releases|grep tag/|awk '{print $7}'|awk -F '"' '{print $2}'|awk -F'/' '{print $NF}'|head -1)/footloose-$(curl -sSLk https://github.com/weaveworks/footloose/releases 2>&1|grep releases|grep tag/|awk '{print $7}'|awk -F '"' '{print $2}'|awk -F'/' '{print $NF}'|head -1)-linux-x86_64" -o /usr/local/bin/footloose \
   && chmod +x /usr/local/bin/footloose
 
 COPY footloose_run.sh /usr/local/bin/run.sh

@@ -7,7 +7,7 @@ services:
     container_name: bootloosestart
     build:
       context: .
-      dockerfile: Dockerfile_Footloose
+      dockerfile: Dockerfile_Bootloose
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./bootloose.cfg:/etc/bootloose.cfg:ro

@@ -1,8 +1,8 @@
 #! /bin/bash
 set -uo pipefail
 
-FTLSCFGINFL='/etc/bootloose.cfg'
-FTLSCFGOUFL='bootloose.yaml'
+FTLSCFGINFL=${FTLSCFGINFL:-'/etc/bootloose.cfg'}
+FTLSCFGOUFL=${FTLSCFGOUFL:-'bootloose.yaml'}
 FTLSCFGFLDS=(Name Count Image Networks Ports)
 
 if [[ ! -f "${FTLSCFGINFL}" ]]

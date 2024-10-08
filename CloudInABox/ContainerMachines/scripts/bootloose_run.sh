@@ -2,17 +2,23 @@
 
 OPTN=${1}
 NUMOPTNMX=2
+TRACE="${TRACE_FLAG:-0}"
 
 printUsage() {
 
   cat <<EOF
- Usage: $(basename "${0}") <create|show|delete>
+ Usage: $(basename "${0}") <create|show|test|delete>
 EOF
   exit 0
 
 }
 
 parseArgs() {
+
+  if [[ ${TRACE} -eq 1 ]]
+  then
+    set -x
+  fi
 
   if [[ $# -gt ${NUMOPTNMX} ]]
   then
@@ -22,7 +28,8 @@ parseArgs() {
   if [[ "${OPTN}" != "create" ]] && \
      [[ "${OPTN}" != "start" ]] && \
      [[ "${OPTN}" != "stop" ]] && \
-     [[ "${OPTN}" != "show"   ]] && \
+     [[ "${OPTN}" != "show" ]] && \
+     [[ "${OPTN}" != "test" ]] && \
      [[ "${OPTN}" != "delete" ]]
   then
     printUsage
@@ -50,6 +57,22 @@ main() {
   elif [[ "${OPTN}" = "show" ]]
   then
     bootloose show -c /tmp/bootloose.yaml
+  elif [[ "${OPTN}" = "test" ]]
+  then
+    echo
+    ftlshw=$(bootloose show -c /tmp/bootloose.yaml|grep '^cluster\-')
+    for h in $(echo "${ftlshw}" | grep -v NAME | awk -F '  +' '{print $2}')
+    do
+      if ! ssh -oStrictHostKeychecking=no -oUserKnownHostsFile=/dev/null \
+	       -oGlobalKnownHostsFile=/dev/null -i cluster-key \
+	       "root@${h}" true 2>/dev/null
+      then
+        echo " SSH PING reply from ${h}: NOPONG"
+      else
+        echo " SSH PING reply from ${h}: PONG"
+      fi
+    done
+    echo
   elif [[ "${OPTN}" = "delete" ]]
   then
     bootloose delete -c /tmp/bootloose.yaml

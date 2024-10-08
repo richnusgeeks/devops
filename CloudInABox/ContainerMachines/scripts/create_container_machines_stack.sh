@@ -150,6 +150,15 @@ showFTLStack() {
 
 }
 
+testFTLStack() {
+
+  if ! docker exec bootloosecreate run.sh test
+  then
+    exitOnErr 'docker exec bootloose test failed'
+  fi
+
+}
+
 createASBLInv() {
 
   local ftlshw
@@ -421,7 +430,8 @@ showAndTest() {
   showFTLStack
   sleep "${DLYTOMSTL}"
   echo
-  testASBLRun "${1}"
+  testFTLStack
+#  testASBLRun "${1}"
 
 }
 

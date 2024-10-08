@@ -12,7 +12,7 @@ RUN adduser -D -S ansible && \
     apk add --no-cache --virtual .build-deps \
       alpine-sdk libffi-dev openssl-dev && \
     apk add --no-cache openssh-client && \
-    pip install ansible==3.4.0 suitable && \
+    pip install ansible suitable && \
     apk del .build-deps
 
 USER ansible

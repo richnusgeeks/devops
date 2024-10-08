@@ -5,7 +5,7 @@ LABEL version="latest"
 LABEL description="docker based bootloose test driver"
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-RUN apk add --no-cache ca-certificates curl openssh-keygen bash \
+RUN apk add --no-cache ca-certificates curl openssh bash \
   && curl -sSLk -o /tmp/docker.tgz "https://download.docker.com/linux/static/stable/x86_64/$(curl -sSkL https://download.docker.com/linux/static/stable/x86_64/|grep '^ *<a'|grep docker|grep -v rootless|awk -F '"' '{print $2}'|sort -nr|head -1)" \
   && cd /tmp \
   && tar zxf docker.tgz \

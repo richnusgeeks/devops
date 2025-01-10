@@ -1,5 +1,3 @@
-version: '3.5'
-
 services:
 
   monitoror:
@@ -12,5 +10,5 @@ services:
 
 networks:
   default:
-    name: monitoror-demo
+    name: statuspage-demo
     external: true

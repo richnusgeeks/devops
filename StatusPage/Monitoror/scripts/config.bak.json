@@ -3,7 +3,7 @@
   "columns": 2,
   "tiles": [
   { "type": "PING", "params": {"hostname": "127.0.0.1"}},
-  { "type": "PORT", "params": {"hostname": "127.0.0.1", "port": 8080}},
+  { "type": "PORT", "params": {"hostname": "129.0.0.1", "port": 8080}},
   { "type": "HTTP-STATUS", "params": {"url": "https://google.com"}},
   {
     "type": "GROUP",
@@ -12,7 +12,7 @@
     {
       "type": "PING",
       "params": {
-        "hostname": "129.0.0.1"
+        "hostname": "128.0.0.1"
       }
     },
     {

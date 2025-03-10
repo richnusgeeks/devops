@@ -5,9 +5,11 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmntfsc:5.33.0
-    name: monitfsc%d
+    image: ubuntujjfmmnt:4.3.4
+    name: mmonit%d
     privileged: true
+    networks:
+    - mmonit-demo
     portMappings:
     - containerPort: 22
-    - containerPort: 2812
+    - containerPort: 8080

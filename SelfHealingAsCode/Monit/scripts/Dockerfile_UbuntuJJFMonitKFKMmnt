@@ -1,4 +1,4 @@
-FROM ubuntujjfmntfscmmnt:5.33.0
+FROM ubuntujjfmntfscmmnt:5.34.4
 
 COPY setup_monit_srvc_kafka_mmnt.sh /usr/local/bin/setup.sh
 RUN setup.sh && \

@@ -1,7 +1,7 @@
 #! /bin/bash
 set -uo pipefail
 
-MONITVER='5.33.0'
+MONITVER='5.34.4'
 DSPCWMARK="${DSPCE_WMARK:-90}"
 INDEWMARK="${INODE_WMARK:-90}"
 MONITBDIR='/opt/monit/bin'

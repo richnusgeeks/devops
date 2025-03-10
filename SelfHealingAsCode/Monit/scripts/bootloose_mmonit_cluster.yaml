@@ -5,7 +5,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmmnt:3.7.14
+    image: ubuntujjfmmnt:4.3.4
     name: mmonit%d
     privileged: true
     networks:
@@ -16,7 +16,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmntmmnt:5.33.0
+    image: ubuntujjfmntmmnt:5.34.4
     name: mmonitmnt%d
     privileged: true
     networks:
@@ -26,7 +26,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmntfscmmnt:5.33.0
+    image: ubuntujjfmntfscmmnt:5.34.4
     name: mmonitfsc%d
     privileged: true
     networks:
@@ -36,7 +36,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmntkfkmmnt:3.4.0
+    image: ubuntujjfmntkfkmmnt:3.9.0
     name: mmonitkfk%d
     privileged: true
     networks:

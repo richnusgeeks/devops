@@ -1,12 +1,12 @@
 #! /bin/bash
 set -uo pipefail
 
-MONITVER='5.33.0'
+MONITVER='5.34.4'
 MONITBDIR='/opt/monit/bin'
 MONITCDIR='/opt/monit/conf'
 MONITSDIR='/opt/monit/monit.d'
 MONITVFLE='/lib/systemd/system/monit.service'
-MMONITVER='3.7.14'
+MMONITVER='4.3.4'
 MMONITLDIR='/opt/mmonit'
 MMONITBDIR='/opt/mmonit/bin'
 MMONITCDIR='/opt/mmonit/conf'

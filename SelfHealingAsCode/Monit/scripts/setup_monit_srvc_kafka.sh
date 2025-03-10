@@ -1,8 +1,8 @@
 #! /bin/bash
 set -uo pipefail
 
-MONITVER='5.33.0'
-KAFKAVER='3.4.0'
+MONITVER='5.34.4'
+KAFKAVER='3.9.0'
 KFKSCVER='2.13'
 DSPCWMARK="${DSPCE_WMARK:-90}"
 INDEWMARK="${INODE_WMARK:-90}"
@@ -125,10 +125,9 @@ setupKafkaWebUI() {
 
   mkdir -p /opt/docker/compose
   tee /opt/docker/compose/kafkawebui.yml <<EOF
-version: "2.4"
 services:
   kafkawebui:
-    image: docker.redpanda.com/vectorized/console:latest
+    image: docker.redpanda.com/redpandadata/console:latest
     container_name: kafkawebui
     hostname: kafkawebui
     mem_limit: 512m

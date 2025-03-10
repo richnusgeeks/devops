@@ -5,7 +5,7 @@ machines:
 - count: 1
   spec:
     backend: docker
-    image: ubuntujjfmntkfk:3.4.0
+    image: ubuntujjfmntkfk:3.9.0
     name: monitkfk%d
     privileged: true
     portMappings:

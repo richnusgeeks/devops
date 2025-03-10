@@ -1,7 +1,7 @@
 #! /bin/bash
 set -uo pipefail
 
-MONITVER='5.33.0'
+MONITVER='5.34.4'
 MONITBDIR='/opt/monit/bin'
 MONITCDIR='/opt/monit/conf'
 MONITSDIR='/opt/monit/monit.d'

@@ -1,0 +1,25 @@
+services:
+
+  gcpcbtemu:
+    image: gcpcbtemu
+    container_name: gcpcbtemu
+    hostname: gcpcbtemu
+    ports:
+      - "28086:8086"
+    restart: unless-stopped
+
+  gcpcbttst:
+    image: gcpcbttst
+    container_name: gcpcbttst
+    hostname: gcpcbttst
+    environment:
+      - "BIGTABLE_EMULATOR_HOST=gcpcbtemu:8086"
+      - "CLOUDSDK_AUTH_DISABLE_CREDENTIALS=true"
+      - "CLOUDSDK_CORE_PROJECT=demo"
+    depends_on:
+      - gcpcbtemu
+
+networks:
+  default:
+    name: gcpemulators-demo
+    external: true

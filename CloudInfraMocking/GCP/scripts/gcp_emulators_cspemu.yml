@@ -1,0 +1,27 @@
+services:
+
+  gcpcspemu:
+    image: gcr.io/cloud-spanner-emulator/emulator
+    container_name: gcpcspemu
+    hostname: gcpcspemu
+    ports:
+      - "29010:9010"
+      - "29020:9020"
+    restart: unless-stopped
+
+  gcpcsptst:
+    image: gcpcsptst
+    container_name: gcpcsptst
+    hostname: gcpcsptst
+    environment:
+      - "SPANNER_EMULATOR_HOST=gcpcspemu:9020"
+      - "CLOUDSDK_AUTH_DISABLE_CREDENTIALS=true"
+      - "CLOUDSDK_CORE_PROJECT=demo"
+      - "CLOUDSDK_API_ENDPOINT_OVERRIDES_SPANNER=http://gcpcspemu:9020/"
+    depends_on:
+      - gcpcspemu
+
+networks:
+  default:
+    name: gcpemulators-demo
+    external: true

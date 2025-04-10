@@ -1,0 +1,26 @@
+services:
+
+  gcpcpsemu:
+    image: gcpcpsemu
+    container_name: gcpcpsemu
+    hostname: gcpcpsemu
+    ports:
+      - "28085:8085"
+    restart: unless-stopped
+
+  gcpcpstst:
+    image: gcpcpstst
+    container_name: gcpcpstst
+    hostname: gcpcpstst
+    environment:
+      - "PUBSUB_EMULATOR_HOST=gcpcpsemu:8085"
+      - "PUBSUB_PROJECT_ID=demo"
+      - "CLOUDSDK_AUTH_DISABLE_CREDENTIALS=true"
+      - "CLOUDSDK_CORE_PROJECT=demo"
+    depends_on:
+      - gcpcpsemu
+
+networks:
+  default:
+    name: gcpemulators-demo
+    external: true

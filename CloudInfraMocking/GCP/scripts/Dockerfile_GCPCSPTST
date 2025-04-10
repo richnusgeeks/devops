@@ -10,17 +10,10 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 FROM google/cloud-sdk:alpine
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-RUN apk add --no-cache --virtual .build-deps \
-      alpine-sdk libffi-dev openssl-dev python3-dev py3-pip && \
-    gcloud components install cbt --quiet && \
-    printf "%s\n%s\n" "project=demo" "instance=demo"|tee ~/.cbtrc && \
-    gcloud config configurations create emulator --quiet && \
-    git clone https://github.com/googleapis/python-pubsub.git && \
-    cd python-pubsub/samples/snippets && \
-    pip3 install -r requirements.txt
+RUN gcloud config configurations create emulator --quiet
 
 COPY --from=dockerize /usr/local/bin/dockerize /usr/local/bin/
 
-COPY gcpemu_run.sh /usr/local/bin/run.sh
+COPY gcpemu_csptst.sh /usr/local/bin/run.sh
 
 ENTRYPOINT ["run.sh"]

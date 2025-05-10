@@ -4,8 +4,7 @@ TAMD=${1}
 EXDR=${2}
 OPRN=${3}
 NUMOPTNMX=4
-TRFRMCNFL=${TRFRMCNFL:-'/etc/terraform/aws_override.tf'}
-TRFRMWLOC=${TRFRMWLOC:-'/tmp/terraform'}
+TRFRMCNFL=${TRFRMCNFL:-'/etc/opentofu/aws_override.tf'}
 
 printUsage() {
 
@@ -40,7 +39,6 @@ preProcess() {
     cd "/tmp/terraform-aws-${TAMD}"
     git pull
     cd "examples/${EXDR}/"
-    terraform init -input=false
 
   else
     if git clone "https://github.com/terraform-aws-modules/terraform-aws-${TAMD}.git" "/tmp/terraform-aws-${TAMD}"
@@ -53,7 +51,6 @@ preProcess() {
           if cp -f "${TRFRMCNFL}" "/tmp/terraform-aws-${TAMD}/examples/${EXDR}/"
           then
             cd "/tmp/terraform-aws-${TAMD}/examples/${EXDR}/"
-            terraform init -input=false
           fi
         fi	    
       fi
@@ -61,6 +58,8 @@ preProcess() {
     fi
   fi
 
+  sed -i '/^ *provider/,/\}/d' main.tf
+  tofu init -input=false
 
 }
 
@@ -71,9 +70,9 @@ runOprtn() {
   if [[ "${OPRN}" = "apply" ]] || \
      [[ "${OPRN}" = "destroy" ]]
   then
-    terraform ${OPRN} -input=false -auto-approve
+    tofu ${OPRN} -input=false -auto-approve
   else
-    terraform "${OPRN}" 
+    tofu "${OPRN}" 
   fi
 
 }

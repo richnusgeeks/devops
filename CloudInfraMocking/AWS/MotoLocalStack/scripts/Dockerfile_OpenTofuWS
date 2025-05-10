@@ -1,0 +1,16 @@
+FROM alpine:3.21
+
+ENV TOFU_VERSION 1.9.1
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN apk add --no-cache git \
+  && wget "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_linux_amd64.zip" \
+  && unzip "tofu_${TOFU_VERSION}_linux_amd64.zip" \
+  && mv tofu /usr/local/bin \
+  && rm -f "tofu_${TOFU_VERSION}_linux_amd64.zip" README.md LICENSE CHANGELOG.md \
+  && chmod +x /usr/local/bin/tofu \
+  && mkdir /etc/opentofu
+
+COPY aws_override.tf /etc/opentofu/aws_override.tf
+COPY opentofu_awsemu_test.sh /usr/local/bin/otofuawstst

@@ -1,7 +1,7 @@
 provider "aws" {
   region                      = "us-west-1"
   access_key                  = "mock_access_key"
-  s3_use_path_style           = true
+  s3_use_path_style           = false
   secret_key                  = "mock_secret_key"
   skip_credentials_validation = true
   skip_metadata_api_check     = true

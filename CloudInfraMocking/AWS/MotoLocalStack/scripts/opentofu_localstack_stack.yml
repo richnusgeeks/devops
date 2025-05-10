@@ -5,7 +5,6 @@ services:
     container_name: localstack
     hostname: localstack
     volumes:
-      - "${TMPDIR:-/tmp/terraform}:/tmp/terraform"
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "14566:4566"
@@ -19,10 +18,10 @@ services:
       retries: 5
     restart: unless-stopped
 
-  terraformws:
-    image: terraformws:${TFWSTAG:-latest}
-    container_name: terraformws
-    hostname: terraformws
+  opentofuws:
+    image: opentofuws:${TFWSTAG:-latest}
+    container_name: opentofuws
+    hostname: opentofuws
     entrypoint: ash
     command: "-c 'while true; do sleep 5; done'"
     depends_on:

@@ -1,0 +1,10 @@
+# docker run -it --rm --device=/dev/ttyACM0:/dev/ttyACM0 minicomscreen minicom -D /dev/ttyACM0
+# Ctrl-A Q to exit
+FROM alpine:3.22
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN apk add --no-cache minicom screen \
+  && mkdir /etc/rpipico
+
+WORKDIR /etc/rpipico

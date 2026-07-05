@@ -1,0 +1,15 @@
+# docker run --device=/dev/ttyACM0:/dev/ttyACM0 pyboard -c 'from machine import Pin;from time import sleep;p=Pin("LED", Pin.OUT);p.toggle();sleep(3);p.toggle()'
+FROM python:3.14-alpine
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN wget https://github.com/micropython/micropython/archive/refs/heads/master.zip \
+  && unzip master.zip \
+  && cp micropython-master/tools/pyboard.py /usr/local/bin/pyboard \
+  && rm -rf master.zip micropython-master \
+  && pip install pyserial \
+  && mkdir /etc/rpipico
+
+WORKDIR /etc/rpipico
+ENTRYPOINT ["pyboard"]
+CMD ["-h"]

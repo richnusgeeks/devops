@@ -1,0 +1,16 @@
+# docker run --device=/dev/ttyACM0:/dev/ttyACM0 mpremote exec 'from machine import Pin;from time import sleep;p=Pin("LED", Pin.OUT);p.toggle();sleep(3);p.toggle()'
+FROM python:3.14-alpine
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN wget https://github.com/micropython/micropython/archive/refs/heads/master.zip \
+  && unzip master.zip \
+  && cp -r micropython-master/tools/mpremote /usr/local/bin/ \
+  && rm -rf master.zip micropython-master \
+  && pip install -r /usr/local/bin/mpremote/requirements.txt \
+  && ln -s /usr/local/bin/mpremote/mpremote.py /usr/local/bin/mpr \
+  && mkdir /etc/rpipico
+
+WORKDIR /etc/rpipico
+ENTRYPOINT ["mpr"]
+CMD ["--help"]

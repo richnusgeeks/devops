@@ -1,0 +1,9 @@
+# docker run --device=/dev/ttyACM0:/dev/ttyACM0 pydos connect auto fs cp -r * :
+FROM mpremote
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+RUN wget https://github.com/RetiredWizard/PyDOS/archive/refs/heads/main.zip \
+  && unzip main.zip \
+  && rm main.zip
+
+WORKDIR /etc/rpipico/PyDOS-main

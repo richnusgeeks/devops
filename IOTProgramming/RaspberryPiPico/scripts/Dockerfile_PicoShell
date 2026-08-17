@@ -1,0 +1,9 @@
+# docker run --device=/dev/ttyACM0:/dev/ttyACM0 picoshell connect auto fs cp boot.py :
+FROM mpremote
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+RUN wget https://github.com/patrickp02/PicoShell/archive/refs/heads/main.zip \
+  && unzip main.zip \
+  && rm main.zip
+
+WORKDIR /etc/rpipico/PicoShell-main

@@ -1,0 +1,12 @@
+# docker run --device=/dev/ttyACM0:/dev/ttyACM0 pyboard -c 'from machine import Pin;from time import sleep;p=Pin(8, Pin.OUT, value=1);p.toggle();sleep(3);p.toggle()'
+FROM python:3.14-alpine
+
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+WORKDIR /tmp
+RUN apk add --no-cache curl \ 
+  && pip install esptool \
+  && mkdir /etc/esp32c3sm
+
+WORKDIR /etc/esp32c3sm
+ENTRYPOINT ["esptool"]
+CMD ["-h"]
